@@ -1,0 +1,37 @@
+@baseUrl = http://localhost:3000
+
+### 1. Hợp lệ (có khoảng trắng và chữ hoa)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{ "email": "  An@Gmail.COM ", "password": "12345678", "fullName": "  Nguyễn An " }
+
+### 2. Sai hết
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{ "email": "abc", "password": "123" }
+
+### 3. Cố tình gửi role ADMIN
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{ "email": "hacker@gmail.com", "password": "12345678", "fullName": "Hacker", "role": "ADMIN" }
+
+### 4. Đăng nhập đúng
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "an@gmail.com", "password": "12345678" }
+
+### 5. Sai mật khẩu
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "an@gmail.com", "password": "sai_mat_khau" }
+
+### 6. Email không tồn tại
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "khongco@gmail.com", "password": "12345678" }
