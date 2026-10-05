@@ -20,8 +20,10 @@ Tài liệu này gồm hai phần:
 | Framework | NestJS 12 + TypeScript | module CommonJS (CJS) |
 | ORM | Prisma 7.10 | dùng driver adapter `@prisma/adapter-pg` |
 | Database | PostgreSQL 17 | chạy bằng Docker |
-| Validate dữ liệu | Zod 4 | kiểm tra biến môi trường (sau này dùng cho cả request body) |
+| Validate dữ liệu | Zod 4 | kiểm tra biến môi trường và request body |
 | Cấu hình | `@nestjs/config` | đọc `.env`, cung cấp `ConfigService` |
+| Hash mật khẩu | bcrypt 6 | cost 10, có salt ngẫu nhiên |
+| Xác thực | `@nestjs/jwt` | JWT access token, ký bằng HS256 |
 
 ---
 
@@ -65,6 +67,25 @@ Mở http://localhost:3000/health, kết quả mong đợi:
 
 Nếu nhận được `503` và `"database": "down"` nghĩa là server không kết nối được Postgres. Xem mục [Lỗi thường gặp](#lỗi-thường-gặp).
 
+### Thử các API
+
+Cài extension **REST Client** (tác giả Huachao Mao) trong VS Code, mở file `backend/request.http` rồi bấm **Send Request** phía trên mỗi request.
+
+| Method | Route | Body | Kết quả |
+|---|---|---|---|
+| `GET` | `/health` | – | `200` nếu DB chạy, `503` nếu DB tắt |
+| `POST` | `/auth/register` | `{ email, password, fullName }` | `201` + thông tin user (không có `passwordHash`) · `409` email đã dùng · `422` dữ liệu sai |
+| `POST` | `/auth/login` | `{ email, password }` | `200` + `{ accessToken }` · `401` sai email hoặc mật khẩu · `422` dữ liệu sai |
+
+Lỗi `422` có dạng:
+
+```json
+{
+  "message": "Dữ liệu không hợp lệ!",
+  "errors": [{ "field": "email", "message": "Email không hợp lệ" }]
+}
+```
+
 ### Các lệnh thường dùng (chạy trong `backend/`)
 
 | Lệnh | Tác dụng |
@@ -87,6 +108,7 @@ Edu_Platform/
 └── backend/
     ├── .env.example             ← mẫu biến môi trường (file .env thật KHÔNG commit)
     ├── docker-compose.yml       ← khai báo container Postgres
+    ├── request.http             ← các request mẫu để test API bằng REST Client
     ├── prisma7.config.ts        ← cấu hình Prisma CLI (đường dẫn schema, DATABASE_URL)
     ├── prisma/
     │   ├── schema.prisma        ← định nghĩa các bảng (model)
@@ -96,6 +118,14 @@ Edu_Platform/
         ├── app.module.ts        ← module gốc, ghép các module lại với nhau
         ├── app.controller.ts    ← route GET / và GET /health
         ├── app.service.ts       ← logic của health check
+        ├── auth/
+        │   ├── auth.module.ts   ← import JwtModule (cấu hình bằng registerAsync)
+        │   ├── auth.controller.ts← POST /auth/register, POST /auth/login
+        │   ├── auth.service.ts  ← hash/compare mật khẩu, tạo user, ký JWT
+        │   └── auth.schema.ts   ← schema Zod cho body đăng ký / đăng nhập
+        ├── common/
+        │   └── pipes/
+        │       └── zod-validation.pipe.ts ← pipe dùng chung: validate bằng Zod, lỗi trả 422
         ├── config/
         │   └── env.schema.ts    ← schema Zod kiểm tra biến môi trường
         ├── prisma/
@@ -117,6 +147,8 @@ Khai báo trong `backend/.env` (xem mẫu ở `backend/.env.example`).
 | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Docker | tài khoản và tên database được tạo khi container chạy lần đầu |
 | `POSTGRES_PORT` | Docker | port trên máy thật, map vào port 5432 của container |
 | `DATABASE_URL` | NestJS, Prisma CLI | chuỗi kết nối, phải khớp với các biến `POSTGRES_*` |
+| `JWT_ACCESS_SECRET` | NestJS | khoá bí mật để ký access token, tối thiểu 32 ký tự. Tạo bằng `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
+| `JWT_ACCESS_EXPIRES_IN` | NestJS | thời hạn access token, **tính bằng giây** (ví dụ `900` = 15 phút) |
 
 Khi thêm một biến mới, cần làm đủ 3 việc:
 
@@ -144,6 +176,36 @@ constructor(private readonly prisma: PrismaService) {}
 
 Nếu quên một trong các điều trên, khi khởi động Nest sẽ báo lỗi kiểu:
 `Nest could not find XxxService element` hoặc `Nest can't resolve dependencies of ...`.
+
+**Hai loại "import" khác nhau:**
+
+| | `import` ở đầu file | `imports: []` trong `@Module` |
+|---|---|---|
+| Thuộc về | TypeScript | NestJS |
+| Tác dụng | đưa code (class, hàm, type) từ file khác vào | cho module này dùng các service mà module kia `exports` |
+
+**Pipe và vòng đời của request:**
+
+```
+Request → Middleware → Guard → Interceptor → Pipe → Controller
+                        │                     └─ validate hoặc biến đổi body/params/query
+                        └─ kiểm tra quyền truy cập
+```
+
+Pipe chạy ngay trước controller. Nếu pipe `throw`, controller không chạy. Giá trị pipe `return` sẽ **thay thế** dữ liệu gốc, nên controller nhận dữ liệu đã được làm sạch.
+
+**Dynamic module (`register` / `registerAsync`):** một số module cần cấu hình trước khi dùng, ví dụ `ConfigModule.forRoot(...)`, `JwtModule.registerAsync(...)`. Khi cấu hình phải lấy từ một service khác (thường là `ConfigService`), dùng bản `Async`:
+
+```ts
+JwtModule.registerAsync({
+  inject: [ConfigService],                 // Nest truyền các service này vào useFactory, theo thứ tự
+  useFactory: (config: ConfigService<Env, true>) => ({   // hàm trả về object cấu hình
+    secret: config.get('JWT_ACCESS_SECRET', { infer: true }),
+  }),
+})
+```
+
+Với arrow function, Nest không đọc được kiểu của tham số như với constructor của class, nên phải liệt kê rõ bằng `inject`.
 
 ---
 
@@ -276,6 +338,97 @@ ConfigModule đọc .env
 - Zod chỉ kiểm tra **định dạng**. Ví dụ `DATABASE_URL` sai mật khẩu vẫn vượt qua bước kiểm tra, lỗi chỉ lộ ra khi kết nối DB (`/health` sẽ báo `down`).
 - `main.ts` không có constructor nên lấy service bằng `app.get(ConfigService)`.
 
+### Bước 4a: Route đăng ký và `ZodValidationPipe`
+
+```bash
+npx nest g module auth
+npx nest g controller auth --no-spec
+```
+
+`src/common/pipes/zod-validation.pipe.ts` là pipe dùng chung cho mọi route:
+
+- Nhận schema qua constructor: `new ZodValidationPipe(registerSchema)`. Cùng một class dùng được cho mọi schema.
+- `transform(value)` gọi `schema.safeParse(value)`. `safeParse` không ném lỗi mà trả về `{ success, data | error }`, nhờ đó ta tự quyết định dạng lỗi trả về.
+- Sai thì `throw new UnprocessableEntityException(...)` (422), với danh sách `{ field, message }`. `field` lấy từ `issue.path.join('.')`, nên field lồng nhau sẽ có dạng `address.city`.
+- Đúng thì `return result.data`, controller nhận dữ liệu **đã được làm sạch**.
+
+Gắn pipe vào body của route:
+
+```ts
+@Post('register')
+register(@Body(new ZodValidationPipe(registerSchema)) body: RegisterDto) { ... }
+```
+
+Những điểm đáng chú ý trong `registerSchema` (`src/auth/auth.schema.ts`):
+
+- **Email:** `z.string().trim().toLowerCase().pipe(z.email())`. Email được làm sạch trước rồi mới kiểm tra, nên `" An@Gmail.COM "` và `"an@gmail.com"` là cùng một tài khoản.
+- **Mật khẩu `max(72)`:** bcrypt chỉ đọc 72 byte đầu tiên, phần sau bị bỏ qua mà không báo lỗi.
+- **Không có field `role`:** `z.object` tự bỏ các field không khai báo. Vì vậy client gửi `"role": "ADMIN"` cũng không có tác dụng, chặn được lỗi **mass assignment**. Mọi người đăng ký đều là `STUDENT`.
+- **DTO** (Data Transfer Object) là kiểu dữ liệu client gửi lên. Ở đây DTO được sinh bằng `z.infer<typeof registerSchema>`.
+
+### Bước 4b: Hash mật khẩu và lưu user
+
+```bash
+npm i bcrypt
+npm i -D @types/bcrypt
+npx nest g service auth --no-spec
+```
+
+**Tại sao phải hash mật khẩu:** nếu database bị lộ, kẻ tấn công không có được mật khẩu gốc, vì hash là biến đổi một chiều.
+
+**bcrypt** cố tình chạy chậm (cost `10` = 2¹⁰ vòng lặp, khoảng 100ms) và tự thêm **salt** ngẫu nhiên. Vì vậy hai người cùng mật khẩu vẫn có hai hash khác nhau, và bảng hash tính sẵn (*rainbow table*) trở nên vô dụng. Salt được lưu ngay trong chuỗi hash:
+
+```
+$2b$10$kICgIiFwUk8d9aTUioAk5e RgmsvQCE67jdxZy7W7a/LE/rQ1.mdV6
+ │   │  └──── salt (22 ký tự) ──┘└──── kết quả hash (31 ký tự) ──┘
+ │   └─ cost = 10
+ └─ phiên bản thuật toán
+```
+
+`AuthService.register()`:
+
+- `data` được viết ra **từng field**, không dùng `data: dto`. Đây là lớp chống mass assignment thứ hai.
+- `omit: { passwordHash: true }`: **không bao giờ** trả `passwordHash` về cho client.
+- **Email trùng:** bắt lỗi Prisma `P2002` (vi phạm `@unique`) rồi đổi thành `ConflictException` (409). Không dùng cách "tìm trước rồi mới tạo", vì cách đó có **race condition**: 2 request đến cùng lúc đều thấy "chưa có" và đều đi tiếp. Các lỗi khác thì `throw error` tiếp ra ngoài, không được nuốt mất.
+
+> ⚠️ Không tạo user bằng tay trong Prisma Studio với mật khẩu gốc. User đó sẽ không đăng nhập được, vì `bcrypt.compare` không đọc được chuỗi không phải hash. Tài khoản admin sẽ được tạo bằng seed script (Bước 5).
+
+### Bước 4c: Đăng nhập và JWT
+
+```bash
+npm i @nestjs/jwt
+```
+
+**JWT** gồm 3 phần `header.payload.signature`:
+
+- **Payload** chỉ được mã hoá base64, **ai cũng đọc được**. Không bao giờ đặt mật khẩu hay thông tin nhạy cảm vào đây.
+- **Chữ ký** được tạo từ payload và `JWT_ACCESS_SECRET`. Nếu ai đó sửa payload (ví dụ đổi `role` thành `ADMIN`), chữ ký sẽ không khớp nữa. JWT **chống giả mạo**, chứ không giấu dữ liệu.
+
+Payload của token do app tạo ra:
+
+```json
+{ "sub": "a322119b-...", "role": "STUDENT", "iat": 1791221203, "exp": 1791222103 }
+```
+
+| Trường | Ý nghĩa |
+|---|---|
+| `sub` | *subject*: id của user |
+| `role` | quyền của user |
+| `iat` | *issued at*: thời điểm tạo token (Unix timestamp, đơn vị giây) |
+| `exp` | *expiration*: thời điểm hết hạn. `exp − iat = JWT_ACCESS_EXPIRES_IN` |
+
+Cấu hình `JwtModule` trong `auth.module.ts` bằng `registerAsync` để lấy secret và thời hạn từ `ConfigService` (xem phần *Dynamic module* ở trên). `JWT_ACCESS_EXPIRES_IN` dùng **số giây** thay vì `"15m"`, vì kiểu dữ liệu của `@nestjs/jwt` không nhận một biến `string` bất kỳ đọc từ `.env`.
+
+`AuthService.login()`:
+
+1. `findUnique({ where: { email } })`: không tìm thấy thì trả về `null`, không ném lỗi.
+2. Không có user → `UnauthorizedException` (401).
+3. `bcrypt.compare(matKhauNhap, user.passwordHash)`: lấy salt từ trong hash đã lưu, hash lại mật khẩu vừa nhập với salt đó rồi so sánh. **Thứ tự tham số: mật khẩu gốc trước, hash sau.** Không thể so bằng `bcrypt.hash(...) === passwordHash`, vì mỗi lần hash ra một salt mới.
+4. Sai mật khẩu → **cùng** câu báo lỗi 401 như bước 2: "Email hoặc mật khẩu không đúng". Nếu báo riêng "Email không tồn tại", kẻ xấu có thể dò ra email nào đã đăng ký (**user enumeration**).
+5. `jwtService.signAsync({ sub: user.id, role: user.role })` → trả về `{ accessToken }`.
+
+Route dùng `@HttpCode(200)`, vì mặc định Nest trả `201 Created` cho `POST`, trong khi đăng nhập không tạo ra tài nguyên mới.
+
 ---
 
 ## Lỗi thường gặp
@@ -288,6 +441,11 @@ ConfigModule đọc .env
 | `Nest could not find ConfigService element` | chưa thêm `ConfigModule.forRoot(...)` vào `imports` của `AppModule` |
 | `File .env không hợp lệ: ✖ ... → at DATABASE_URL` | thiếu biến hoặc giá trị sai định dạng trong `.env` |
 | `Cannot find module '../generated/prisma/client'` | chưa chạy `npx prisma generate` |
+| `File .env không hợp lệ: ✖ expected number, received NaN → at JWT_ACCESS_EXPIRES_IN` | tên biến trong `.env` bị gõ sai (ví dụ `JWT_ACCESS_EXPIRESS_IN`) hoặc thiếu biến |
+| `Nest can't resolve dependencies of the AuthService (PrismaService, ?)` | `AuthModule` chưa có `JwtModule` trong `imports` |
+| REST Client báo `The connection was rejected` | server chưa chạy. Bật Docker Desktop trước, rồi chạy `npm run start:dev` và để terminal đó luôn mở |
+| Đăng nhập luôn trả `401` dù mật khẩu đúng | user được tạo tay với mật khẩu gốc (không phải hash), hoặc truyền ngược tham số `bcrypt.compare` |
+| `npm test` lỗi `Cannot find module './internal/class.js'` | Jest chưa map import đuôi `.js` của Prisma Client. Sẽ sửa khi bắt đầu viết test |
 
 ---
 
@@ -296,7 +454,12 @@ ConfigModule đọc .env
 - [x] Bước 1: Khởi tạo NestJS, route `/health`
 - [x] Bước 2: Postgres (Docker), Prisma, `PrismaService`
 - [x] Bước 3: Kiểm tra biến môi trường bằng Zod
-- [ ] Bước 4: Đăng ký, đăng nhập (bcrypt, JWT access/refresh token)
+- [ ] Bước 4: Xác thực
+  - [x] 4a: `POST /auth/register`, `ZodValidationPipe`
+  - [x] 4b: hash mật khẩu bằng bcrypt, lưu user, xử lý email trùng
+  - [x] 4c: `POST /auth/login`, cấp JWT access token
+  - [ ] 4d: Guard kiểm tra token, `GET /auth/me`
+  - [ ] 4e: refresh token và logout
 - [ ] Bước 5: Phân quyền theo role (Student / Instructor / Admin)
 - [ ] Bước 6: Khóa học (giảng viên tạo và xuất bản, học viên xem)
 - [ ] Bước 7: Section và Lecture
