@@ -1,11 +1,9 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
-import { Env } from './config/env.schema';
+import { NestFactory } from '@nestjs/core'
+import { AppModule } from './app.module'
+import envConfig from './shared/config'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const config = app.get(ConfigService<Env, true>);
-  await app.listen(config.get('PORT', { infer: true }));
+  const app = await NestFactory.create(AppModule)
+  await app.listen(envConfig.PORT)
 }
-void bootstrap();
+void bootstrap()
