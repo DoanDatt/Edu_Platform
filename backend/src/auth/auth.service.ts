@@ -66,4 +66,14 @@ export class AuthService {
 
     return { accessToken };
   }
+  async getMe(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      omit: { passwordHash: true },
+    });
+    if (!user) {
+      throw new UnauthorizedException('Tài khoản không còn tồn tại');
+    }
+    return user;
+  }
 }

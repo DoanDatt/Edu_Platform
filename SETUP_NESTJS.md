@@ -59,7 +59,7 @@ npm run start:dev
 
 ### Kiểm tra
 
-Mở http://localhost:3000/health, kết quả mong đợi:
+Mở http://localhost:4000/health, kết quả mong đợi:
 
 ```json
 { "status": "ok", "database": "up" }
@@ -76,6 +76,9 @@ Cài extension **REST Client** (tác giả Huachao Mao) trong VS Code, mở file
 | `GET` | `/health` | – | `200` nếu DB chạy, `503` nếu DB tắt |
 | `POST` | `/auth/register` | `{ email, password, fullName }` | `201` + thông tin user (không có `passwordHash`) · `409` email đã dùng · `422` dữ liệu sai |
 | `POST` | `/auth/login` | `{ email, password }` | `200` + `{ accessToken }` · `401` sai email hoặc mật khẩu · `422` dữ liệu sai |
+| `GET` | `/auth/me` | – (header `Authorization: Bearer <accessToken>`) | `200` + thông tin user · `401` thiếu, sai hoặc hết hạn token |
+
+Trong `request.http`, request đăng nhập có dòng `# @name login`. Các request sau dùng `{{login.response.body.accessToken}}` để tự lấy token, nên phải gửi request đăng nhập trước.
 
 Lỗi `422` có dạng:
 
@@ -122,7 +125,9 @@ Edu_Platform/
         │   ├── auth.module.ts   ← import JwtModule (cấu hình bằng registerAsync)
         │   ├── auth.controller.ts← POST /auth/register, POST /auth/login
         │   ├── auth.service.ts  ← hash/compare mật khẩu, tạo user, ký JWT
-        │   └── auth.schema.ts   ← schema Zod cho body đăng ký / đăng nhập
+        │   ├── auth.schema.ts   ← schema Zod cho body đăng ký / đăng nhập
+        │   ├── auth.types.ts    ← kiểu JwtPayload, AuthenticatedRequest
+        │   └── jwt-auth.guard.ts← Guard kiểm tra access token
         ├── common/
         │   └── pipes/
         │       └── zod-validation.pipe.ts ← pipe dùng chung: validate bằng Zod, lỗi trả 422
@@ -143,7 +148,7 @@ Khai báo trong `backend/.env` (xem mẫu ở `backend/.env.example`).
 | Biến | Dùng bởi | Ý nghĩa |
 |---|---|---|
 | `NODE_ENV` | NestJS | `development` / `production` / `test`, mặc định là `development` |
-| `PORT` | NestJS | port của API, mặc định là `3000` |
+| `PORT` | NestJS | port của API, mặc định là `4000` (port `3000` để dành cho frontend Next.js) |
 | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Docker | tài khoản và tên database được tạo khi container chạy lần đầu |
 | `POSTGRES_PORT` | Docker | port trên máy thật, map vào port 5432 của container |
 | `DATABASE_URL` | NestJS, Prisma CLI | chuỗi kết nối, phải khớp với các biến `POSTGRES_*` |
@@ -193,6 +198,15 @@ Request → Middleware → Guard → Interceptor → Pipe → Controller
 ```
 
 Pipe chạy ngay trước controller. Nếu pipe `throw`, controller không chạy. Giá trị pipe `return` sẽ **thay thế** dữ liệu gốc, nên controller nhận dữ liệu đã được làm sạch.
+
+| | Guard | Pipe |
+|---|---|---|
+| Trả lời câu hỏi | "Người gửi **là ai**, có được vào không?" (*authentication / authorization*) | "Dữ liệu gửi lên có **đúng định dạng** không?" (*validation*) |
+| Lỗi thường trả về | `401` / `403` | `422` |
+| Trong project | `JwtAuthGuard` | `ZodValidationPipe` |
+| Tương đương trong Express | middleware kiểm tra token, gọi `next()` khi hợp lệ | middleware validate `req.body` |
+
+Guard chạy **trước** Pipe: chưa biết người gửi là ai thì chưa cần kiểm tra dữ liệu họ gửi.
 
 **Dynamic module (`register` / `registerAsync`):** một số module cần cấu hình trước khi dùng, ví dụ `ConfigModule.forRoot(...)`, `JwtModule.registerAsync(...)`. Khi cấu hình phải lấy từ một service khác (thường là `ConfigService`), dùng bản `Async`:
 
@@ -429,6 +443,43 @@ Cấu hình `JwtModule` trong `auth.module.ts` bằng `registerAsync` để lấ
 
 Route dùng `@HttpCode(200)`, vì mặc định Nest trả `201 Created` cho `POST`, trong khi đăng nhập không tạo ra tài nguyên mới.
 
+### Bước 4d: `JwtAuthGuard` và `GET /auth/me`
+
+Guard là phiên bản NestJS của middleware kiểm tra token trong Express:
+
+```js
+// Express
+function requireAuth(req, res, next) {
+  const [type, token] = (req.headers.authorization ?? '').split(' ');
+  if (type !== 'Bearer' || !token) return res.status(401).json({ message: 'Thiếu access token' });
+  try { req.user = jwt.verify(token, SECRET); next(); }
+  catch { return res.status(401).json({ message: 'Token không hợp lệ hoặc đã hết hạn' }); }
+}
+app.get('/auth/me', requireAuth, handler);
+```
+
+| Express | NestJS (`src/auth/jwt-auth.guard.ts`) |
+|---|---|
+| `function requireAuth(req, res, next)` | class `JwtAuthGuard implements CanActivate`, có hàm `canActivate()` |
+| `return res.status(401)...` | `throw new UnauthorizedException(...)` |
+| `next()` | `return true` |
+| `jwt.verify(token, SECRET)` | `this.jwtService.verifyAsync(token)`: kiểm tra cả chữ ký lẫn `exp`, secret lấy từ cấu hình `JwtModule` |
+| `app.get('/me', requireAuth, handler)` | `@UseGuards(JwtAuthGuard)` đặt trên handler |
+
+Một số điểm cần nhớ:
+
+- `context.switchToHttp().getRequest()`: guard dùng được cho cả HTTP và WebSocket, nên phải chuyển về HTTP trước rồi mới lấy được `request`.
+- Header có dạng `Authorization: Bearer <token>`, tách bằng `split(' ')` (có **dấu cách**). Viết `split('')` sẽ tách thành từng ký tự, khiến guard **luôn trả 401** mà TypeScript không báo lỗi.
+- `src/auth/auth.types.ts` khai báo `AuthenticatedRequest extends Request` để thêm field `user`. Phải có dòng `import type { Request } from 'express'`. Nếu thiếu, `Request` sẽ là kiểu toàn cục của `fetch()`, kiểu đó không có `headers.authorization`.
+- Trong controller, `AuthenticatedRequest` phải được import bằng **`import type`**. Nếu không, TypeScript báo lỗi `TS1272`, vì interface được dùng trong hàm có decorator (`@Req()`).
+- `getMe()` lấy lại user từ DB thay vì trả luôn payload, vì token chỉ chứa dữ liệu tại thời điểm đăng nhập (user có thể đã đổi tên hoặc bị xoá).
+
+---
+
+### Ghi chú: port 4000
+
+Backend chạy ở port **4000** vì frontend Next.js sẽ dùng port mặc định **3000**. Khi frontend (`localhost:3000`) gọi API (`localhost:4000`), trình duyệt coi đây là hai origin khác nhau, nên backend sẽ cần bật **CORS** khi bắt đầu làm frontend.
+
 ---
 
 ## Lỗi thường gặp
@@ -446,6 +497,10 @@ Route dùng `@HttpCode(200)`, vì mặc định Nest trả `201 Created` cho `PO
 | REST Client báo `The connection was rejected` | server chưa chạy. Bật Docker Desktop trước, rồi chạy `npm run start:dev` và để terminal đó luôn mở |
 | Đăng nhập luôn trả `401` dù mật khẩu đúng | user được tạo tay với mật khẩu gốc (không phải hash), hoặc truyền ngược tham số `bcrypt.compare` |
 | `npm test` lỗi `Cannot find module './internal/class.js'` | Jest chưa map import đuôi `.js` của Prisma Client. Sẽ sửa khi bắt đầu viết test |
+| REST Client báo `The connection was rejected` nhưng server vẫn đang chạy | server chạy ở port khác với `@baseUrl`. Đối chiếu `PORT` trong `.env` với URL trong `request.http` |
+| `getaddrinfo ENOTFOUND (` | URL trong `request.http` bị thừa ngoặc. Biến chỉ có **đúng 2 cặp** ngoặc nhọn: `{{baseUrl}}/auth/me` |
+| `Class 'JwtAuthGuard' incorrectly implements interface 'CanActivate'` | gõ sai tên hàm: phải là `canActivate` |
+| `Property 'authorization' does not exist on type 'Headers'` | `auth.types.ts` thiếu dòng `import type { Request } from 'express'` |
 
 ---
 
@@ -458,7 +513,7 @@ Route dùng `@HttpCode(200)`, vì mặc định Nest trả `201 Created` cho `PO
   - [x] 4a: `POST /auth/register`, `ZodValidationPipe`
   - [x] 4b: hash mật khẩu bằng bcrypt, lưu user, xử lý email trùng
   - [x] 4c: `POST /auth/login`, cấp JWT access token
-  - [ ] 4d: Guard kiểm tra token, `GET /auth/me`
+  - [x] 4d: Guard kiểm tra token, `GET /auth/me`
   - [ ] 4e: refresh token và logout
 - [ ] Bước 5: Phân quyền theo role (Student / Instructor / Admin)
 - [ ] Bước 6: Khóa học (giảng viên tạo và xuất bản, học viên xem)
