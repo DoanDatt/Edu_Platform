@@ -1,0 +1,38 @@
+@baseUrl = http://localhost:4000
+
+### 1. Đăng ký thành công → 201
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "hocvien1@gmail.com",
+  "password": "12345678",
+  "confirmPassword": "12345678",
+  "name": "Học viên 1",
+  "phoneNumber": "0901234567"
+}
+
+### 2. Gửi lại y hệt → 409 "Email đã được sử dụng"
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "hocvien1@gmail.com",
+  "password": "12345678",
+  "confirmPassword": "12345678",
+  "name": "Học viên 1",
+  "phoneNumber": "0901234567"
+}
+
+### 3. Dữ liệu sai + cố gửi roleId → 422 kèm danh sách lỗi
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "abc",
+  "password": "123",
+  "confirmPassword": "999",
+  "name": "",
+  "phoneNumber": "1",
+  "roleId": 1
+}

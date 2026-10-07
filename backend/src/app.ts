@@ -1,5 +1,5 @@
 import express from 'express'
-import prisma from './lib/prisma'
+import authRouter from './modules/auth/auth.route'
 
 const app = express()
 
@@ -10,10 +10,6 @@ app.get('/', (req, res) => {
   res.json({ message: 'Hello Wordl!' })
 })
 
-app.get('/roles', async (req, res) => {
-  // Tương đương SELECT * FROM "ROLE"
-  const roles = await prisma.role.findMany()
-  res.json(roles)
-})
+app.use('/auth', authRouter)
 
 export default app
