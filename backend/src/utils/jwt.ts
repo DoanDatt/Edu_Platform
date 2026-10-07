@@ -13,7 +13,7 @@ export type RefreshTokenPayload = {
 }
 
 // Thư viện tự thêm iat (lúc tạo) và exp (lúc hết hạn), tính bằng giây
-type Decoded<T> = T & { iat: number; exp: number }
+export type Decoded<T> = T & { iat: number; exp: number }
 
 export const signAccessToken = (payload: AccessTokenPayload) => {
   return jwt.sign(payload, envConfig.ACCESS_TOKEN_SECRET, {

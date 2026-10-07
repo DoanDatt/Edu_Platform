@@ -17,3 +17,11 @@ export const login = async (req: Request, res: Response) => {
     data: user,
   })
 }
+
+export const me = async (req: Request, res: Response) => {
+  const user = await authService.getMe(req.user!.userId)
+  res.json({
+    message: 'Lấy thông tin thành công',
+    data: user,
+  })
+}
