@@ -38,12 +38,13 @@ Content-Type: application/json
 }
 
 ### 6. Đăng nhập đúng → 200, có accessToken + refreshToken
+# @name login
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
   "email": "admin@email.com",
-  "password": "<mật khẩu admin trong .env>"
+  "password": "{{$dotenv ADMIN_PASSWORD}}"
 }
 
 ### 7. Sai mật khẩu → 401
@@ -53,4 +54,29 @@ Content-Type: application/json
 {
   "email": "admin@email.com",
   "password": "sai-mat-khau"
+}
+
+### 11. Refresh lần 1 → 200, nhận cặp token mới
+# @name refresh
+POST {{baseUrl}}/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "{{login.response.body.data.refreshToken}}"
+}
+
+### 12. Dùng LẠI refresh token cũ (của login) → 401 "đã được sử dụng"
+POST {{baseUrl}}/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "{{login.response.body.data.refreshToken}}"
+}
+
+### 13. Dùng refresh token MỚI (của request 11) → 200
+POST {{baseUrl}}/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refresh.response.body.data.refreshToken}}"
 }

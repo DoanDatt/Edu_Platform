@@ -3,7 +3,14 @@ import { Prisma } from '../../generated/prisma/client'
 import prisma from '../../lib/prisma'
 import { comparePassword, hashPassword } from '../../utils/crypto'
 import { HttpError } from '../../utils/error'
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../utils/jwt'
+import {
+  AccessTokenPayload,
+  Decoded,
+  RefreshTokenPayload,
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+} from '../../utils/jwt'
 import { LoginBodyType, RegisterBodyType } from './auth.schema'
 
 export const register = async (body: RegisterBodyType) => {
@@ -35,6 +42,22 @@ export const register = async (body: RegisterBodyType) => {
   }
 }
 
+const generateTokens = async ({ userId, roleName }: AccessTokenPayload) => {
+  const accessToken = signAccessToken({ userId, roleName })
+  const refreshToken = signRefreshToken({ userId })
+
+  // lưu refresh token vào DB, để sau này refresh và logout kiểm tra được
+  const { exp } = verifyRefreshToken(refreshToken)
+  await prisma.refreshToken.create({
+    data: {
+      token: refreshToken,
+      userId,
+      expiresAt: new Date(exp * 1000), // exp tính bằng giấy, Date cần mili giấy
+    },
+  })
+  return { accessToken, refreshToken }
+}
+
 export const login = async (body: LoginBodyType) => {
   // 1. Tìm user theo email (bỏ qua user đã bị xoá mềm), lấy kèm role
   const user = await prisma.user.findFirst({
@@ -56,21 +79,21 @@ export const login = async (body: LoginBodyType) => {
     throw new HttpError(403, 'Tài khoản của bạn đã bị khoá')
   }
 
-  // 4. Tạo access token và refresh token
-  const accessToken = signAccessToken({ userId: user.id, roleName: user.role.name })
-  const refreshToken = signRefreshToken({ userId: user.id })
+  // // 4. Tạo access token và refresh token
+  // const accessToken = signAccessToken({ userId: user.id, roleName: user.role.name })
+  // const refreshToken = signRefreshToken({ userId: user.id })
 
-  // 5. Lưu refresh token vào DB, để sau này refresh và logout kiểm tra được
-  const { exp } = verifyRefreshToken(refreshToken)
-  await prisma.refreshToken.create({
-    data: {
-      token: refreshToken,
-      userId: user.id,
-      expiresAt: new Date(exp * 1000), // exp tính bằng giây, Date cần mili-giây
-    },
-  })
+  // // 5. Lưu refresh token vào DB, để sau này refresh và logout kiểm tra được
+  // const { exp } = verifyRefreshToken(refreshToken)
+  // await prisma.refreshToken.create({
+  //   data: {
+  //     token: refreshToken,
+  //     userId: user.id,
+  //     expiresAt: new Date(exp * 1000), // exp tính bằng giây, Date cần mili-giây
+  //   },
+  // })
 
-  return { accessToken, refreshToken }
+  return generateTokens({ userId: user.id, roleName: user.role.name })
 }
 
 export const getMe = async (userId: number) => {
@@ -86,4 +109,34 @@ export const getMe = async (userId: number) => {
     throw new HttpError(401, 'Tài khoản không còn tồn tại')
   }
   return user
+}
+
+export const refreshToken = async (token: string) => {
+  // Kiểm tra chữ ký và hạn dùng
+  let payload: Decoded<RefreshTokenPayload>
+  try {
+    payload = verifyRefreshToken(token)
+  } catch (error) {
+    throw new HttpError(401, 'Refresh token không hợp lệ hoặc đã hết hạn')
+  }
+  // Xóa refresh token cũ, không xóa được dòng nào nghĩa là token đã được dùng rồi hoặc đã logout
+  const { count } = await prisma.refreshToken.deleteMany({ where: { token } })
+  if (count === 0) {
+    throw new HttpError(401, 'Refresh token đã được sử dụng hoặc đã bị thu hồi')
+  }
+
+  // Lấy user hiện tại(có thể bị xóa hoặc bị khóa từ lúc đăng nhập)
+  const user = await prisma.user.findFirst({
+    where: { id: payload.userId, deletedAt: null },
+    include: { role: true },
+  })
+  if (!user) {
+    throw new HttpError(401, 'Tài khoản không tồn tại')
+  }
+  if (user.status === 'BLOCKED') {
+    throw new HttpError(403, 'Tài khoản của bạn đã bị khóa')
+  }
+
+  // Cấp token mới
+  return generateTokens({ userId: user.id, roleName: user.role.name })
 }

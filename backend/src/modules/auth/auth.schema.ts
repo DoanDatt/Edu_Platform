@@ -23,3 +23,11 @@ export const LoginBodySchema = z
   .strict()
 
 export type LoginBodyType = z.infer<typeof LoginBodySchema>
+
+export const RefreshTokenBodySchema = z
+  .object({
+    refreshToken: z.string().min(1, 'Thiếu refresh token'),
+  })
+  .strict()
+
+export type RefreshTokenBodyType = z.infer<typeof RefreshTokenBodySchema>
