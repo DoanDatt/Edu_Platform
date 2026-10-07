@@ -72,3 +72,18 @@ export const login = async (body: LoginBodyType) => {
 
   return { accessToken, refreshToken }
 }
+
+export const getMe = async (userId: number) => {
+  const user = await prisma.user.findFirst({
+    where: { id: userId, deletedAt: null },
+    omit: {
+      password: true,
+      totpSecret: true,
+    },
+    include: { role: { select: { id: true, name: true } } },
+  })
+  if (!user) {
+    throw new HttpError(401, 'Tài khoản không còn tồn tại')
+  }
+  return user
+}
