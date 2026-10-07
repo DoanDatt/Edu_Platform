@@ -14,3 +14,12 @@ export const RegisterBodySchema = z
     path: ['confirmPassword'],
   })
 export type RegisterBodyType = z.infer<typeof RegisterBodySchema>
+
+export const LoginBodySchema = z
+  .object({
+    email: z.email('Email không hợp lệ'),
+    password: z.string().min(1, 'Vui lòng nhập mật khẩu').max(100),
+  })
+  .strict()
+
+export type LoginBodyType = z.infer<typeof LoginBodySchema>

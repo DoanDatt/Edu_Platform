@@ -1,9 +1,10 @@
 import { RoleName } from '../../constants/role'
 import { Prisma } from '../../generated/prisma/client'
 import prisma from '../../lib/prisma'
-import { hashPassword } from '../../utils/crypto'
+import { comparePassword, hashPassword } from '../../utils/crypto'
 import { HttpError } from '../../utils/error'
-import { RegisterBodyType } from './auth.schema'
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../utils/jwt'
+import { LoginBodyType, RegisterBodyType } from './auth.schema'
 
 export const register = async (body: RegisterBodyType) => {
   const studentRole = await prisma.role.findFirstOrThrow({
@@ -32,4 +33,42 @@ export const register = async (body: RegisterBodyType) => {
     }
     throw error
   }
+}
+
+export const login = async (body: LoginBodyType) => {
+  // 1. Tìm user theo email (bỏ qua user đã bị xoá mềm), lấy kèm role
+  const user = await prisma.user.findFirst({
+    where: { email: body.email, deletedAt: null },
+    include: { role: true },
+  })
+
+  // 2. Kiểm tra mật khẩu. Không có user thì coi như sai mật khẩu
+  const isPasswordValid = user ? await comparePassword(body.password, user.password) : false
+
+  // Dùng CHUNG 1 câu báo lỗi cho "không có email" và "sai mật khẩu"
+  // để kẻ xấu không dò được email nào đã đăng ký
+  if (!user || !isPasswordValid) {
+    throw new HttpError(401, 'Email hoặc mật khẩu không đúng')
+  }
+
+  // 3. Tài khoản bị khoá thì không cho đăng nhập
+  if (user.status === 'BLOCKED') {
+    throw new HttpError(403, 'Tài khoản của bạn đã bị khoá')
+  }
+
+  // 4. Tạo access token và refresh token
+  const accessToken = signAccessToken({ userId: user.id, roleName: user.role.name })
+  const refreshToken = signRefreshToken({ userId: user.id })
+
+  // 5. Lưu refresh token vào DB, để sau này refresh và logout kiểm tra được
+  const { exp } = verifyRefreshToken(refreshToken)
+  await prisma.refreshToken.create({
+    data: {
+      token: refreshToken,
+      userId: user.id,
+      expiresAt: new Date(exp * 1000), // exp tính bằng giây, Date cần mili-giây
+    },
+  })
+
+  return { accessToken, refreshToken }
 }
