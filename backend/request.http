@@ -36,3 +36,21 @@ Content-Type: application/json
   "phoneNumber": "1",
   "roleId": 1
 }
+
+### 6. Đăng nhập đúng → 200, có accessToken + refreshToken
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@email.com",
+  "password": "<mật khẩu admin trong .env>"
+}
+
+### 7. Sai mật khẩu → 401
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@email.com",
+  "password": "sai-mat-khau"
+}
