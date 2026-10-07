@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
+    "seed": "tsx src/scripts/seed.ts",
     "start": "node dist/server.js",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "oxlint --type-aware src/",
