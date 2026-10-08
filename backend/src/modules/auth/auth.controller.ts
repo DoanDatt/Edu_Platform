@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { LoginBodyType, RefreshTokenBodyType, RegisterBodyType } from './auth.schema'
+import { LoginBodyType, LogoutBodyType, RefreshTokenBodyType, RegisterBodyType } from './auth.schema'
 import * as authService from './auth.service'
 
 export const register = async (req: Request, res: Response) => {
@@ -30,4 +30,10 @@ export const refreshToken = async (req: Request, res: Response) => {
   const { refreshToken } = req.body as RefreshTokenBodyType
   const tokens = await authService.refreshToken(refreshToken)
   res.json({ message: 'Lấy token mới thành công', data: tokens })
+}
+
+export const logout = async (req: Request, res: Response) => {
+  const { refreshToken } = req.body as LogoutBodyType
+  await authService.logout(refreshToken)
+  res.json({ message: 'Đăng xuất thành công' })
 }

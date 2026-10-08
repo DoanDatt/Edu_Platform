@@ -31,3 +31,6 @@ export const RefreshTokenBodySchema = z
   .strict()
 
 export type RefreshTokenBodyType = z.infer<typeof RefreshTokenBodySchema>
+
+export const LogoutBodySchema = RefreshTokenBodySchema
+export type LogoutBodyType = z.infer<typeof LogoutBodySchema>

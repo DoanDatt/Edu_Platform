@@ -140,3 +140,20 @@ export const refreshToken = async (token: string) => {
   // Cấp token mới
   return generateTokens({ userId: user.id, roleName: user.role.name })
 }
+
+export const logout = async (token: string) => {
+  // kiểm tra chữ ký
+  try {
+    verifyRefreshToken(token)
+  } catch (error) {
+    throw new HttpError(401, 'Refresh token không hợp lệ hoặc đã hết hạn')
+  }
+
+  // Xóa refresh token khỏi DB, từ giờ token này không dùng để refresh được nữa
+  const { count } = await prisma.refreshToken.deleteMany({
+    where: { token },
+  })
+  if (count === 0) {
+    throw new HttpError(401, 'Refresh token đã được sử dụng hoặc đã bị thu hồi')
+  }
+}
