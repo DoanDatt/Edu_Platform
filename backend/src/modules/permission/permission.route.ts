@@ -1,8 +1,6 @@
 import { Router } from 'express'
-import { requireAuth, requireRole } from '../../middleware/auth.middleware'
 import * as permissionController from './permission.controller'
-
-import { RoleName } from '../../constants/role'
+import { requireAuth, requirePermission } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate.middleware'
 import {
   CreatePermissionBodySchema,
@@ -13,22 +11,40 @@ import {
 
 const permissionRouter = Router()
 
-// áp dụng cho mọi route bên dưới: phải đăng nhập và là admin
-permissionRouter.use(requireAuth, requireRole(RoleName.Admin))
+// Áp dụng cho mọi route bên dưới: phải đăng nhập
+permissionRouter.use(requireAuth)
 
-permissionRouter.get('/', validateQuery(GetPermissionQuerySchema), permissionController.getPermissions)
-
-permissionRouter.get('/:permissionId', validateParams(PermissionParamsSchema), permissionController.getPermissionById)
-
-permissionRouter.post('/', validateBody(CreatePermissionBodySchema), permissionController.createPermission)
-
+// requirePermission đặt ĐẦU MỖI ROUTE để biết đang gọi route nào (req.route)
+permissionRouter.get(
+  '/',
+  requirePermission,
+  validateQuery(GetPermissionQuerySchema),
+  permissionController.getPermissions,
+)
+permissionRouter.get(
+  '/:permissionId',
+  requirePermission,
+  validateParams(PermissionParamsSchema),
+  permissionController.getPermissionById,
+)
+permissionRouter.post(
+  '/',
+  requirePermission,
+  validateBody(CreatePermissionBodySchema),
+  permissionController.createPermission,
+)
 permissionRouter.put(
   '/:permissionId',
+  requirePermission,
   validateParams(PermissionParamsSchema),
   validateBody(UpdatePermissionBodySchema),
   permissionController.updatePermission,
 )
-
-permissionRouter.delete('/:permissionId', validateParams(PermissionParamsSchema), permissionController.deletePermission)
+permissionRouter.delete(
+  '/:permissionId',
+  requirePermission,
+  validateParams(PermissionParamsSchema),
+  permissionController.deletePermission,
+)
 
 export default permissionRouter
