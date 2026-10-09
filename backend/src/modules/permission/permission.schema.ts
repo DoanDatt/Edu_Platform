@@ -1,5 +1,6 @@
 import z from 'zod'
 import { HTTPMethod } from '../../generated/prisma/enums'
+import { PaginationQuerySchema } from '../../utils/pagination'
 
 // /permission/:permissionId -> '5' thành 5, 'abc' hoặc '0' thì 422
 export const PermissionParamsSchema = z
@@ -9,14 +10,9 @@ export const PermissionParamsSchema = z
   .strict()
 export type PermissionParamsType = z.infer<typeof PermissionParamsSchema>
 
-// ?page=2&limit=10, không gửi thì dùng giá trị mặc định
-export const GetPermissionQuerySchema = z
-  .object({
-    page: z.coerce.number().int().positive().default(1),
-    // GIới hạn 100 để client không gọi limit=1000000 làm nặng DB
-    limit: z.coerce.number().int().positive().max(100).default(10),
-  })
-  .strict()
+// ?page=2&limit=10, dùng chung schema phân trang
+export const GetPermissionQuerySchema = PaginationQuerySchema
+
 export type GetPermissionQueryType = z.infer<typeof GetPermissionQuerySchema>
 
 export const CreatePermissionBodySchema = z
