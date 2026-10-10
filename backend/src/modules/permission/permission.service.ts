@@ -12,7 +12,7 @@ export const getPermission = async ({ page, limit }: GetPermissionQueryType) => 
     }),
     prisma.permission.findMany({
       where,
-      skip: (page - 1) * limit, // trang 1 bỏ quan 0, trang 2 bỏ qua 'limit'
+      skip: (page - 1) * limit, // trang 1 bỏ qua 0, trang 2 bỏ qua 'limit'
       take: limit,
       orderBy: { id: 'asc' },
     }),

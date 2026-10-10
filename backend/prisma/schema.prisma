@@ -36,6 +36,11 @@ model User {
   updatedBy    User?  @relation("UpdatorUsers", fields: [updatedById], references: [id], onDelete: SetNull, onUpdate: NoAction)
   updatedUsers User[] @relation("UpdatorUsers")
 
+  // Khóa học do user này dạy (role INSTRUCTOR)
+  courses           Course[]
+  createdCategories Category[] @relation("CategoryCreatedBy")
+  updatedCategories Category[] @relation("CategoryUpdatedBy")
+
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -99,6 +104,67 @@ model Role {
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(200)
+  description String   @default("")
+  courses     Course[]
+
+  createdById Int?
+  createdBy   User? @relation("CategoryCreatedBy", fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  updatedById Int?
+  updatedBy   User? @relation("CategoryUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Course {
+  id           Int          @id @default(autoincrement())
+  title        String       @db.VarChar(300)
+  subtitle     String       @default("") @db.VarChar(500)
+  // Mô tả chi tiết có thể rất dài → không giới hạn VarChar
+  description  String       @default("")
+  thumbnail    String?      @db.VarChar(1000)
+  // Giá tính bằng VND (số nguyên, không có số lẻ). 0 = miễn phí
+  price        Int          @default(0)
+  level        CourseLevel  @default(ALL_LEVELS)
+  language     String       @default("vi") @db.VarChar(10)
+  status       CourseStatus @default(DRAFT)
+  // Admin từ chối thì ghi lý do để giảng viên biết mà sửa
+  rejectReason String?      @db.VarChar(1000)
+  publishedAt  DateTime?
+
+  instructorId Int
+  // NoAction: còn khoá học thì không cho xoá thật giảng viên / danh mục
+  instructor   User     @relation(fields: [instructorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  categoryId   Int
+  category     Category @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([status, deletedAt])
+  @@index([instructorId])
+  @@index([categoryId])
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  ALL_LEVELS
+}
+
+enum CourseStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  REJECTED
 }
 
 enum UserStatus {

@@ -19,10 +19,6 @@ app.use(express.json())
 app.get('/', (req, res) => {
   res.json({ message: 'Hello Wordl!' })
 })
-
-app.use('/auth', authRouter)
-// app.use('/permissions', permissionRouter) // thêm, phải đặt trước notFound
-// app.use('/roles', roleRouter) // ← thêm, vẫn đặt trước notFoundHandler
 app.use('/auth', authRouter)
 for (const { prefix, router } of protectedRouters) {
   app.use(prefix, router)
