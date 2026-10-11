@@ -1,0 +1,143 @@
+import prisma from '../../lib/prisma'
+import { HttpError } from '../../utils/error'
+import { RoleName } from '../../constants/role'
+import { CourseStatus } from '../../generated/prisma/enums'
+import { Prisma } from '../../generated/prisma/client'
+import { AccessTokenPayload } from '../../utils/jwt'
+import { isEnrolled } from '../enrollment/enrollment.service'
+import { CreateReviewBodyType, GetReviewsQueryType, UpdateReviewBodyType } from './review.schema'
+
+const reviewInclude = {
+  user: { select: { id: true, name: true, avatar: true } },
+} as const
+
+// Điểm trung bình + số đánh giá cho NHIỀU khóa cùng lúc (dùng cho danh sách khóa học).
+// groupBy: SQL GROUP BY courseId, tính AVG(rating) và COUNT(*) cho từng khóa
+export const getRatingByCourse = async (courseIds: number[]) => {
+  const result = new Map<number, { averageRating: number; totalReviews: number }>()
+  if (courseIds.length === 0) return result
+
+  const groups = await prisma.review.groupBy({
+    by: ['courseId'],
+    where: { courseId: { in: courseIds } },
+    _avg: { rating: true },
+    _count: { _all: true },
+  })
+  for (const group of groups) {
+    result.set(group.courseId, {
+      // Làm tròn 1 chữ số thập phân: 4.666 → 4.7
+      averageRating: Math.round((group._avg.rating ?? 0) * 10) / 10,
+      totalReviews: group._count._all,
+    })
+  }
+  return result
+}
+
+// Tổng quan đánh giá của 1 khóa: trung bình, tổng số, và số lượng theo từng mức sao
+export const getRatingSummary = async (courseId: number) => {
+  const groups = await prisma.review.groupBy({
+    by: ['rating'],
+    where: { courseId },
+    _count: { _all: true },
+  })
+  const distribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+  let totalReviews = 0
+  let sum = 0
+  for (const group of groups) {
+    distribution[group.rating] = group._count._all
+    totalReviews += group._count._all
+    sum += group.rating * group._count._all
+  }
+  return {
+    averageRating: totalReviews === 0 ? 0 : Math.round((sum / totalReviews) * 10) / 10,
+    totalReviews,
+    distribution,
+  }
+}
+
+const ensurePublishedCourse = async (courseId: number) => {
+  const course = await prisma.course.findFirst({
+    where: { id: courseId, status: CourseStatus.PUBLISHED, deletedAt: null },
+    select: { id: true },
+  })
+  if (!course) {
+    throw new HttpError(404, 'Không tìm thấy khóa học')
+  }
+}
+
+// Công khai: danh sách đánh giá của một khóa (mới nhất trước) + tổng quan
+export const getReviews = async ({ courseId, page, limit }: GetReviewsQueryType) => {
+  await ensurePublishedCourse(courseId)
+  const where = { courseId }
+  const [totalItems, data, summary] = await Promise.all([
+    prisma.review.count({ where }),
+    prisma.review.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: reviewInclude,
+    }),
+    getRatingSummary(courseId),
+  ])
+  return { data, summary, totalItems, page, limit, totalPages: Math.ceil(totalItems / limit) }
+}
+
+// Đánh giá của tôi cho 1 khóa (để frontend điền sẵn form sửa). Chưa đánh giá → null
+export const getMyReview = (userId: number, courseId: number) =>
+  prisma.review.findUnique({
+    where: { userId_courseId: { userId, courseId } },
+    include: reviewInclude,
+  })
+
+export const createReview = async ({ courseId, ...data }: CreateReviewBodyType, userId: number) => {
+  await ensurePublishedCourse(courseId)
+  // Phải học rồi mới được đánh giá
+  if (!(await isEnrolled(userId, courseId))) {
+    throw new HttpError(403, 'Bạn cần ghi danh khóa học trước khi đánh giá')
+  }
+  try {
+    return await prisma.review.create({
+      data: { ...data, courseId, userId },
+      include: reviewInclude,
+    })
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      throw new HttpError(409, 'Bạn đã đánh giá khóa học này, hãy sửa đánh giá cũ')
+    }
+    throw error
+  }
+}
+
+const getOwnReview = async (reviewId: number, userId: number) => {
+  const review = await prisma.review.findUnique({ where: { id: reviewId } })
+  if (!review) {
+    throw new HttpError(404, 'Không tìm thấy đánh giá')
+  }
+  if (review.userId !== userId) {
+    throw new HttpError(403, 'Đây không phải đánh giá của bạn')
+  }
+  return review
+}
+
+export const updateReview = async (reviewId: number, body: UpdateReviewBodyType, userId: number) => {
+  await getOwnReview(reviewId, userId)
+  return prisma.review.update({
+    where: { id: reviewId },
+    data: body,
+    include: reviewInclude,
+  })
+}
+
+// Người viết tự xóa, hoặc admin xóa (kiểm duyệt nội dung xấu)
+export const deleteReview = async (reviewId: number, user: AccessTokenPayload) => {
+  if (user.roleName === RoleName.Admin) {
+    const { count } = await prisma.review.deleteMany({ where: { id: reviewId } })
+    if (count === 0) {
+      throw new HttpError(404, 'Không tìm thấy đánh giá')
+    }
+    return
+  }
+  await getOwnReview(reviewId, user.userId)
+  await prisma.review.delete({ where: { id: reviewId } })
+}
