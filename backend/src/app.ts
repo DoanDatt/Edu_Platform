@@ -8,6 +8,7 @@ import courseRouter from './modules/course/course.route'
 import sectionRouter from './modules/section/section.route'
 import lectureRouter from './modules/lecture/lecture.route'
 import enrollmentRouter from './modules/enrollment/enrollment.route'
+import reviewRouter from './modules/review/review.route'
 
 // Các router có route cần kiểm tra quyền theo bảng Permission.
 // Script sync-permissions đọc danh sách này để sinh permission → thêm module mới thì thêm vào đây
@@ -19,6 +20,7 @@ export const protectedRouters: { prefix: string; router: Router }[] = [
   { prefix: '/sections', router: sectionRouter },
   { prefix: '/lectures', router: lectureRouter },
   { prefix: '/enrollments', router: enrollmentRouter },
+  { prefix: '/reviews', router: reviewRouter },
 ]
 
 const app = express()

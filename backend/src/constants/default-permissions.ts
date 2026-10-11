@@ -11,6 +11,11 @@ const LEARNER_PERMISSIONS = [
   // Đánh dấu học xong
   'POST /lectures/:lectureId/complete',
   'DELETE /lectures/:lectureId/complete',
+  // Đánh giá khóa đã học
+  'GET /reviews/mine/:courseId',
+  'POST /reviews',
+  'PUT /reviews/:reviewId',
+  'DELETE /reviews/:reviewId',
 ]
 
 // Quyền mặc định của từng role (ADMIN không cần: script sync luôn gán TẤT CẢ cho ADMIN).
