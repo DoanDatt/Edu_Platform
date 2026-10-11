@@ -35,3 +35,17 @@ export const CreateCourseBodySchema = z
 export type CreateCourseBodyType = z.infer<typeof CreateCourseBodySchema>
 export const UpdateCourseBodySchema = CreateCourseBodySchema
 export type UpdateCourseBodyType = z.infer<typeof UpdateCourseBodySchema>
+
+// ----- Luồng duyệt -----
+
+export const GetPendingCoursesQuerySchema = PaginationQuerySchema
+
+export type GetPendingCoursesQueryType = z.infer<typeof GetPendingCoursesQuerySchema>
+
+export const RejectCourseBodySchema = z
+  .object({
+    reason: z.string().trim().min(1, 'Vui lòng nhập lý do từ chối').max(1000),
+  })
+  .strict()
+
+export type RejectCourseBodyType = z.infer<typeof RejectCourseBodySchema>
