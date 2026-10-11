@@ -15,6 +15,18 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     'PUT /courses/:courseId',
     'DELETE /courses/:courseId',
     'POST /courses/:courseId/submit',
+    // Soạn mục lục
+    'POST /sections',
+    'PUT /sections/:sectionId',
+    'DELETE /sections/:sectionId',
+    'POST /lectures',
+    'PUT /lectures/:lectureId',
+    'DELETE /lectures/:lectureId',
+    // Xem nội dung bài giảng (của khóa mình dạy, hoặc khóa đã ghi danh)
+    'GET /lectures/:lectureId',
   ],
-  [RoleName.Student]: [],
+  [RoleName.Student]: [
+    // Xem nội dung bài giảng (bài xem thử, hoặc khóa đã ghi danh)
+    'GET /lectures/:lectureId',
+  ],
 }
