@@ -38,6 +38,14 @@ courseRouter.get(
   validateQuery(GetPendingCoursesQuerySchema),
   courseController.getPendingCourses,
 )
+// Admin xem chi tiết khóa ở mọi trạng thái (kèm mục lục) để duyệt
+courseRouter.get(
+  '/admin/:courseId',
+  requireAuth,
+  requirePermission,
+  validateParams(CourseParamsSchema),
+  courseController.getCourseForAdmin,
+)
 
 courseRouter.post(
   '/',

@@ -144,6 +144,9 @@ model Course {
   categoryId   Int
   category     Category @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
+  // Mục lục: khóa học → chương → bài giảng
+  sections Section[]
+
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -151,6 +154,48 @@ model Course {
   @@index([status, deletedAt])
   @@index([instructorId])
   @@index([categoryId])
+}
+
+// Chương trong khóa học
+model Section {
+  id       Int    @id @default(autoincrement())
+  title    String @db.VarChar(300)
+  // Thứ tự hiển thị trong khóa học (nhỏ đứng trước)
+  position Int    @default(0)
+
+  courseId Int
+  course   Course    @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  lectures Lecture[]
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([courseId, position])
+}
+
+// Bài giảng trong chương
+model Lecture {
+  id          Int     @id @default(autoincrement())
+  title       String  @db.VarChar(300)
+  // Tạm thời là URL video có sẵn (YouTube, mp4...); phần upload làm sau
+  videoUrl    String? @db.VarChar(1000)
+  // Nội dung bài viết / ghi chú kèm video
+  content     String  @default("")
+  durationSec Int     @default(0)
+  // true = cho xem thử miễn phí, không cần ghi danh
+  isPreview   Boolean @default(false)
+  // Thứ tự trong chương (nhỏ đứng trước)
+  position    Int     @default(0)
+
+  sectionId Int
+  section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([sectionId, position])
 }
 
 enum CourseLevel {

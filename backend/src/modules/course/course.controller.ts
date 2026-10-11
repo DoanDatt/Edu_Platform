@@ -55,6 +55,12 @@ export const getPendingCourses = async (req: Request, res: Response) => {
   res.json({ message: 'Lấy danh sách khóa học chờ duyệt thành công', ...result })
 }
 
+export const getCourseForAdmin = async (req: Request, res: Response) => {
+  const { courseId } = req.params as unknown as CourseParamsType
+  const course = await courseService.getCourseForAdmin(courseId)
+  res.json({ message: 'Lấy khóa học thành công', data: course })
+}
+
 export const approveCourse = async (req: Request, res: Response) => {
   const { courseId } = req.params as unknown as CourseParamsType
   const course = await courseService.approveCourse(courseId)
