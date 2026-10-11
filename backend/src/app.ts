@@ -4,6 +4,7 @@ import { errorHandler, notFoundHandler } from './middleware/error.middleware'
 import permissionRouter from './modules/permission/permission.route'
 import roleRouter from './modules/role/role.route'
 import categoryRouter from './modules/category/category.route'
+import courseRouter from './modules/course/course.route'
 
 // Các router cần kiểm tra quyền theo bảng Permission.
 // Script sync-permissions đọc danh sách này để sinh permission → thêm module mới thì thêm vào đây
@@ -14,6 +15,7 @@ export const protectedRouters: { prefix: string; router: Router }[] = [
     prefix: '/categories',
     router: categoryRouter,
   },
+  { prefix: '/courses', router: courseRouter },
 ]
 
 const app = express()
