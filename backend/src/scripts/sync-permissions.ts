@@ -3,6 +3,7 @@ import prisma from '../lib/prisma'
 import { RoleName } from '../constants/role'
 import { HTTPMethod } from '../generated/prisma/enums'
 import { buildPermissionPath } from '../utils/permission-path'
+import { requirePermission } from '../middleware/auth.middleware'
 
 type RouteInfo = { method: HTTPMethod; path: string }
 
@@ -15,6 +16,11 @@ const collectRoutes = () => {
     for (const layer of router.stack) {
       // Layer không có route = middleware (requireAuth, requireRole...) → bỏ qua
       if (!layer.route) continue
+      // Chỉ đồng bộ route có gắn requirePermission. Route không khai không gắn thì bỏ qua
+      const isProtected = (layer.route as unknown as { stack: { handle: unknown }[] }).stack.some(
+        (l) => l.handle === requirePermission,
+      )
+      if (!isProtected) continue
       // route.methods dạng { get: true }. Type của Express không khai báo field này nên phải ép kiểu
       const methods = Object.keys((layer.route as unknown as { methods: Record<string, boolean> }).methods)
       for (const method of methods.map((m) => m.toUpperCase())) {
