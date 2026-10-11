@@ -2,8 +2,11 @@ import { CourseStatus } from '../../generated/prisma/enums'
 import { Prisma } from '../../generated/prisma/client'
 import prisma from '../../lib/prisma'
 import { HttpError } from '../../utils/error'
+import { isEnrolled } from '../enrollment/enrollment.service'
+import { getRatingByCourse, getRatingSummary } from '../review/review.service'
 import {
   CreateCourseBodyType,
+  GetCoursesQueryType,
   GetMyCoursesQueryType,
   GetPendingCoursesQueryType,
   UpdateCourseBodyType,
@@ -127,6 +130,128 @@ export const deleteCourse = async (courseId: number, instructorId: number) => {
     where: { id: courseId },
     data: { deletedAt: new Date() },
   })
+}
+
+// ===== Công khai: khóa học đã xuất bản =====
+
+const publicCourseWhere = { status: CourseStatus.PUBLISHED, deletedAt: null }
+
+// Thông tin hiển thị trên thẻ khóa học (danh sách) và đầu trang chi tiết
+const publicCourseSelect = {
+  id: true,
+  title: true,
+  subtitle: true,
+  thumbnail: true,
+  price: true,
+  level: true,
+  language: true,
+  publishedAt: true,
+  category: { select: { id: true, name: true } },
+  instructor: { select: { id: true, name: true, avatar: true } },
+  _count: { select: { enrollments: true } }, // số học viên
+} satisfies Prisma.CourseSelect
+
+// Mỗi kiểu sort → orderBy của Prisma. Thêm id để thứ tự luôn ổn định khi giá trị bằng nhau
+const SORT_ORDER: Record<GetCoursesQueryType['sort'], Prisma.CourseOrderByWithRelationInput[]> = {
+  newest: [{ publishedAt: 'desc' }, { id: 'desc' }],
+  popular: [{ enrollments: { _count: 'desc' } }, { id: 'desc' }],
+  price_asc: [{ price: 'asc' }, { id: 'desc' }],
+  price_desc: [{ price: 'desc' }, { id: 'desc' }],
+}
+
+export const getPublicCourses = async ({ page, limit, search, categoryId, level, price, sort }: GetCoursesQueryType) => {
+  // Lọc động: điều kiện nào không gửi thì để undefined → Prisma bỏ qua
+  const where: Prisma.CourseWhereInput = {
+    ...publicCourseWhere,
+    categoryId,
+    level,
+    price: price === 'free' ? 0 : price === 'paid' ? { gt: 0 } : undefined,
+    // Tìm trong tên HOẶC mô tả ngắn, không phân biệt hoa thường
+    OR: search
+      ? [
+          { title: { contains: search, mode: 'insensitive' } },
+          { subtitle: { contains: search, mode: 'insensitive' } },
+        ]
+      : undefined,
+  }
+
+  const [totalItems, courses] = await Promise.all([
+    prisma.course.count({ where }),
+    prisma.course.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: SORT_ORDER[sort],
+      select: publicCourseSelect,
+    }),
+  ])
+
+  // Điểm đánh giá của cả trang trong 1 query (groupBy)
+  const ratings = await getRatingByCourse(courses.map((c) => c.id))
+  const data = courses.map(({ _count, ...course }) => ({
+    ...course,
+    studentCount: _count.enrollments,
+    rating: ratings.get(course.id) ?? { averageRating: 0, totalReviews: 0 },
+  }))
+  return { data, totalItems, page, limit, totalPages: Math.ceil(totalItems / limit) }
+}
+
+// Trang chi tiết công khai. userId có giá trị khi người xem đã đăng nhập (optionalAuth)
+export const getPublicCourseById = async (courseId: number, userId?: number) => {
+  const course = await prisma.course.findFirst({
+    where: { id: courseId, ...publicCourseWhere },
+    select: {
+      ...publicCourseSelect,
+      description: true,
+      sections: {
+        where: { deletedAt: null },
+        orderBy: [{ position: 'asc' }, { id: 'asc' }],
+        select: {
+          id: true,
+          title: true,
+          lectures: {
+            where: { deletedAt: null },
+            orderBy: [{ position: 'asc' }, { id: 'asc' }],
+            // Không trả content; videoUrl chỉ trả cho bài xem thử (xử lý bên dưới)
+            select: { id: true, title: true, durationSec: true, isPreview: true, videoUrl: true },
+          },
+        },
+      },
+    },
+  })
+  if (!course) {
+    throw new HttpError(404, 'Không tìm thấy khóa học')
+  }
+
+  const [rating, enrolled] = await Promise.all([
+    getRatingSummary(courseId),
+    userId ? isEnrolled(userId, courseId) : Promise.resolve(false),
+  ])
+
+  // Tổng số bài + tổng thời lượng để hiện "12 bài giảng • 3 giờ 20 phút"
+  let totalLectures = 0
+  let totalDurationSec = 0
+  const sections = course.sections.map((section) => ({
+    ...section,
+    lectures: section.lectures.map(({ videoUrl, ...lecture }) => {
+      totalLectures++
+      totalDurationSec += lecture.durationSec
+      // Bài không phải xem thử → ẩn link video (phải ghi danh rồi lấy qua GET /lectures/:id)
+      return { ...lecture, videoUrl: lecture.isPreview ? videoUrl : null }
+    }),
+  }))
+
+  const { _count, ...rest } = course
+  return {
+    ...rest,
+    sections,
+    studentCount: _count.enrollments,
+    totalLectures,
+    totalDurationSec,
+    rating,
+    // null = khách chưa đăng nhập; true/false = đã đăng nhập, đã ghi danh hay chưa
+    isEnrolled: userId ? enrolled : null,
+  }
 }
 
 // ===== Luồng duyệt =====

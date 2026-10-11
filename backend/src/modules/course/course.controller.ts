@@ -3,11 +3,29 @@ import * as courseService from './course.service'
 import {
   CourseParamsType,
   CreateCourseBodyType,
+  GetCoursesQueryType,
   GetMyCoursesQueryType,
   GetPendingCoursesQueryType,
   RejectCourseBodyType,
   UpdateCourseBodyType,
 } from './course.schema'
+
+// ----- Công khai -----
+
+export const getPublicCourses = async (req: Request, res: Response) => {
+  const query = req.query as unknown as GetCoursesQueryType
+  const result = await courseService.getPublicCourses(query)
+  res.json({ message: 'Lấy danh sách khóa học thành công', ...result })
+}
+
+export const getPublicCourseById = async (req: Request, res: Response) => {
+  const { courseId } = req.params as unknown as CourseParamsType
+  // req.user chỉ có khi người xem gửi token hợp lệ (optionalAuth)
+  const course = await courseService.getPublicCourseById(courseId, req.user?.userId)
+  res.json({ message: 'Lấy khóa học thành công', data: course })
+}
+
+// ----- Giảng viên -----
 
 export const getMyCourses = async (req: Request, res: Response) => {
   const query = req.query as unknown as GetMyCoursesQueryType

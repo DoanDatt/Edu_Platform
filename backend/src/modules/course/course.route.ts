@@ -1,10 +1,11 @@
 import { Router } from 'express'
 import * as courseController from './course.controller'
-import { requireAuth, requirePermission } from '../../middleware/auth.middleware'
+import { optionalAuth, requireAuth, requirePermission } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate.middleware'
 import {
   CourseParamsSchema,
   CreateCourseBodySchema,
+  GetCoursesQuerySchema,
   GetMyCoursesQuerySchema,
   GetPendingCoursesQuerySchema,
   RejectCourseBodySchema,
@@ -12,6 +13,9 @@ import {
 } from './course.schema'
 
 const courseRouter = Router()
+
+// ----- Công khai: danh sách khóa đã xuất bản (tìm kiếm, lọc, sắp xếp) -----
+courseRouter.get('/', validateQuery(GetCoursesQuerySchema), courseController.getPublicCourses)
 
 // ----- Giảng viên: khoá học của tôi -----
 // ⚠️ Các route "/mine..." PHẢI khai báo TRƯỚC route "/:courseId" (xem giải thích bên dưới)
@@ -68,6 +72,16 @@ courseRouter.delete(
   requirePermission,
   validateParams(CourseParamsSchema),
   courseController.deleteCourse,
+)
+
+// ----- Công khai: chi tiết khóa đã xuất bản -----
+// Đặt SAU các route cố định "/mine", "/pending", "/admin/..." vì ":courseId" khớp mọi chữ.
+// optionalAuth: đã đăng nhập thì trả thêm isEnrolled
+courseRouter.get(
+  '/:courseId',
+  optionalAuth,
+  validateParams(CourseParamsSchema),
+  courseController.getPublicCourseById,
 )
 
 // ----- Luồng duyệt: DRAFT/REJECTED → PENDING → PUBLISHED/REJECTED -----

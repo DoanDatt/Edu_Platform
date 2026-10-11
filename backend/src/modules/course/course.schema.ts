@@ -36,6 +36,21 @@ export type CreateCourseBodyType = z.infer<typeof CreateCourseBodySchema>
 export const UpdateCourseBodySchema = CreateCourseBodySchema
 export type UpdateCourseBodyType = z.infer<typeof UpdateCourseBodySchema>
 
+// ----- Công khai: danh sách khóa học đã xuất bản -----
+
+// ?search=react&categoryId=2&level=BEGINNER&price=free&sort=popular&page=1&limit=12
+// Mọi bộ lọc đều không bắt buộc: không gửi thì không lọc
+export const GetCoursesQuerySchema = PaginationQuerySchema.extend({
+  search: z.string().trim().max(200).optional(),
+  categoryId: z.coerce.number().int().positive().optional(),
+  level: z.enum(CourseLevel).optional(),
+  price: z.enum(['free', 'paid']).optional(),
+  // newest: mới xuất bản | popular: nhiều học viên | price_asc / price_desc: theo giá
+  sort: z.enum(['newest', 'popular', 'price_asc', 'price_desc']).default('newest'),
+}).strict()
+
+export type GetCoursesQueryType = z.infer<typeof GetCoursesQuerySchema>
+
 // ----- Luồng duyệt -----
 
 export const GetPendingCoursesQuerySchema = PaginationQuerySchema
