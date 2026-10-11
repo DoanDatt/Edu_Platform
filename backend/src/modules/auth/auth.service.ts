@@ -42,17 +42,18 @@ export const register = async (body: RegisterBodyType) => {
   }
 }
 
-const generateTokens = async ({ userId, roleName }: AccessTokenPayload) => {
+// db: mặc định là prisma thường; truyền tx khi cần chạy trong transaction (xem refreshToken)
+const generateTokens = async ({ userId, roleName }: AccessTokenPayload, db: Prisma.TransactionClient = prisma) => {
   const accessToken = signAccessToken({ userId, roleName })
   const refreshToken = signRefreshToken({ userId })
 
   // lưu refresh token vào DB, để sau này refresh và logout kiểm tra được
   const { exp } = verifyRefreshToken(refreshToken)
-  await prisma.refreshToken.create({
+  await db.refreshToken.create({
     data: {
       token: refreshToken,
       userId,
-      expiresAt: new Date(exp * 1000), // exp tính bằng giấy, Date cần mili giấy
+      expiresAt: new Date(exp * 1000), // exp tính bằng giây, Date cần mili giây
     },
   })
   return { accessToken, refreshToken }
@@ -79,20 +80,7 @@ export const login = async (body: LoginBodyType) => {
     throw new HttpError(403, 'Tài khoản của bạn đã bị khoá')
   }
 
-  // // 4. Tạo access token và refresh token
-  // const accessToken = signAccessToken({ userId: user.id, roleName: user.role.name })
-  // const refreshToken = signRefreshToken({ userId: user.id })
-
-  // // 5. Lưu refresh token vào DB, để sau này refresh và logout kiểm tra được
-  // const { exp } = verifyRefreshToken(refreshToken)
-  // await prisma.refreshToken.create({
-  //   data: {
-  //     token: refreshToken,
-  //     userId: user.id,
-  //     expiresAt: new Date(exp * 1000), // exp tính bằng giây, Date cần mili-giây
-  //   },
-  // })
-
+  // 4. Tạo access token + refresh token (refresh token được lưu DB)
   return generateTokens({ userId: user.id, roleName: user.role.name })
 }
 
@@ -116,36 +104,42 @@ export const refreshToken = async (token: string) => {
   let payload: Decoded<RefreshTokenPayload>
   try {
     payload = verifyRefreshToken(token)
-  } catch (error) {
+  } catch {
     throw new HttpError(401, 'Refresh token không hợp lệ hoặc đã hết hạn')
   }
-  // Xóa refresh token cũ, không xóa được dòng nào nghĩa là token đã được dùng rồi hoặc đã logout
-  const { count } = await prisma.refreshToken.deleteMany({ where: { token } })
-  if (count === 0) {
-    throw new HttpError(401, 'Refresh token đã được sử dụng hoặc đã bị thu hồi')
-  }
 
-  // Lấy user hiện tại(có thể bị xóa hoặc bị khóa từ lúc đăng nhập)
-  const user = await prisma.user.findFirst({
-    where: { id: payload.userId, deletedAt: null },
-    include: { role: true },
+  // Xóa token cũ + tạo token mới trong CÙNG 1 transaction:
+  // bước nào lỗi (DB đứt, user bị khóa...) thì DB hoàn tác cả việc xóa token cũ,
+  // user không bị mất phiên đăng nhập giữa chừng
+  return prisma.$transaction(async (tx) => {
+    // Xóa refresh token cũ, không xóa được dòng nào nghĩa là token đã được dùng rồi hoặc đã logout
+    const { count } = await tx.refreshToken.deleteMany({ where: { token } })
+    if (count === 0) {
+      throw new HttpError(401, 'Refresh token đã được sử dụng hoặc đã bị thu hồi')
+    }
+
+    // Lấy user hiện tại (có thể bị xóa hoặc bị khóa từ lúc đăng nhập)
+    const user = await tx.user.findFirst({
+      where: { id: payload.userId, deletedAt: null },
+      include: { role: true },
+    })
+    if (!user) {
+      throw new HttpError(401, 'Tài khoản không tồn tại')
+    }
+    if (user.status === 'BLOCKED') {
+      throw new HttpError(403, 'Tài khoản của bạn đã bị khóa')
+    }
+
+    // Cấp token mới (ghi DB bằng tx để nằm trong transaction)
+    return generateTokens({ userId: user.id, roleName: user.role.name }, tx)
   })
-  if (!user) {
-    throw new HttpError(401, 'Tài khoản không tồn tại')
-  }
-  if (user.status === 'BLOCKED') {
-    throw new HttpError(403, 'Tài khoản của bạn đã bị khóa')
-  }
-
-  // Cấp token mới
-  return generateTokens({ userId: user.id, roleName: user.role.name })
 }
 
 export const logout = async (token: string) => {
   // kiểm tra chữ ký
   try {
     verifyRefreshToken(token)
-  } catch (error) {
+  } catch {
     throw new HttpError(401, 'Refresh token không hợp lệ hoặc đã hết hạn')
   }
 

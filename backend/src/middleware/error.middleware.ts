@@ -8,8 +8,9 @@ export const notFoundHandler: RequestHandler = (req, res) => {
   })
 }
 
-// Mọi lỗi throw từ middleware/controller/server đều về đây
-export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+// Mọi lỗi throw từ middleware/controller/server đều về đây.
+// Phải giữ đủ 4 tham số (kể cả _next không dùng): Express nhận ra error handler nhờ số tham số
+export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   // Lỗi mình chủ động ném (409, 422,....) -> trả đúng status và message
   if (err instanceof HttpError) {
     res.status(err.status).json({

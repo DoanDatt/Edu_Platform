@@ -1,4 +1,6 @@
 import express, { Router } from 'express'
+import cors from 'cors'
+import envConfig from './config/env'
 import authRouter from './modules/auth/auth.route'
 import { errorHandler, notFoundHandler } from './middleware/error.middleware'
 import permissionRouter from './modules/permission/permission.route'
@@ -24,6 +26,9 @@ export const protectedRouters: { prefix: string; router: Router }[] = [
 ]
 
 const app = express()
+
+// CORS: trình duyệt chỉ cho frontend (khác cổng) gọi API khi server cho phép đúng origin đó
+app.use(cors({ origin: envConfig.CORS_ORIGINS }))
 
 // đọc body json mà client gửi lên -> req.body
 app.use(express.json())

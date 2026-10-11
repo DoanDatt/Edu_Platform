@@ -15,6 +15,17 @@ if (!fs.existsSync(path.resolve('.env'))) {
 
 const configSchema = z.object({
   PORT: z.coerce.number().default(4000),
+  // Các địa chỉ frontend được phép gọi API, cách nhau bằng dấu phẩy
+  // (mặc định: Vite 5173 và Next.js 3000 trên máy dev)
+  CORS_ORIGINS: z
+    .string()
+    .default('http://localhost:5173,http://localhost:3000')
+    .transform((value) =>
+      value
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean),
+    ),
   DATABASE_URL: z.string(),
   ACCESS_TOKEN_SECRET: z.string(),
   ACCESS_TOKEN_EXPIRES_IN: z.string(),
