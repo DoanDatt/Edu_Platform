@@ -1,5 +1,18 @@
 import { RoleName } from './role'
 
+// Quyền của người học (học viên, và cả giảng viên khi đi học khóa của người khác)
+const LEARNER_PERMISSIONS = [
+  // Xem nội dung bài giảng (bài xem thử, khóa đã ghi danh, hoặc khóa mình dạy)
+  'GET /lectures/:lectureId',
+  // Ghi danh + khóa học của tôi + trang học
+  'POST /enrollments',
+  'GET /enrollments/mine',
+  'GET /enrollments/mine/:courseId',
+  // Đánh dấu học xong
+  'POST /lectures/:lectureId/complete',
+  'DELETE /lectures/:lectureId/complete',
+]
+
 // Quyền mặc định của từng role (ADMIN không cần: script sync luôn gán TẤT CẢ cho ADMIN).
 // Mỗi dòng là "METHOD path" giống cột name của Permission do script sync sinh ra.
 //
@@ -22,11 +35,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     'POST /lectures',
     'PUT /lectures/:lectureId',
     'DELETE /lectures/:lectureId',
-    // Xem nội dung bài giảng (của khóa mình dạy, hoặc khóa đã ghi danh)
-    'GET /lectures/:lectureId',
+    ...LEARNER_PERMISSIONS,
   ],
-  [RoleName.Student]: [
-    // Xem nội dung bài giảng (bài xem thử, hoặc khóa đã ghi danh)
-    'GET /lectures/:lectureId',
-  ],
+  [RoleName.Student]: [...LEARNER_PERMISSIONS],
 }

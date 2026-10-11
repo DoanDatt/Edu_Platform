@@ -5,6 +5,7 @@ import { CourseStatus } from '../../generated/prisma/enums'
 import { AccessTokenPayload } from '../../utils/jwt'
 import { getEditableOwnCourse } from '../course/course.service'
 import { getEditableOwnSection } from '../section/section.service'
+import { isEnrolled } from '../enrollment/enrollment.service'
 import { CreateLectureBodyType, UpdateLectureBodyType } from './lecture.schema'
 
 // Bài giảng còn tồn tại + khóa học là của mình và còn sửa được
@@ -79,8 +80,7 @@ export const getLectureForLearner = async (lectureId: number, user: AccessTokenP
     if (course.status !== CourseStatus.PUBLISHED) {
       throw new HttpError(404, 'Không tìm thấy bài giảng')
     }
-    // TODO bước 8: cho người đã ghi danh xem mọi bài
-    if (!lecture.isPreview) {
+    if (!lecture.isPreview && !(await isEnrolled(user.userId, course.id))) {
       throw new HttpError(403, 'Bạn cần ghi danh khóa học để xem bài giảng này')
     }
   }

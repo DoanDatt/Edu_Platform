@@ -41,6 +41,10 @@ model User {
   createdCategories Category[] @relation("CategoryCreatedBy")
   updatedCategories Category[] @relation("CategoryUpdatedBy")
 
+  // Học viên: khóa đã ghi danh + bài đã học xong
+  enrollments       Enrollment[]
+  lectureProgresses LectureProgress[]
+
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -145,7 +149,8 @@ model Course {
   category     Category @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   // Mục lục: khóa học → chương → bài giảng
-  sections Section[]
+  sections    Section[]
+  enrollments Enrollment[]
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -191,11 +196,43 @@ model Lecture {
   sectionId Int
   section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
+  progresses LectureProgress[]
+
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
   @@index([sectionId, position])
+}
+
+// Học viên ghi danh khóa học
+model Enrollment {
+  id Int @id @default(autoincrement())
+
+  userId   Int
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  createdAt DateTime @default(now())
+
+  // Mỗi người chỉ ghi danh 1 khóa đúng 1 lần (DB tự chặn trùng)
+  @@unique([userId, courseId])
+  @@index([courseId])
+}
+
+// Bài giảng học viên đã học xong (có dòng = đã xong, không có = chưa)
+model LectureProgress {
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  lectureId Int
+  lecture   Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  completedAt DateTime @default(now())
+
+  // Khóa chính gồm 2 cột: 1 người + 1 bài chỉ có 1 dòng
+  @@id([userId, lectureId])
+  @@index([lectureId])
 }
 
 enum CourseLevel {
