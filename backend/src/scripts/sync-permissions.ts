@@ -1,6 +1,7 @@
 import { protectedRouters } from '../app'
 import prisma from '../lib/prisma'
 import { RoleName } from '../constants/role'
+import { DEFAULT_ROLE_PERMISSIONS } from '../constants/default-permissions'
 import { HTTPMethod } from '../generated/prisma/enums'
 import { buildPermissionPath } from '../utils/permission-path'
 import { requirePermission } from '../middleware/auth.middleware'
@@ -44,6 +45,14 @@ const main = async () => {
   const toCreate = routes.filter((r) => !existingKeys.has(toKey(r)))
   const toDelete = existing.filter((p) => !routeKeys.has(toKey(p)))
 
+  // Quyền mặc định khai báo sai (gõ nhầm, hoặc route đã bị xoá) → báo ngay để sửa
+  const unknownDefaults = Object.values(DEFAULT_ROLE_PERMISSIONS)
+    .flat()
+    .filter((key) => !routeKeys.has(key))
+  if (unknownDefaults.length > 0) {
+    throw new Error(`DEFAULT_ROLE_PERMISSIONS có quyền không khớp route nào: ${unknownDefaults.join(', ')}`)
+  }
+
   // npm run sync-permissions -- --dry → chỉ in ra, không ghi DB
   if (process.argv.includes('--dry')) {
     console.log('Sẽ tạo:', toCreate.map(toKey))
@@ -67,8 +76,31 @@ const main = async () => {
     data: { permissions: { set: allPermissions } },
   })
 
+  // Các role khác: THÊM quyền mặc định (connect), không gỡ quyền admin đã gán bằng tay
+  for (const [roleName, keys] of Object.entries(DEFAULT_ROLE_PERMISSIONS)) {
+    if (keys.length === 0) continue
+    const permissions = await prisma.permission.findMany({
+      where: {
+        deletedAt: null,
+        OR: keys.map((key) => {
+          const [method, path] = key.split(' ')
+          return { method: method as HTTPMethod, path }
+        }),
+      },
+      select: { id: true },
+    })
+    const role = await prisma.role.findFirstOrThrow({ where: { name: roleName, deletedAt: null } })
+    await prisma.role.update({
+      where: { id: role.id },
+      data: { permissions: { connect: permissions } },
+    })
+  }
+
   console.log(`Đã tạo ${toCreate.length}, xoá ${toDelete.length} permission`)
   console.log(`ADMIN hiện có ${allPermissions.length} permission`)
+  for (const [roleName, keys] of Object.entries(DEFAULT_ROLE_PERMISSIONS)) {
+    console.log(`${roleName}: đảm bảo có ${keys.length} quyền mặc định`)
+  }
 }
 
 main()

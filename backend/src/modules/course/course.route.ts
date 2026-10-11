@@ -6,6 +6,8 @@ import {
   CourseParamsSchema,
   CreateCourseBodySchema,
   GetMyCoursesQuerySchema,
+  GetPendingCoursesQuerySchema,
+  RejectCourseBodySchema,
   UpdateCourseBodySchema,
 } from './course.schema'
 
@@ -27,6 +29,16 @@ courseRouter.get(
   validateParams(CourseParamsSchema),
   courseController.getMyCourseById,
 )
+
+// ----- Admin: danh sách chờ duyệt (route cố định → cũng phải đứng trước "/:courseId") -----
+courseRouter.get(
+  '/pending',
+  requireAuth,
+  requirePermission,
+  validateQuery(GetPendingCoursesQuerySchema),
+  courseController.getPendingCourses,
+)
+
 courseRouter.post(
   '/',
   requireAuth,
@@ -48,6 +60,30 @@ courseRouter.delete(
   requirePermission,
   validateParams(CourseParamsSchema),
   courseController.deleteCourse,
+)
+
+// ----- Luồng duyệt: DRAFT/REJECTED → PENDING → PUBLISHED/REJECTED -----
+courseRouter.post(
+  '/:courseId/submit',
+  requireAuth,
+  requirePermission,
+  validateParams(CourseParamsSchema),
+  courseController.submitCourse,
+)
+courseRouter.post(
+  '/:courseId/approve',
+  requireAuth,
+  requirePermission,
+  validateParams(CourseParamsSchema),
+  courseController.approveCourse,
+)
+courseRouter.post(
+  '/:courseId/reject',
+  requireAuth,
+  requirePermission,
+  validateParams(CourseParamsSchema),
+  validateBody(RejectCourseBodySchema),
+  courseController.rejectCourse,
 )
 
 export default courseRouter
