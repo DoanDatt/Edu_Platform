@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import * as lectureController from './lecture.controller'
+import * as enrollmentController from '../enrollment/enrollment.controller'
 import { requireAuth, requirePermission } from '../../middleware/auth.middleware'
 import { validateBody, validateParams } from '../../middleware/validate.middleware'
 import { CreateLectureBodySchema, LectureParamsSchema, UpdateLectureBodySchema } from './lecture.schema'
@@ -37,6 +38,22 @@ lectureRouter.delete(
   requirePermission,
   validateParams(LectureParamsSchema),
   lectureController.deleteLecture,
+)
+
+// Học viên đánh dấu / bỏ đánh dấu đã học xong (logic nằm ở module enrollment)
+lectureRouter.post(
+  '/:lectureId/complete',
+  requireAuth,
+  requirePermission,
+  validateParams(LectureParamsSchema),
+  enrollmentController.completeLecture,
+)
+lectureRouter.delete(
+  '/:lectureId/complete',
+  requireAuth,
+  requirePermission,
+  validateParams(LectureParamsSchema),
+  enrollmentController.uncompleteLecture,
 )
 
 export default lectureRouter
