@@ -19,8 +19,22 @@ export const requireAuth: RequestHandler = (req, res, next) => {
   next()
 }
 
+// Cho route CÔNG KHAI nhưng muốn biết ai đang xem (nếu có):
+// có token hợp lệ → gán req.user; không có / token sai → coi như khách, KHÔNG báo lỗi
+export const optionalAuth: RequestHandler = (req, res, next) => {
+  const [type, token] = req.headers.authorization?.split(' ') ?? []
+  if (type === 'Bearer' && token) {
+    try {
+      req.user = verifyAccessToken(token)
+    } catch {
+      // token hết hạn / sai → bỏ qua, xem như chưa đăng nhập
+    }
+  }
+  next()
+}
+
 // Factory: nhận vào các role được phép, trả về 1 middleware
-// DÙng sau: requireAuth: requireAuth, requireRole(RoleName.admin)
+// Dùng sau requireAuth: requireAuth, requireRole(RoleName.Admin)
 export const requireRole = (...roles: string[]): RequestHandler => {
   return (req, res, next) => {
     // Quên đặt ngoài requireAuth phía trước thì sẽ không có req.user
