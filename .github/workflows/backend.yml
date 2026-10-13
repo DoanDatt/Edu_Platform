@@ -1,0 +1,50 @@
+# Mỗi lần push / mở PR có sửa backend: typecheck + lint + chạy toàn bộ test trên Postgres thật
+name: Backend CI
+
+on:
+  push:
+    paths: ['backend/**', '.github/workflows/backend.yml']
+  pull_request:
+    paths: ['backend/**', '.github/workflows/backend.yml']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    # Postgres chạy kèm job (Redis không cần: test giả lập hàng đợi email)
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: edu
+          POSTGRES_PASSWORD: edu_ci
+          POSTGRES_DB: edu_platform
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U edu"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # prisma.config.ts cần DATABASE_URL; test dùng TEST_DATABASE_URL (tên phải kết thúc bằng _test)
+      DATABASE_URL: postgresql://edu:edu_ci@localhost:5432/edu_platform?schema=public
+      TEST_DATABASE_URL: postgresql://edu:edu_ci@localhost:5432/edu_platform_test?schema=public
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run typecheck
+      - run: npx oxlint src tests
+      - run: npm test
