@@ -89,7 +89,18 @@ POST /auth/login (hoặc /auth/register) ──> { accessToken (15 phút), refre
 | POST | `/auth/refresh-token` | `{ refreshToken }` | `data: { accessToken, refreshToken }` (cặp mới) |
 | POST | `/auth/logout` | `{ refreshToken }` | Không cần access token (vẫn đăng xuất được khi access token đã hết hạn) |
 
-Ràng buộc đăng ký: `password` 8–100 ký tự, `confirmPassword` phải trùng, `phoneNumber` 9–15 ký tự, `name` 1–100 ký tự.
+Ràng buộc đăng ký: `password` 8–100 ký tự, `confirmPassword` phải trùng, `phoneNumber` 9–15 ký tự, `name` 1–100 ký tự. Đăng ký xong có email chào mừng.
+
+### Quên mật khẩu (OTP qua email)
+
+| Method | Path | Body | Ghi chú |
+|---|---|---|---|
+| POST | `/auth/forgot-password` | `{ email }` | Gửi mã OTP 6 số, hiệu lực **10 phút**. **Luôn trả 200 cùng một câu**, dù email có tồn tại hay không (không cho dò email). Gửi lại trong vòng 60 giây sẽ không có email mới. 503 nếu hệ thống email đang lỗi |
+| POST | `/auth/reset-password` | `{ email, code, newPassword, confirmPassword }` | `code` là 6 chữ số. Sai / hết hạn / đã dùng → 422 (`field: code`). Sai **5 lần** thì mã bị hủy, phải xin mã mới. Thành công: mọi thiết bị bị đăng xuất, cần đăng nhập lại |
+
+Luồng frontend: trang "Quên mật khẩu" (nhập email) → trang "Nhập mã" (OTP + mật khẩu mới) → về trang đăng nhập.
+
+Lúc dev, email **không gửi ra ngoài thật** mà vào Mailpit: mở `http://localhost:8025` để xem mã OTP.
 
 ### Hồ sơ của tôi
 
@@ -278,6 +289,8 @@ Sửa được khi khóa là của mình và đang `DRAFT` / `REJECTED` / `PUBLI
 
 Approve/reject khi khóa không ở `PENDING`, unpublish khi không ở `PUBLISHED` → **409**.
 
+Duyệt, từ chối, gỡ khóa đều **gửi email cho giảng viên** (kèm lý do nếu có).
+
 ---
 
 ## 9. Học viên: ghi danh và học
@@ -417,4 +430,4 @@ Chạy `npm run seed` rồi `npm run seed:demo` trong thư mục `backend/`. M�
 
 ## 14. Chưa có (làm sau)
 
-Thanh toán (khóa có phí trả 402), upload video/ảnh (đang dùng URL), xác thực email / OTP / quên mật khẩu, hỏi đáp theo bài giảng, thông báo.
+Thanh toán (khóa có phí trả 402), upload video/ảnh (đang dùng URL), xác thực email khi đăng ký, hỏi đáp theo bài giảng, thông báo.

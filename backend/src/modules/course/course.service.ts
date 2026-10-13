@@ -2,6 +2,8 @@ import { CourseStatus } from '../../generated/prisma/enums'
 import { Prisma } from '../../generated/prisma/client'
 import prisma from '../../lib/prisma'
 import { HttpError } from '../../utils/error'
+import { enqueueEmailSafely } from '../../queues/email.queue'
+import { courseApprovedEmail, courseRejectedEmail, EmailContent } from '../../emails/templates'
 import { isEnrolled } from '../enrollment/enrollment.service'
 import { getRatingByCourse, getRatingSummary } from '../review/review.service'
 import {
@@ -356,27 +358,48 @@ export const getCourseForAdmin = async (courseId: number) => {
   return course
 }
 
-export const approveCourse = (courseId: number) =>
-  changeStatus(courseId, [CourseStatus.PENDING], {
+// Gửi email cho giảng viên của khóa (qua hàng đợi, lỗi không ảnh hưởng thao tác duyệt)
+const notifyInstructor = async (
+  courseId: number,
+  buildEmail: (instructorName: string, courseTitle: string) => EmailContent,
+) => {
+  const course = await prisma.course.findUniqueOrThrow({
+    where: { id: courseId },
+    select: { title: true, instructor: { select: { name: true, email: true } } },
+  })
+  await enqueueEmailSafely({ to: course.instructor.email, ...buildEmail(course.instructor.name, course.title) })
+}
+
+export const approveCourse = async (courseId: number) => {
+  const course = await changeStatus(courseId, [CourseStatus.PENDING], {
     status: CourseStatus.PUBLISHED,
     publishedAt: new Date(),
     rejectReason: null,
   })
+  await notifyInstructor(courseId, (name, title) => courseApprovedEmail(name, title, courseId))
+  return course
+}
 
-export const rejectCourse = (courseId: number, reason: string) =>
-  changeStatus(courseId, [CourseStatus.PENDING], {
+export const rejectCourse = async (courseId: number, reason: string) => {
+  const course = await changeStatus(courseId, [CourseStatus.PENDING], {
     status: CourseStatus.REJECTED,
     rejectReason: reason,
   })
+  await notifyInstructor(courseId, (name, title) => courseRejectedEmail(name, title, reason, false))
+  return course
+}
 
 // Admin gỡ khóa đang công khai (vi phạm, nội dung sai...): PUBLISHED → REJECTED kèm lý do.
 // Khóa biến mất khỏi trang công khai, học viên đã ghi danh tạm không vào học được.
 // Giảng viên sửa xong gửi duyệt lại như bình thường
-export const unpublishCourse = (courseId: number, reason: string) =>
-  changeStatus(courseId, [CourseStatus.PUBLISHED], {
+export const unpublishCourse = async (courseId: number, reason: string) => {
+  const course = await changeStatus(courseId, [CourseStatus.PUBLISHED], {
     status: CourseStatus.REJECTED,
     rejectReason: reason,
   })
+  await notifyInstructor(courseId, (name, title) => courseRejectedEmail(name, title, reason, true))
+  return course
+}
 
 // ===== Admin: tất cả khóa học (mọi trạng thái, mọi giảng viên) =====
 
