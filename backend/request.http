@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:4000
 
-### 1. Đăng ký thành công → 201
+### 1. Đăng ký thành công → 201, có accessToken + refreshToken + account (đăng nhập luôn)
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
@@ -37,7 +37,7 @@ Content-Type: application/json
   "roleId": 1
 }
 
-### 6. Đăng nhập đúng → 200, có accessToken + refreshToken
+### 6. Đăng nhập đúng → 200, có accessToken + refreshToken + account
 # @name login
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
