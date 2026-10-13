@@ -2,16 +2,19 @@
 
 Nền tảng học trực tuyến kiểu Udemy, với 3 vai trò:
 
-- **Học viên (Student)**: tìm khóa học, ghi danh, học và đánh giá.
-- **Giảng viên (Instructor)**: tạo khóa học, soạn chương và bài giảng, gửi duyệt.
-- **Admin**: duyệt khóa học, quản lý danh mục, role và quyền.
+- **Học viên (Student)**: tìm khóa học, ghi danh, học, theo dõi tiến độ và đánh giá.
+- **Giảng viên (Instructor)**: tạo khóa học, soạn chương và bài giảng, upload video, gửi duyệt, xem học viên của mình.
+- **Admin**: duyệt / gỡ khóa học, quản lý người dùng, danh mục, role và quyền, xem thống kê.
 
 Thư mục:
 
 ```
 Edu_Platform/
-├── backend/      API (Express + Prisma + PostgreSQL)
-└── docs/API.md   Tài liệu API cho frontend
+├── backend/                 API (Express + Prisma + PostgreSQL + Redis/BullMQ)
+│   └── postman/             Postman collection cho toàn bộ API
+├── frontend/                Next.js
+├── docs/API.md              Tài liệu API cho frontend
+└── .github/workflows/       CI: typecheck + lint + test cho backend
 ```
 
 ---
@@ -21,11 +24,15 @@ Edu_Platform/
 | Thành phần | Công nghệ | Ghi chú |
 |---|---|---|
 | Framework | Express 5 + TypeScript | Express 5 tự bắt lỗi của hàm `async` |
-| ORM | Prisma 7 | driver adapter `@prisma/adapter-pg`, client sinh vào `src/generated/prisma` |
-| Database | PostgreSQL 17 | chạy bằng Docker |
-| Validate | Zod 4 | kiểm tra `.env`, body, params, query |
+| ORM | Prisma 7 | driver adapter `@prisma/adapter-pg`; preview `partialIndexes` |
+| Database | PostgreSQL 17 | Docker |
+| Hàng đợi | BullMQ + Redis 7 | gửi email có retry, job định kỳ |
+| Email | Nodemailer | dev: Mailpit (hộp thư giả, Docker) |
+| Upload | Multer | lưu trên ổ đĩa server, kiểm tra chữ ký file |
+| Validate | Zod 4 | `.env`, body, params, query |
 | Xác thực | JWT (`jsonwebtoken`) | access token 15 phút + refresh token 7 ngày, xoay vòng |
-| Mật khẩu | bcrypt | cost 10 |
+| Bảo mật | helmet, express-rate-limit, bcrypt | |
+| Test | Vitest + Supertest | 44 test, database riêng |
 | Lint | oxlint | |
 
 ---
@@ -43,7 +50,7 @@ cp .env.example .env
 # 2. Cài package
 npm install
 
-# 3. Postgres
+# 3. Postgres + Redis + Mailpit
 docker compose up -d
 
 # 4. Tạo bảng + sinh Prisma Client
@@ -55,19 +62,25 @@ npm run seed               # 3 role + tài khoản admin (lấy từ .env)
 npm run sync-permissions   # sinh permission từ route + gán quyền mặc định cho từng role
 npm run seed:demo          # (tùy chọn) giảng viên, học viên, khóa học mẫu, mật khẩu Demo@1234
 
-# 6. Chạy server (tự reload khi sửa code)
+# 6. Chạy server (tự reload khi sửa code; worker gửi email chạy kèm)
 npm run dev                # http://localhost:4000
 ```
 
-Kiểm tra: mở `http://localhost:4000/courses`, sẽ thấy danh sách khóa học (rỗng nếu chưa chạy `seed:demo`).
+Kiểm tra:
+
+- `http://localhost:4000/courses`: danh sách khóa học (rỗng nếu chưa chạy `seed:demo`).
+- `http://localhost:8025`: **Mailpit**, xem mọi email hệ thống gửi (chào mừng, mã OTP quên mật khẩu, khóa được duyệt...). Lúc dev không có email nào gửi ra ngoài thật.
 
 ### Các lệnh (chạy trong `backend/`)
 
 | Lệnh | Việc |
 |---|---|
-| `npm run dev` | Chạy server dev, tự reload |
-| `npm run typecheck` | Kiểm tra kiểu TypeScript |
-| `npm run lint` | oxlint (`--type-aware`). Nếu `tsgolint.exe` không chạy được thì dùng `npx oxlint src/` |
+| `npm run dev` | Server dev, tự reload. Chạy luôn worker nếu `RUN_WORKER=true` |
+| `npm run worker` | Chạy worker (email, job định kỳ) thành process riêng |
+| `npm test` | Chạy toàn bộ test (cần Postgres; tự tạo database `edu_platform_test`) |
+| `npm run test:watch` | Test chế độ theo dõi |
+| `npm run typecheck` | Kiểm tra kiểu cho cả `src/` và `tests/` |
+| `npm run lint` | oxlint (`--type-aware`). Nếu `tsgolint.exe` không chạy được thì dùng `npx oxlint src tests` |
 | `npm run format` | Prettier |
 | `npm run seed` | Tạo role + admin (chỉ chạy được khi DB chưa có role) |
 | `npm run seed:demo` | Dữ liệu mẫu (bỏ qua nếu đã có) |
@@ -88,8 +101,15 @@ Kiểm tra: mở `http://localhost:4000/courses`, sẽ thấy danh sách khóa h
 | `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET` | Khóa ký JWT, mỗi cái một chuỗi ngẫu nhiên khác nhau |
 | `ACCESS_TOKEN_EXPIRES_IN`, `REFRESH_TOKEN_EXPIRES_IN` | Ví dụ `15m`, `7d` |
 | `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_PHONE_NUMBER` | Tài khoản admin do `npm run seed` tạo |
+| `REDIS_URL` | Redis cho BullMQ, mặc định `redis://localhost:6379` |
+| `RUN_WORKER` | `true`: server chạy kèm worker (dev). `false`: chạy `npm run worker` riêng (deploy) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` | Gửi email. Mặc định trỏ vào Mailpit |
+| `FRONTEND_URL` | Địa chỉ frontend, dùng tạo link trong email |
+| `PUBLIC_URL` | Địa chỉ công khai của API, dùng tạo link file upload |
+| `UPLOAD_DIR`, `MAX_IMAGE_MB`, `MAX_VIDEO_MB` | Thư mục lưu file và giới hạn dung lượng |
+| `RATE_LIMIT_ENABLED` | `false` để tắt giới hạn số request (khi test) |
 
-`.env` sai hoặc thiếu biến thì server dừng ngay và in ra biến bị lỗi (kiểm tra bằng Zod trong `src/config/env.ts`).
+Có file `.env` thì đọc, không có thì dùng biến môi trường sẵn có (CI, Docker). Thiếu hoặc sai biến thì server dừng ngay và in ra biến bị lỗi (Zod trong `src/config/env.ts`).
 
 ---
 
@@ -97,22 +117,29 @@ Kiểm tra: mở `http://localhost:4000/courses`, sẽ thấy danh sách khóa h
 
 ```
 backend/
+├── docker-compose.yml         Postgres, Redis, Mailpit
 ├── prisma/
 │   ├── schema.prisma          Định nghĩa bảng
 │   └── migrations/            Lịch sử thay đổi DB (commit cùng code)
+├── tests/                     Vitest + Supertest
 └── src/
-    ├── server.ts              Khởi động server
-    ├── app.ts                 Gắn middleware + router; danh sách protectedRouters
-    ├── config/env.ts          Đọc và kiểm tra .env
+    ├── server.ts              Khởi động API (+ worker nếu RUN_WORKER=true)
+    ├── worker.ts              Chạy worker thành process riêng
+    ├── app.ts                 Middleware chung + router; danh sách protectedRouters
+    ├── config/env.ts          Đọc và kiểm tra biến môi trường
     ├── constants/
     │   ├── role.ts            Tên 3 role hệ thống
     │   └── default-permissions.ts   Quyền mặc định của INSTRUCTOR / STUDENT
-    ├── lib/prisma.ts          Prisma Client dùng chung
+    ├── lib/                   Prisma Client, mailer (nodemailer)
+    ├── emails/templates.ts    Nội dung email (HTML + text, có escape)
+    ├── queues/                BullMQ: hàng đợi email, job định kỳ, worker
     ├── middleware/
     │   ├── auth.middleware.ts       requireAuth, optionalAuth, requireRole, requirePermission
     │   ├── validate.middleware.ts   validateBody / validateParams / validateQuery (Zod)
+    │   ├── upload.middleware.ts     Multer: loại file, dung lượng, tên file
+    │   ├── rate-limit.middleware.ts Giới hạn số request
     │   └── error.middleware.ts      404 + xử lý lỗi tập trung
-    ├── utils/                 jwt, crypto (bcrypt), HttpError, pagination, permission-path
+    ├── utils/                 jwt, crypto (bcrypt, OTP), HttpError, pagination, file-signature...
     ├── scripts/               seed, seed-demo, sync-permissions
     └── modules/               Mỗi chức năng một thư mục
         └── <module>/
@@ -122,14 +149,14 @@ backend/
             └── <module>.route.ts       Khai báo URL + middleware
 ```
 
-Module: `auth`, `permission`, `role`, `category`, `course`, `section`, `lecture`, `enrollment`, `review`.
+Module: `auth`, `profile`, `user`, `permission`, `role`, `category`, `course`, `section`, `lecture`, `enrollment`, `review`, `stats`, `upload`.
 
 ### Một request đi qua những đâu
 
 ```
-express.json → router (theo prefix) → requireAuth → requirePermission → validate... → controller → service → Prisma
-                                          │               │                  │
-                                         401             403                422        lỗi nào cũng về errorHandler
+helmet → cors → rate limit → express.json → router (theo prefix) → requireAuth → requirePermission → validate... → controller → service → Prisma
+                    │                                                    │               │                  │
+                   429                                                  401             403                422     lỗi nào cũng về errorHandler
 ```
 
 ---
@@ -140,7 +167,8 @@ express.json → router (theo prefix) → requireAuth → requirePermission → 
 
 - **Access token**: 15 phút, không lưu DB. `requireAuth` chỉ kiểm tra chữ ký.
 - **Refresh token**: 7 ngày, **lưu DB**, mỗi token dùng **một lần**. Mỗi lần refresh thì xóa token cũ và cấp cặp mới, trong cùng một transaction.
-- Logout = xóa refresh token khỏi DB.
+- Logout = xóa refresh token khỏi DB. Đổi / đặt lại mật khẩu hoặc bị khóa = xóa **mọi** refresh token của user.
+- **Quên mật khẩu**: OTP 6 số qua email, lưu dạng hash, hết hạn 10 phút, sai 5 lần thì hủy, dùng một lần.
 
 ### Phân quyền động (RBAC)
 
@@ -164,19 +192,44 @@ User ──1 role──> Role ──nhiều──> Permission (method + path, v�
 
 ```
 DRAFT ──gửi duyệt──> PENDING ──admin duyệt──> PUBLISHED (hiện công khai, ghi danh được)
-  ▲                     │
-  └──── REJECTED <──────┘ admin từ chối (kèm lý do)
+  ▲                     │                        │
+  └──── REJECTED <──────┴── admin từ chối ────────┘ admin gỡ (kèm lý do)
 ```
 
-Chỉ sửa được khóa, chương, bài khi khóa đang `DRAFT` / `REJECTED`. Đổi trạng thái dùng `updateMany` kèm điều kiện trạng thái cũ, nên 2 admin bấm duyệt cùng lúc thì chỉ một người thành công.
+- Sửa khóa / chương / bài: khi `DRAFT`, `REJECTED` hoặc `PUBLISHED` (có hiệu lực ngay). Không sửa khi `PENDING`.
+- Xóa khóa: chỉ khi `DRAFT` / `REJECTED`. Khóa đã xuất bản luôn phải còn ít nhất 1 bài.
+- Đổi trạng thái dùng `updateMany` kèm điều kiện trạng thái cũ, nên 2 admin bấm duyệt cùng lúc thì chỉ một người thành công.
+- Duyệt / từ chối / gỡ đều gửi email cho giảng viên.
+
+### Xử lý nền (BullMQ)
+
+- Request chỉ **đẩy job vào hàng đợi** (Redis), trả về ngay. Worker xử lý sau, lỗi thì **tự thử lại** (5 lần, đợi tăng dần 10s → 80s).
+- Email "có cũng được" (chào mừng, thông báo duyệt): hàng đợi lỗi thì chỉ ghi log, không làm hỏng request. Email OTP: lỗi thì trả 503.
+- Job định kỳ 3h sáng mỗi ngày: xóa refresh token và mã OTP đã hết hạn.
 
 ### Quy ước dữ liệu
 
 - **Xóa mềm** (`deletedAt`) cho user, role, permission, category, course, section, lecture: mọi query đọc đều lọc `deletedAt: null`. Riêng đánh giá thì xóa thật.
+- **Unique chỉ tính dòng chưa xóa** (partial unique index): tên role, tên danh mục, cặp method + path của permission. Xóa mềm xong có thể tạo lại cùng tên; 2 request tạo trùng cùng lúc thì DB chặn (409).
 - Giá tiền là **VND số nguyên**. Thời lượng tính bằng **giây**.
 - Response: `{ message, data }`. Danh sách: `{ message, data, totalItems, page, limit, totalPages }`. Lỗi: `{ message, errors? }`.
 
-Chi tiết từng API: **[docs/API.md](docs/API.md)**.
+Chi tiết từng API: **[docs/API.md](docs/API.md)**. Gọi thử: import `backend/postman/edu-platform.postman_collection.json` vào Postman.
+
+---
+
+## Test
+
+```bash
+cd backend
+npm test
+```
+
+- Chạy trên database **riêng** `edu_platform_test` (cùng server Postgres): chưa có thì tự tạo, rồi `migrate deploy`, seed nếu trống, sync quyền. **Không xóa dữ liệu nào**; test dùng email và tên ngẫu nhiên nên chạy lại bao nhiêu lần cũng được. Muốn dọn sạch thì tự xóa database `edu_platform_test`, lần sau sẽ tự tạo lại.
+- Tên database test bắt buộc kết thúc bằng `_test` (chốt an toàn). Đổi bằng biến `TEST_DATABASE_URL`.
+- Hàng đợi email được giả lập (không cần Redis), test đọc được email "đã gửi" để lấy mã OTP.
+- `tests/unit/`: hàm thuần. Các file còn lại: gọi API thật qua Supertest (auth, phân quyền, quản lý user, hồ sơ, toàn bộ vòng đời khóa học, upload).
+- CI (`.github/workflows/backend.yml`) chạy typecheck, lint và test mỗi lần push có sửa `backend/`.
 
 ---
 
@@ -184,7 +237,7 @@ Chi tiết từng API: **[docs/API.md](docs/API.md)**.
 
 | Triệu chứng | Nguyên nhân / cách sửa |
 |---|---|
-| `port is already allocated` khi `docker compose up` | Một Postgres khác đang dùng port 5432. Đổi `POSTGRES_PORT` **và** port trong `DATABASE_URL` sang 5433 |
+| `port is already allocated` khi `docker compose up` | Một Postgres / Redis khác đang dùng cổng. Đổi `POSTGRES_PORT` (và port trong `DATABASE_URL`) hoặc `REDIS_PORT` |
 | `Can't reach database server` | Docker Desktop chưa bật, hoặc `DATABASE_URL` không khớp `POSTGRES_*` |
 | `Các giá trị khai báo trong file .env không hợp lệ` | Thiếu biến hoặc sai định dạng, xem dòng lỗi in ra |
 | `Cannot find module '../generated/prisma/client'` | Chưa chạy `npx prisma generate` |
@@ -192,24 +245,33 @@ Chi tiết từng API: **[docs/API.md](docs/API.md)**.
 | API trả 500, log có `Unknown argument 'createById'` | Tên field sai so với cột (ví dụ thiếu chữ `d`: `createdById`). TypeScript không bắt được lỗi này với `data` của Prisma |
 | Mọi request của giảng viên / học viên đều 403 | Chưa chạy `npm run sync-permissions` sau khi thêm route |
 | `sync-permissions` báo "Sẽ xoá" nhiều permission đang dùng | **Dừng lại**: thường do một route bị gỡ `requirePermission` hoặc router bị bỏ khỏi `protectedRouters` |
-| `npm run lint` lỗi `spawnSync ... tsgolint.exe UNKNOWN` | Lỗi công cụ trên Windows, dùng `npx oxlint src/` |
+| Không thấy email | Mở `http://localhost:8025`. Kiểm tra `docker compose ps` có `edu_mailpit` và `edu_redis`, log server có dòng `Worker đang chạy` |
+| Đăng ký chậm thêm ~3 giây | Redis không chạy: hàng đợi email đợi 3 giây rồi bỏ qua. Bật lại `docker compose up -d` |
+| Quên mật khẩu trả 503 | Redis không chạy, không gửi được email OTP |
+| 429 khi đăng nhập | Sai quá 10 lần trong 15 phút (theo IP). Đợi theo header `Retry-After`, hoặc khởi động lại server lúc dev |
+| `npm run lint` lỗi `spawnSync ... tsgolint.exe UNKNOWN` | Lỗi công cụ trên Windows, dùng `npx oxlint src tests` |
+| `prisma migrate dev` báo "non-interactive" | Đang chạy trong môi trường không tương tác và có cảnh báo cần xác nhận: chạy lệnh trong terminal thường |
 | Trình duyệt báo lỗi CORS | Thêm địa chỉ frontend vào `CORS_ORIGINS` trong `.env` rồi khởi động lại server |
 
 ---
 
 ## Tiến độ
 
-- [x] Xác thực: đăng ký, đăng nhập, `me`, refresh token xoay vòng, logout
+- [x] Xác thực: đăng ký, đăng nhập, `me`, refresh token xoay vòng, logout, quên mật khẩu (OTP)
+- [x] Hồ sơ, đổi mật khẩu; admin quản lý user (khóa, đổi role)
 - [x] Phân quyền động: Permission, Role, sync từ route, quyền mặc định
 - [x] Danh mục
-- [x] Khóa học: giảng viên quản lý, luồng duyệt, trang công khai có tìm kiếm / lọc / sắp xếp
-- [x] Chương và bài giảng, bài xem thử
+- [x] Khóa học: giảng viên quản lý, luồng duyệt, gỡ khóa, trang công khai có tìm kiếm / lọc / sắp xếp
+- [x] Chương và bài giảng, bài xem thử, đổi thứ tự, chuyển bài giữa các chương
 - [x] Ghi danh (khóa miễn phí), tiến độ học
 - [x] Đánh giá, điểm trung bình
-- [x] CORS, dữ liệu demo, tài liệu API
+- [x] Thống kê cho admin và giảng viên
+- [x] Upload ảnh / video
+- [x] Email qua hàng đợi BullMQ (retry), job dọn dữ liệu hết hạn
+- [x] Helmet, rate limit, log request, partial unique index
+- [x] Test tự động (Vitest + Supertest), CI GitHub Actions
 - [ ] Thanh toán (khóa có phí đang trả 402)
-- [ ] Upload video / ảnh (đang dùng URL)
-- [ ] Email: xác thực tài khoản, OTP, quên mật khẩu
-- [ ] Hồ sơ người dùng, đổi mật khẩu; admin quản lý user
+- [ ] Upload lên cloud (S3 / Cloudinary) thay vì ổ đĩa server
+- [ ] Xác thực email khi đăng ký
 - [ ] Hỏi đáp theo bài giảng, thông báo
-- [ ] Test tự động, rate limit, cron dọn refresh token hết hạn
+- [ ] Deploy
