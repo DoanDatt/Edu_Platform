@@ -1,4 +1,5 @@
 import { ErrorRequestHandler, RequestHandler } from 'express'
+import { MulterError } from 'multer'
 import { HttpError } from '../utils/error'
 
 // không route nào khớp -> 404 dạng JSON
@@ -23,6 +24,18 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   if (err?.type === 'entity.parse.failed') {
     res.status(400).json({
       message: 'Body không phải JSON hợp lệ',
+    })
+    return
+  }
+  // Lỗi upload của multer: file quá lớn, gửi nhiều file, sai tên field...
+  if (err instanceof MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      res.status(413).json({ message: 'File quá lớn so với giới hạn cho phép' })
+      return
+    }
+    res.status(422).json({
+      message: 'Dữ liệu không hợp lệ',
+      errors: [{ field: err.field ?? 'file', message: `Upload lỗi: ${err.code} (chỉ gửi 1 file, field "file")` }],
     })
     return
   }

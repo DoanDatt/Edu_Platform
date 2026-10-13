@@ -45,8 +45,13 @@ Query phân trang: `?page=1&limit=10`. `page` ≥ 1 (mặc định 1), `limit` t
 | 403 | Đã đăng nhập nhưng không có quyền / không phải chủ sở hữu | Hiện thông báo, ẩn nút tương ứng |
 | 404 | Không tìm thấy (hoặc chưa xuất bản) | Trang 404 |
 | 409 | Xung đột trạng thái: trùng, đã ghi danh, khóa đang chờ duyệt... | Hiện `message` |
+| 413 | File upload quá lớn | Báo người dùng chọn file nhỏ hơn |
+| 429 | Gọi quá nhiều lần (xem bên dưới) | Hiện `message`, đợi `Retry-After` giây |
+| 503 | Hệ thống email tạm lỗi (quên mật khẩu) | "Thử lại sau" |
 | 422 | Dữ liệu gửi lên sai | Hiện lỗi theo `errors[].field` |
 | 500 | Lỗi server | Thông báo chung "thử lại sau" |
+
+**Giới hạn số request (429):** đăng nhập sai quá **10 lần / 15 phút**, đăng ký quá **10 lần / giờ**, xin mã OTP quá **5 lần / 15 phút**, nhập mã quá **10 lần / 15 phút** (theo IP) thì nhận **429** kèm header `Retry-After` (số giây phải đợi). Toàn bộ API giới hạn 1000 request / 15 phút. Hiện `message` cho người dùng là đủ.
 
 **Lưu ý:** body và query có `.strict()`: gửi **thừa field** (ví dụ `id`, `status`, `instructorId`) sẽ bị **422**. Chỉ gửi đúng các field ghi trong tài liệu.
 
@@ -130,6 +135,34 @@ Quyền mặc định (khai báo trong `backend/src/constants/default-permission
 | **STUDENT** | Ghi danh, học, đánh dấu hoàn thành, đánh giá |
 
 Ngoài permission, service còn kiểm tra **chủ sở hữu**: giảng viên chỉ sửa được khóa của mình, học viên chỉ sửa được đánh giá của mình... Vi phạm thì trả **403**.
+
+---
+
+## 3b. Upload ảnh / video
+
+Upload trước, nhận `url`, rồi gửi `url` đó vào API khác: `avatar` (`PUT /profile`), `thumbnail` (`POST/PUT /courses`), `videoUrl` (`POST/PUT /lectures`).
+
+| Method | Path | Ai | Giới hạn |
+|---|---|---|---|
+| POST | `/uploads/image` | 🔒 mọi người đã đăng nhập | jpg, png, webp, gif, tối đa **5 MB** |
+| POST | `/uploads/video` | 🔑 giảng viên / admin | mp4, webm, mov, tối đa **500 MB** |
+
+Gửi dạng **`multipart/form-data`**, đúng **1 file**, field tên **`file`**:
+```ts
+const form = new FormData()
+form.append('file', fileInput.files[0])
+await fetch(`${API}/uploads/image`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: form })
+// Không tự đặt Content-Type: trình duyệt tự thêm kèm boundary
+```
+
+Response 201:
+```json
+{ "message": "Tải file lên thành công", "data": { "url": "http://localhost:4000/uploads/images/<uuid>.png", "mimeType": "image/png", "size": 52341, "originalName": "anh.png" } }
+```
+
+Lỗi: sai loại file, hoặc nội dung file không khớp loại khai báo (ví dụ đổi đuôi `.txt` thành `.jpg`) → **422**; file quá lớn → **413**; không gửi file / gửi 2 file → **422**.
+
+File được phục vụ lại tại `url` (GET, công khai). Video hỗ trợ tua (HTTP Range), dùng thẳng trong thẻ `<video src="...">`.
 
 ---
 
@@ -430,4 +463,4 @@ Chạy `npm run seed` rồi `npm run seed:demo` trong thư mục `backend/`. M�
 
 ## 14. Chưa có (làm sau)
 
-Thanh toán (khóa có phí trả 402), upload video/ảnh (đang dùng URL), xác thực email khi đăng ký, hỏi đáp theo bài giảng, thông báo.
+Thanh toán (khóa có phí trả 402), xác thực email khi đăng ký, hỏi đáp theo bài giảng, thông báo. Upload hiện lưu trên ổ đĩa server (chưa dùng cloud như S3 / Cloudinary).

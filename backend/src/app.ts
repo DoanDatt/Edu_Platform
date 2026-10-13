@@ -1,6 +1,10 @@
 import express, { Router } from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
+import morgan from 'morgan'
 import envConfig from './config/env'
+import { apiLimiter } from './middleware/rate-limit.middleware'
+import uploadRouter from './modules/upload/upload.route'
 import authRouter from './modules/auth/auth.route'
 import { errorHandler, notFoundHandler } from './middleware/error.middleware'
 import permissionRouter from './modules/permission/permission.route'
@@ -28,12 +32,26 @@ export const protectedRouters: { prefix: string; router: Router }[] = [
   { prefix: '/reviews', router: reviewRouter },
   { prefix: '/users', router: userRouter },
   { prefix: '/stats', router: statsRouter },
+  // Upload ảnh / video (POST). Cùng prefix với file tĩnh /uploads (GET) bên dưới, không đụng nhau
+  { prefix: '/uploads', router: uploadRouter },
 ]
 
 const app = express()
 
+// Header bảo mật (chống clickjacking, sniff MIME...). crossOriginResourcePolicy = cross-origin
+// để frontend ở cổng khác vẫn hiển thị được ảnh / video trong /uploads
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
+
 // CORS: trình duyệt chỉ cho frontend (khác cổng) gọi API khi server cho phép đúng origin đó
 app.use(cors({ origin: envConfig.CORS_ORIGINS }))
+
+// Log mỗi request: "GET /courses 200 12.3 ms" (tắt khi chạy test cho đỡ rối)
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan('dev'))
+}
+
+// Chặn spam chung cho toàn bộ API (các route nhạy cảm có giới hạn riêng, chặt hơn)
+app.use(apiLimiter)
 
 // đọc body json mà client gửi lên -> req.body
 app.use(express.json())
@@ -41,6 +59,10 @@ app.use(express.json())
 app.get('/', (req, res) => {
   res.json({ message: 'Hello World!' })
 })
+
+// File đã upload: GET /uploads/images/<tên>.jpg. Hỗ trợ Range request nên video tua được
+app.use('/uploads', express.static(envConfig.UPLOAD_DIR, { maxAge: '7d', index: false }))
+
 app.use('/auth', authRouter)
 // Hồ sơ của chính mình: chỉ cần đăng nhập, không cần permission
 app.use('/profile', profileRouter)

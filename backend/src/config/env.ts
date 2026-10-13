@@ -57,6 +57,18 @@ const configSchema = z.object({
   MAIL_FROM: z.string().default('Edu Platform <no-reply@edu.local>'),
   // Địa chỉ frontend, dùng để tạo link trong email
   FRONTEND_URL: z.url().default('http://localhost:3000'),
+
+  // Upload: file lưu trên ổ đĩa của server, phục vụ lại qua <PUBLIC_URL>/uploads/...
+  PUBLIC_URL: z.url().default('http://localhost:4000'),
+  UPLOAD_DIR: z.string().default('uploads'),
+  MAX_IMAGE_MB: z.coerce.number().positive().default(5),
+  MAX_VIDEO_MB: z.coerce.number().positive().default(500),
+
+  // Giới hạn số request (chống dò mật khẩu, spam). Tắt khi chạy test tự động
+  RATE_LIMIT_ENABLED: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((value) => value === 'true'),
 })
 
 const configServer = configSchema.safeParse(process.env)

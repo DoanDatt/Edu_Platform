@@ -43,6 +43,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     'PUT /lectures/reorder',
     'PUT /lectures/:lectureId',
     'DELETE /lectures/:lectureId',
+    // Upload video bài giảng (ảnh thì ai đăng nhập cũng upload được, không cần quyền)
+    'POST /uploads/video',
     // Dashboard giảng viên
     'GET /stats/instructor',
     ...LEARNER_PERMISSIONS,
