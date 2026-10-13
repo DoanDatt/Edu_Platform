@@ -1,6 +1,6 @@
 import prisma from '../../lib/prisma'
 import { RoleName } from '../../constants/role'
-import { HttpError } from '../../utils/error'
+import { HttpError, onUniqueViolation } from '../../utils/error'
 import { CreateRoleBodyType, GetRolesQueryType, UpdateRoleBodyType } from './role.schema'
 
 // 3 role mà code đang dùng theo tên (requireRole(RoleName.Admin), register gán STUDENT...)
@@ -71,15 +71,18 @@ export const createRole = async ({ permissionIds, ...data }: CreateRoleBodyType,
   await ensureNameNotDuplicate(data.name)
   await ensurePermissionsExist(permissionIds)
 
-  return prisma.role.create({
-    data: {
-      ...data, // name, description, isActive
-      createdById,
-      // connect: nối role mới với các permission có sẵn (ghi vào bảng trung gian)
-      permissions: { connect: permissionIds.map((id) => ({ id })) },
-    },
-    include: permissionsInclude,
-  })
+  return onUniqueViolation(
+    prisma.role.create({
+      data: {
+        ...data, // name, description, isActive
+        createdById,
+        // connect: nối role mới với các permission có sẵn (ghi vào bảng trung gian)
+        permissions: { connect: permissionIds.map((id) => ({ id })) },
+      },
+      include: permissionsInclude,
+    }),
+    `Role ${data.name} đã tồn tại`,
+  )
 }
 
 export const updateRole = async (id: number, { permissionIds, ...data }: UpdateRoleBodyType, updatedById: number) => {
@@ -102,16 +105,19 @@ export const updateRole = async (id: number, { permissionIds, ...data }: UpdateR
   await ensureNameNotDuplicate(data.name, id)
   await ensurePermissionsExist(permissionIds)
 
-  return prisma.role.update({
-    where: { id },
-    data: {
-      ...data,
-      updatedById,
-      // set: XOÁ hết liên kết cũ rồi nối lại đúng danh sách mới
-      permissions: { set: permissionIds.map((permissionId) => ({ id: permissionId })) },
-    },
-    include: permissionsInclude,
-  })
+  return onUniqueViolation(
+    prisma.role.update({
+      where: { id },
+      data: {
+        ...data,
+        updatedById,
+        // set: XOÁ hết liên kết cũ rồi nối lại đúng danh sách mới
+        permissions: { set: permissionIds.map((permissionId) => ({ id: permissionId })) },
+      },
+      include: permissionsInclude,
+    }),
+    `Role ${data.name} đã tồn tại`,
+  )
 }
 
 export const deleteRole = async (id: number, deletedById: number) => {

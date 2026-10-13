@@ -1,5 +1,5 @@
 import prisma from '../../lib/prisma'
-import { HttpError } from '../../utils/error'
+import { HttpError, onUniqueViolation } from '../../utils/error'
 import { CreatePermissionBodyType, GetPermissionQueryType, UpdatePermissionBodyType } from './permission.schema'
 
 export const getPermission = async ({ page, limit }: GetPermissionQueryType) => {
@@ -53,18 +53,25 @@ const ensureNotDuplicate = async ({ path, method }: CreatePermissionBodyType, ex
 
 export const createPermission = async (body: CreatePermissionBodyType, createdById: number) => {
   await ensureNotDuplicate(body)
-  return prisma.permission.create({
-    data: { ...body, createdById },
-  })
+  // ensureNotDuplicate cho thông báo rõ ràng; onUniqueViolation là chốt chặn cuối khi 2 request cùng lúc
+  return onUniqueViolation(
+    prisma.permission.create({
+      data: { ...body, createdById },
+    }),
+    `Permission ${body.method} ${body.path} đã tồn tại`,
+  )
 }
 
 export const updatePermission = async (id: number, body: UpdatePermissionBodyType, updatedById: number) => {
   await getPermissionById(id) // không có thì ném 404
   await ensureNotDuplicate(body, id)
-  return prisma.permission.update({
-    where: { id },
-    data: { ...body, updatedById },
-  })
+  return onUniqueViolation(
+    prisma.permission.update({
+      where: { id },
+      data: { ...body, updatedById },
+    }),
+    `Permission ${body.method} ${body.path} đã tồn tại`,
+  )
 }
 
 export const deletePermission = async (id: number, deleteById: number) => {
