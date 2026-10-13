@@ -27,3 +27,13 @@ export const UpdateSectionBodySchema = z
   .strict()
 
 export type UpdateSectionBodyType = z.infer<typeof UpdateSectionBodySchema>
+
+// Đổi thứ tự cả khóa: gửi đủ id các chương theo thứ tự mới
+export const ReorderSectionsBodySchema = z
+  .object({
+    courseId: z.number().int().positive(),
+    sectionIds: z.array(z.number().int().positive()).min(1),
+  })
+  .strict()
+
+export type ReorderSectionsBodyType = z.infer<typeof ReorderSectionsBodySchema>

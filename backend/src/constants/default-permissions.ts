@@ -33,13 +33,18 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     'PUT /courses/:courseId',
     'DELETE /courses/:courseId',
     'POST /courses/:courseId/submit',
+    'GET /courses/mine/:courseId/students',
     // Soạn mục lục
     'POST /sections',
+    'PUT /sections/reorder',
     'PUT /sections/:sectionId',
     'DELETE /sections/:sectionId',
     'POST /lectures',
+    'PUT /lectures/reorder',
     'PUT /lectures/:lectureId',
     'DELETE /lectures/:lectureId',
+    // Dashboard giảng viên
+    'GET /stats/instructor',
     ...LEARNER_PERMISSIONS,
   ],
   [RoleName.Student]: [...LEARNER_PERMISSIONS],

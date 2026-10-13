@@ -2,7 +2,12 @@ import { Router } from 'express'
 import * as sectionController from './section.controller'
 import { requireAuth, requirePermission } from '../../middleware/auth.middleware'
 import { validateBody, validateParams } from '../../middleware/validate.middleware'
-import { CreateSectionBodySchema, SectionParamsSchema, UpdateSectionBodySchema } from './section.schema'
+import {
+  CreateSectionBodySchema,
+  ReorderSectionsBodySchema,
+  SectionParamsSchema,
+  UpdateSectionBodySchema,
+} from './section.schema'
 
 const sectionRouter = Router()
 
@@ -14,6 +19,14 @@ sectionRouter.post(
   requirePermission,
   validateBody(CreateSectionBodySchema),
   sectionController.createSection,
+)
+// Route cố định "/reorder" phải đứng TRƯỚC "/:sectionId" (cùng method PUT)
+sectionRouter.put(
+  '/reorder',
+  requireAuth,
+  requirePermission,
+  validateBody(ReorderSectionsBodySchema),
+  sectionController.reorderSections,
 )
 sectionRouter.put(
   '/:sectionId',

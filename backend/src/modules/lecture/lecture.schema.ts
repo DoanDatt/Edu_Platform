@@ -26,9 +26,20 @@ export const CreateLectureBodySchema = LectureContentSchema.extend({
 
 export type CreateLectureBodyType = z.infer<typeof CreateLectureBodySchema>
 
-// Sửa: không đổi được chương (muốn chuyển chương thì xóa rồi tạo lại)
 export const UpdateLectureBodySchema = LectureContentSchema.extend({
+  // Chuyển sang chương khác (cùng khóa). Không gửi thì giữ chương cũ
+  sectionId: z.number().int().positive().optional(),
   position: z.number().int().min(0).optional(),
 }).strict()
 
 export type UpdateLectureBodyType = z.infer<typeof UpdateLectureBodySchema>
+
+// Đổi thứ tự cả chương: gửi đủ id các bài theo thứ tự mới
+export const ReorderLecturesBodySchema = z
+  .object({
+    sectionId: z.number().int().positive(),
+    lectureIds: z.array(z.number().int().positive()).min(1),
+  })
+  .strict()
+
+export type ReorderLecturesBodyType = z.infer<typeof ReorderLecturesBodySchema>

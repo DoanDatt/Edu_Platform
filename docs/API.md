@@ -91,6 +91,16 @@ POST /auth/login (hoặc /auth/register) ──> { accessToken (15 phút), refre
 
 Ràng buộc đăng ký: `password` 8–100 ký tự, `confirmPassword` phải trùng, `phoneNumber` 9–15 ký tự, `name` 1–100 ký tự.
 
+### Hồ sơ của tôi
+
+🔒 Mọi role đều dùng được (chỉ cần đăng nhập).
+
+| Method | Path | Body | Ghi chú |
+|---|---|---|---|
+| GET | `/profile` | | Giống `GET /auth/me` |
+| PUT | `/profile` | `{ name, phoneNumber, avatar? }` | `avatar`: URL ảnh; gửi `null` để xóa; không gửi thì giữ nguyên. Trả về hồ sơ mới |
+| PUT | `/profile/password` | `{ currentPassword, newPassword, confirmPassword }` | Sai mật khẩu hiện tại → 422 (`field: currentPassword`). Thành công: **mọi thiết bị khác bị đăng xuất**, `data: { accessToken, refreshToken }` là cặp token MỚI cho thiết bị đang dùng → frontend phải lưu đè |
+
 ---
 
 ## 3. Phân quyền
@@ -196,9 +206,11 @@ Công khai. **Nếu gửi kèm token** thì có thêm thông tin `isEnrolled`.
 | GET | `/courses/mine` | `?page&limit&status` | Khóa của tôi, mọi trạng thái, mới sửa nhất lên đầu |
 | GET | `/courses/mine/:courseId` | | Chi tiết + **mục lục đầy đủ** (kể cả `content`, `videoUrl`) để soạn bài |
 | POST | `/courses` | xem bên dưới | Tạo khóa, luôn ở `DRAFT` |
-| PUT | `/courses/:courseId` | xem bên dưới | Chỉ khi `DRAFT` / `REJECTED` (ngược lại **409**) |
-| DELETE | `/courses/:courseId` | | Chỉ khi `DRAFT` / `REJECTED` |
+| PUT | `/courses/:courseId` | xem bên dưới | Khi `DRAFT` / `REJECTED` / `PUBLISHED`. Đang `PENDING` → **409** |
+| DELETE | `/courses/:courseId` | | Chỉ khi `DRAFT` / `REJECTED` (đã xuất bản thì không xóa được, **409**) |
 | POST | `/courses/:courseId/submit` | | Gửi duyệt: `DRAFT`/`REJECTED` → `PENDING`. Cần ít nhất 1 bài giảng (**409**) |
+| GET | `/courses/mine/:courseId/students` | `?page&limit` | Học viên của khóa + tiến độ từng người (xem bên dưới) |
+| GET | `/stats/instructor` | | Số liệu dashboard (mục 11) |
 
 Tất cả đều 🔑 INSTRUCTOR (hoặc ADMIN). Khóa của người khác → **403**.
 
@@ -217,25 +229,39 @@ Body tạo / sửa khóa học:
 ```
 `PUT` gửi lại các field như khi tạo. Field tùy chọn không gửi thì **giữ nguyên** giá trị cũ.
 
-Khi khóa bị từ chối, `GET /courses/mine/:courseId` có `rejectReason` để hiển thị cho giảng viên sửa.
+Khi khóa bị từ chối (hoặc bị admin gỡ), `GET /courses/mine/:courseId` có `rejectReason` để hiển thị cho giảng viên sửa.
+
+**Sửa khóa đã xuất bản** (`PUBLISHED`): thông tin khóa, chương, bài giảng đều sửa được và **có hiệu lực ngay** (không duyệt lại), để giảng viên sửa lỗi hoặc thêm bài cho học viên đang học. Riêng khóa đã xuất bản **phải còn ít nhất 1 bài giảng**: xóa bài / chương cuối cùng → **409**.
+
+`GET /courses/mine/:courseId/students`, mỗi phần tử:
+```json
+{
+  "enrolledAt": "2026-10-10T08:00:00.000Z",
+  "user": { "id": 7, "name": "...", "email": "...", "avatar": null },
+  "progress": { "totalLectures": 8, "completedLectures": 4, "percent": 50 }
+}
+```
 
 ---
 
 ## 7. Chương & bài giảng (giảng viên soạn bài)
 
-Chỉ sửa được khi khóa đang `DRAFT` / `REJECTED` và là khóa của mình. Mục mới luôn được thêm vào **cuối**. Đổi thứ tự bằng cách gửi `position` mới (số nhỏ đứng trước).
+Sửa được khi khóa là của mình và đang `DRAFT` / `REJECTED` / `PUBLISHED` (không phải `PENDING`). Mục mới luôn được thêm vào **cuối**.
 
 | Method | Path | Body |
 |---|---|---|
 | POST | `/sections` | `{ courseId, title }` |
+| PUT | `/sections/reorder` | `{ courseId, sectionIds: [5, 3, 4] }`: **đủ tất cả** id chương theo thứ tự mới (thiếu / thừa / trùng → 422). Trả về danh sách chương đã sắp |
 | PUT | `/sections/:sectionId` | `{ title, position? }` |
 | DELETE | `/sections/:sectionId` | Xóa luôn các bài giảng trong chương |
 | POST | `/lectures` | `{ sectionId, title, videoUrl?, content?, durationSec?, isPreview? }` |
-| PUT | `/lectures/:lectureId` | `{ title, videoUrl?, content?, durationSec?, isPreview?, position? }` |
+| PUT | `/lectures/reorder` | `{ sectionId, lectureIds: [...] }`: giống trên, cho các bài trong 1 chương |
+| PUT | `/lectures/:lectureId` | `{ title, videoUrl?, content?, durationSec?, isPreview?, sectionId?, position? }` |
 | DELETE | `/lectures/:lectureId` | |
 
-- `videoUrl`: URL video có sẵn (chưa có upload). `durationSec`: 0–86400. `isPreview: true` = ai cũng xem được.
-- Muốn chuyển bài sang chương khác: xóa rồi tạo lại.
+- `videoUrl`: URL video (lấy từ `POST /uploads/video`, hoặc link có sẵn). `durationSec`: 0–86400. `isPreview: true` = ai cũng xem được.
+- **Kéo thả đổi thứ tự**: gọi `PUT /sections/reorder` hoặc `PUT /lectures/reorder` một lần với cả danh sách, thay vì sửa `position` từng mục.
+- **Chuyển bài sang chương khác**: `PUT /lectures/:id` kèm `sectionId` mới (phải cùng khóa, ngược lại 422). Không gửi `position` thì bài nằm cuối chương mới.
 
 ---
 
@@ -247,8 +273,10 @@ Chỉ sửa được khi khóa đang `DRAFT` / `REJECTED` và là khóa của m�
 | GET | `/courses/admin/:courseId` | | Chi tiết khóa ở **mọi** trạng thái + mục lục + giảng viên |
 | POST | `/courses/:courseId/approve` | | `PENDING` → `PUBLISHED` |
 | POST | `/courses/:courseId/reject` | `{ reason }` | `PENDING` → `REJECTED`, lưu lý do |
+| GET | `/courses/admin` | `?search&status&instructorId&categoryId&page&limit` | **Tất cả** khóa học (mọi trạng thái, mọi giảng viên), mới sửa nhất trước. Mỗi item kèm `instructor`, `category`, `studentCount` |
+| POST | `/courses/:courseId/unpublish` | `{ reason }` | **Gỡ** khóa đang công khai: `PUBLISHED` → `REJECTED` kèm lý do. Khóa biến mất khỏi trang công khai, **học viên đã ghi danh tạm không vào học được** cho đến khi giảng viên sửa và được duyệt lại |
 
-Khóa không ở `PENDING` → **409**.
+Approve/reject khi khóa không ở `PENDING`, unpublish khi không ở `PUBLISHED` → **409**.
 
 ---
 
@@ -305,7 +333,44 @@ Gợi ý trang học: bên trái là mục lục (`completed` hiện dấu ✓),
 
 ---
 
-## 11. Quản trị phân quyền (admin)
+## 11. Quản trị (admin) và thống kê
+
+### Người dùng
+
+🔑 Admin.
+
+| Method | Path | Body / Query | Ghi chú |
+|---|---|---|---|
+| GET | `/users` | `?search&roleId&status&page&limit` | `search` tìm theo tên hoặc email. Mỗi item `{ id, email, name, phoneNumber, avatar, status, createdAt, role: { id, name } }` |
+| GET | `/users/:userId` | | Như trên + `stats: { teachingCourses, enrolledCourses, reviews }` |
+| PUT | `/users/:userId/status` | `{ status: "ACTIVE" \| "BLOCKED" }` | Khóa → đăng xuất mọi thiết bị, mọi request sau đó của user bị **403** ngay |
+| PUT | `/users/:userId/role` | `{ roleId }` | Ví dụ nâng học viên lên giảng viên. Có hiệu lực ngay |
+
+Không đổi được trạng thái / role của **chính mình** (403).
+
+### Thống kê (dashboard)
+
+`GET /stats/admin` (🔑 Admin):
+```json
+{
+  "users": { "total": 15, "blocked": 1, "newLast30Days": 6, "byRole": { "ADMIN": 1, "INSTRUCTOR": 4, "STUDENT": 10 } },
+  "courses": { "total": 8, "byStatus": { "DRAFT": 2, "PENDING": 1, "PUBLISHED": 4, "REJECTED": 1 } },
+  "enrollments": { "total": 5, "newLast30Days": 5 },
+  "reviews": { "total": 4, "averageRating": 4.8 }
+}
+```
+
+`GET /stats/instructor` (🔑 Giảng viên, số liệu các khóa **của mình**):
+```json
+{
+  "courses": { "total": 4, "byStatus": { "DRAFT": 1, "PENDING": 1, "PUBLISHED": 2, "REJECTED": 0 } },
+  "totalStudents": 12,
+  "reviews": { "total": 5, "averageRating": 4.6 },
+  "topCourses": [ { "id": 1, "title": "...", "status": "PUBLISHED", "studentCount": 8, "reviewCount": 3 } ]
+}
+```
+
+### Phân quyền
 
 Thường chỉ dùng cho trang quản trị. Permission do lệnh `npm run sync-permissions` tự sinh từ code.
 
@@ -334,8 +399,9 @@ Không sửa được ADMIN; không đổi tên, tắt hay xóa được INSTRUC
 | Khóa học của tôi (học viên) | `GET /enrollments/mine` |
 | Trang học | `GET /enrollments/mine/:courseId`, `GET /lectures/:id`, `POST/DELETE /lectures/:id/complete` |
 | Viết đánh giá | `GET /reviews/mine/:courseId`, `POST` / `PUT /reviews` |
-| Dashboard giảng viên | `GET /courses/mine`, tạo/sửa khóa, `GET /courses/mine/:id` + `/sections` + `/lectures`, `POST /courses/:id/submit` |
-| Trang admin | `GET /courses/pending`, `GET /courses/admin/:id`, approve/reject, `/categories`, `/roles`, `/permissions` |
+| Tài khoản của tôi | `GET` / `PUT /profile`, `PUT /profile/password` |
+| Dashboard giảng viên | `GET /stats/instructor`, `GET /courses/mine`, tạo/sửa khóa, `GET /courses/mine/:id` + `/sections` + `/lectures` (+ `/reorder`), `POST /courses/:id/submit`, `GET /courses/mine/:id/students` |
+| Trang admin | `GET /stats/admin`, `GET /courses/admin`, `GET /courses/pending`, `GET /courses/admin/:id`, approve/reject/unpublish, `/users`, `/categories`, `/roles`, `/permissions` |
 
 ## 13. Tài khoản demo
 
@@ -351,4 +417,4 @@ Chạy `npm run seed` rồi `npm run seed:demo` trong thư mục `backend/`. M�
 
 ## 14. Chưa có (làm sau)
 
-Thanh toán (khóa có phí trả 402), upload video/ảnh (đang dùng URL), xác thực email / OTP / quên mật khẩu, sửa hồ sơ và đổi mật khẩu, quản lý user cho admin, hỏi đáp theo bài giảng, thông báo.
+Thanh toán (khóa có phí trả 402), upload video/ảnh (đang dùng URL), xác thực email / OTP / quên mật khẩu, hỏi đáp theo bài giảng, thông báo.

@@ -3,10 +3,20 @@ import { HttpError } from '../../utils/error'
 import { RoleName } from '../../constants/role'
 import { CourseStatus } from '../../generated/prisma/enums'
 import { AccessTokenPayload } from '../../utils/jwt'
-import { getEditableOwnCourse } from '../course/course.service'
+import { hasExactlyIds } from '../../utils/ids'
+import { ensurePublishedCourseKeepsLectures, getEditableOwnCourse } from '../course/course.service'
 import { getEditableOwnSection } from '../section/section.service'
 import { isEnrolled } from '../enrollment/enrollment.service'
-import { CreateLectureBodyType, UpdateLectureBodyType } from './lecture.schema'
+import { CreateLectureBodyType, ReorderLecturesBodyType, UpdateLectureBodyType } from './lecture.schema'
+
+// Vị trí cuối cùng trong chương (để thêm bài mới / chuyển bài sang vào cuối)
+const nextPositionInSection = async (sectionId: number) => {
+  const { _max } = await prisma.lecture.aggregate({
+    where: { sectionId, deletedAt: null },
+    _max: { position: true },
+  })
+  return (_max.position ?? -1) + 1
+}
 
 // Bài giảng còn tồn tại + khóa học là của mình và còn sửa được
 const getEditableOwnLecture = async (lectureId: number, instructorId: number) => {
@@ -23,27 +33,67 @@ const getEditableOwnLecture = async (lectureId: number, instructorId: number) =>
 
 export const createLecture = async ({ sectionId, ...data }: CreateLectureBodyType, instructorId: number) => {
   await getEditableOwnSection(sectionId, instructorId)
-
   // Bài mới luôn nằm cuối chương
-  const { _max } = await prisma.lecture.aggregate({
-    where: { sectionId, deletedAt: null },
-    _max: { position: true },
-  })
   return prisma.lecture.create({
-    data: { ...data, sectionId, position: (_max.position ?? -1) + 1 },
+    data: { ...data, sectionId, position: await nextPositionInSection(sectionId) },
   })
 }
 
-export const updateLecture = async (lectureId: number, body: UpdateLectureBodyType, instructorId: number) => {
-  await getEditableOwnLecture(lectureId, instructorId)
+export const updateLecture = async (
+  lectureId: number,
+  { sectionId, position, ...data }: UpdateLectureBodyType,
+  instructorId: number,
+) => {
+  const lecture = await getEditableOwnLecture(lectureId, instructorId)
+
+  // Chuyển chương: chương đích phải còn tồn tại và thuộc CÙNG khóa học
+  const isMoving = sectionId !== undefined && sectionId !== lecture.sectionId
+  if (isMoving) {
+    const target = await prisma.section.findFirst({ where: { id: sectionId, deletedAt: null } })
+    if (!target || target.courseId !== lecture.section.courseId) {
+      throw new HttpError(422, 'Dữ liệu không hợp lệ', [
+        { field: 'sectionId', message: 'Chương đích không tồn tại hoặc không thuộc khóa học này' },
+      ])
+    }
+  }
+
   return prisma.lecture.update({
     where: { id: lectureId },
-    data: body,
+    data: {
+      ...data,
+      sectionId: isMoving ? sectionId : undefined,
+      // Chuyển chương mà không chỉ định vị trí → nằm cuối chương mới
+      position: position ?? (isMoving ? await nextPositionInSection(sectionId) : undefined),
+    },
+  })
+}
+
+// Đổi thứ tự TẤT CẢ bài trong 1 chương trong 1 lần
+export const reorderLectures = async ({ sectionId, lectureIds }: ReorderLecturesBodyType, instructorId: number) => {
+  await getEditableOwnSection(sectionId, instructorId)
+  const lectures = await prisma.lecture.findMany({
+    where: { sectionId, deletedAt: null },
+    select: { id: true },
+  })
+  const currentIds = lectures.map((l) => l.id)
+  if (!hasExactlyIds(lectureIds, currentIds)) {
+    throw new HttpError(422, 'Dữ liệu không hợp lệ', [
+      { field: 'lectureIds', message: 'Phải gửi đúng và đủ tất cả bài giảng hiện có của chương' },
+    ])
+  }
+  await prisma.$transaction(
+    lectureIds.map((id, index) => prisma.lecture.update({ where: { id }, data: { position: index } })),
+  )
+  return prisma.lecture.findMany({
+    where: { sectionId, deletedAt: null },
+    orderBy: [{ position: 'asc' }, { id: 'asc' }],
   })
 }
 
 export const deleteLecture = async (lectureId: number, instructorId: number) => {
-  await getEditableOwnLecture(lectureId, instructorId)
+  const lecture = await getEditableOwnLecture(lectureId, instructorId)
+  // Khóa đã xuất bản: không được xóa bài cuối cùng
+  await ensurePublishedCourseKeepsLectures(lecture.section.courseId, { id: lectureId })
   await prisma.lecture.update({
     where: { id: lectureId },
     data: { deletedAt: new Date() },

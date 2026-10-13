@@ -1,6 +1,16 @@
 import { Request, Response } from 'express'
 import * as sectionService from './section.service'
-import { CreateSectionBodyType, SectionParamsType, UpdateSectionBodyType } from './section.schema'
+import {
+  CreateSectionBodyType,
+  ReorderSectionsBodyType,
+  SectionParamsType,
+  UpdateSectionBodyType,
+} from './section.schema'
+
+export const reorderSections = async (req: Request, res: Response) => {
+  const sections = await sectionService.reorderSections(req.body as ReorderSectionsBodyType, req.user!.userId)
+  res.json({ message: 'Đổi thứ tự chương thành công', data: sections })
+}
 
 export const createSection = async (req: Request, res: Response) => {
   const body = req.body as CreateSectionBodyType

@@ -3,10 +3,13 @@ import * as courseService from './course.service'
 import {
   CourseParamsType,
   CreateCourseBodyType,
+  GetAdminCoursesQueryType,
+  GetCourseStudentsQueryType,
   GetCoursesQueryType,
   GetMyCoursesQueryType,
   GetPendingCoursesQueryType,
   RejectCourseBodyType,
+  UnpublishCourseBodyType,
   UpdateCourseBodyType,
 } from './course.schema'
 
@@ -90,4 +93,24 @@ export const rejectCourse = async (req: Request, res: Response) => {
   const { reason } = req.body as RejectCourseBodyType
   const course = await courseService.rejectCourse(courseId, reason)
   res.json({ message: 'Đã từ chối khóa học', data: course })
+}
+
+export const unpublishCourse = async (req: Request, res: Response) => {
+  const { courseId } = req.params as unknown as CourseParamsType
+  const { reason } = req.body as UnpublishCourseBodyType
+  const course = await courseService.unpublishCourse(courseId, reason)
+  res.json({ message: 'Đã gỡ khóa học khỏi trang công khai', data: course })
+}
+
+export const getAdminCourses = async (req: Request, res: Response) => {
+  const query = req.query as unknown as GetAdminCoursesQueryType
+  const result = await courseService.getAdminCourses(query)
+  res.json({ message: 'Lấy danh sách khóa học thành công', ...result })
+}
+
+export const getCourseStudents = async (req: Request, res: Response) => {
+  const { courseId } = req.params as unknown as CourseParamsType
+  const query = req.query as unknown as GetCourseStudentsQueryType
+  const result = await courseService.getCourseStudents(courseId, req.user!.userId, query)
+  res.json({ message: 'Lấy danh sách học viên thành công', ...result })
 }
