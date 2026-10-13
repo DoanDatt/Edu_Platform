@@ -1,0 +1,10 @@
+{
+  // Typecheck cả code lẫn test (vitest chỉ chạy test, không kiểm tra kiểu)
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["src", "tests"]
+}

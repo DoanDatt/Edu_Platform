@@ -3,14 +3,11 @@ import fs from 'fs'
 import path from 'path'
 import z from 'zod'
 
-config({
-  path: '.env',
-})
-
-// kiểm tra xem có file .env hay chưa
-if (!fs.existsSync(path.resolve('.env'))) {
-  console.log('Không tìm thấy file .env')
-  process.exit(1)
+// Có file .env thì đọc (máy dev). Không có thì dùng biến môi trường có sẵn (CI, Docker, server).
+// dotenv KHÔNG ghi đè biến đã có → test / CI đặt DATABASE_URL riêng thì vẫn được giữ.
+// Thiếu biến bắt buộc nào thì bước kiểm tra Zod bên dưới sẽ báo
+if (fs.existsSync(path.resolve('.env'))) {
+  config({ path: '.env', quiet: true })
 }
 
 const configSchema = z.object({
