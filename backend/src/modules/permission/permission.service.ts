@@ -22,7 +22,7 @@ export const getPermission = async ({ page, limit }: GetPermissionQueryType) => 
     totalItems,
     page,
     limit,
-    totalPage: Math.ceil(totalItems / limit),
+    totalPages: Math.ceil(totalItems / limit),
   }
 }
 
