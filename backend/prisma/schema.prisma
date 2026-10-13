@@ -52,12 +52,16 @@ model User {
 }
 
 model VerificationCode {
-  id    Int                  @id @default(autoincrement())
-  email String               @unique @db.VarChar(500)
-  code  String               @db.VarChar(50)
-  type  VerificationCodeType
+  id       Int                  @id @default(autoincrement())
+  email    String               @unique @db.VarChar(500)
+  // Lưu HASH của mã OTP (sha256, 64 ký tự), không lưu mã gốc: lộ DB cũng không dùng được mã
+  code     String               @db.VarChar(100)
+  type     VerificationCodeType
+  // Số lần nhập sai. Quá giới hạn thì mã bị hủy, chống đoán mò 6 chữ số
+  attempts Int                  @default(0)
 
   expiresAt DateTime
+  // Lúc gửi mã gần nhất (dùng để giới hạn: 60 giây mới được gửi lại)
   createdAt DateTime @default(now())
 
   @@index([email, code, type])

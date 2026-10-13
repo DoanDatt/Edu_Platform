@@ -34,3 +34,28 @@ export type RefreshTokenBodyType = z.infer<typeof RefreshTokenBodySchema>
 
 export const LogoutBodySchema = RefreshTokenBodySchema
 export type LogoutBodyType = z.infer<typeof LogoutBodySchema>
+
+// ----- Quên mật khẩu -----
+
+export const ForgotPasswordBodySchema = z
+  .object({
+    email: z.email('Email không hợp lệ'),
+  })
+  .strict()
+
+export type ForgotPasswordBodyType = z.infer<typeof ForgotPasswordBodySchema>
+
+export const ResetPasswordBodySchema = z
+  .object({
+    email: z.email('Email không hợp lệ'),
+    code: z.string().regex(/^\d{6}$/, 'Mã OTP gồm 6 chữ số'),
+    newPassword: z.string().min(8, 'Mật khẩu tối thiểu 8 kí tự').max(100),
+    confirmPassword: z.string(),
+  })
+  .strict()
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword'],
+  })
+
+export type ResetPasswordBodyType = z.infer<typeof ResetPasswordBodySchema>

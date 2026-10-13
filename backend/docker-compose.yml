@@ -12,5 +12,26 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  # Hàng đợi BullMQ (gửi email, job định kỳ) lưu trong Redis
+  redis:
+    image: redis:7-alpine
+    container_name: edu_redis
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis_data:/data
+
+  # Hộp thư giả cho môi trường dev: mọi email gửi qua SMTP cổng 1025 đều hiện ở http://localhost:8025
+  # (không gửi ra ngoài thật, không cần tài khoản email)
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: edu_mailpit
+    restart: unless-stopped
+    ports:
+      - '${MAILPIT_SMTP_PORT:-1025}:1025'
+      - '${MAILPIT_UI_PORT:-8025}:8025'
+
 volumes:
   postgres_data:
+  redis_data:

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "VerificationCode" ADD COLUMN     "attempts" INTEGER NOT NULL DEFAULT 0,
+ALTER COLUMN "code" SET DATA TYPE VARCHAR(100);

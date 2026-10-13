@@ -1,5 +1,12 @@
 import { Request, Response } from 'express'
-import { LoginBodyType, LogoutBodyType, RefreshTokenBodyType, RegisterBodyType } from './auth.schema'
+import {
+  ForgotPasswordBodyType,
+  LoginBodyType,
+  LogoutBodyType,
+  RefreshTokenBodyType,
+  RegisterBodyType,
+  ResetPasswordBodyType,
+} from './auth.schema'
 import * as authService from './auth.service'
 
 export const register = async (req: Request, res: Response) => {
@@ -36,4 +43,15 @@ export const logout = async (req: Request, res: Response) => {
   const { refreshToken } = req.body as LogoutBodyType
   await authService.logout(refreshToken)
   res.json({ message: 'Đăng xuất thành công' })
+}
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  await authService.forgotPassword(req.body as ForgotPasswordBodyType)
+  // Luôn cùng 1 câu trả lời, dù email có tồn tại hay không
+  res.json({ message: 'Nếu email đã đăng ký, mã OTP đã được gửi. Mã có hiệu lực trong 10 phút' })
+}
+
+export const resetPassword = async (req: Request, res: Response) => {
+  await authService.resetPassword(req.body as ResetPasswordBodyType)
+  res.json({ message: 'Đặt lại mật khẩu thành công, vui lòng đăng nhập lại' })
 }
