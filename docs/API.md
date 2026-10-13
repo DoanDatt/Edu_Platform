@@ -67,7 +67,7 @@ Giá tiền (`price`) là **VND, số nguyên**; `0` = miễn phí. Thời lư�
 ### Luồng token
 
 ```
-POST /auth/login ──> { accessToken (15 phút), refreshToken (7 ngày) }
+POST /auth/login (hoặc /auth/register) ──> { accessToken (15 phút), refreshToken (7 ngày) }
        │
        ├─ Mọi request cần đăng nhập: header  Authorization: Bearer <accessToken>
        │
@@ -83,8 +83,8 @@ POST /auth/login ──> { accessToken (15 phút), refreshToken (7 ngày) }
 
 | Method | Path | Body | Ghi chú |
 |---|---|---|---|
-| POST | `/auth/register` | `{ email, password, confirmPassword, name, phoneNumber }` | Tạo tài khoản **STUDENT**. 201 trả user (không có password). 409 nếu email đã dùng |
-| POST | `/auth/login` | `{ email, password }` | `data: { accessToken, refreshToken }`. 401 sai email/mật khẩu, 403 tài khoản bị khóa |
+| POST | `/auth/register` | `{ email, password, confirmPassword, name, phoneNumber }` | Tạo tài khoản **STUDENT** và đăng nhập luôn: 201 trả `data` giống hệt login. 409 nếu email đã dùng |
+| POST | `/auth/login` | `{ email, password }` | `data: { accessToken, refreshToken, account: { id, name, email, role } }`, `role` là chuỗi `ADMIN` / `INSTRUCTOR` / `STUDENT`. 401 sai email/mật khẩu, 403 tài khoản bị khóa |
 | GET | `/auth/me` | | 🔒 Thông tin user + `role: { id, name }` → dùng để biết là ADMIN / INSTRUCTOR / STUDENT |
 | POST | `/auth/refresh-token` | `{ refreshToken }` | `data: { accessToken, refreshToken }` (cặp mới) |
 | POST | `/auth/logout` | `{ refreshToken }` | Không cần access token (vẫn đăng xuất được khi access token đã hết hạn) |

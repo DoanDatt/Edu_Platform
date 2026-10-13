@@ -13,35 +13,6 @@ import {
 } from '../../utils/jwt'
 import { LoginBodyType, RegisterBodyType } from './auth.schema'
 
-export const register = async (body: RegisterBodyType) => {
-  const studentRole = await prisma.role.findFirstOrThrow({
-    where: { name: RoleName.Student },
-  })
-  try {
-    return await prisma.user.create({
-      data: {
-        email: body.email,
-        name: body.name,
-        phoneNumber: body.phoneNumber,
-        password: await hashPassword(body.password),
-        roleId: studentRole.id,
-        status: 'ACTIVE',
-      },
-      // Không bao giờ trả password ra ngoài
-      omit: {
-        password: true,
-        totpSecret: true,
-      },
-    })
-  } catch (error) {
-    // P2002 = vi phạm unique, ở đây là email đã tồn tại
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      throw new HttpError(409, 'Email đã được sử dụng')
-    }
-    throw error
-  }
-}
-
 // db: mặc định là prisma thường; truyền tx khi cần chạy trong transaction (xem refreshToken)
 const generateTokens = async ({ userId, roleName }: AccessTokenPayload, db: Prisma.TransactionClient = prisma) => {
   const accessToken = signAccessToken({ userId, roleName })
@@ -57,6 +28,39 @@ const generateTokens = async ({ userId, roleName }: AccessTokenPayload, db: Pris
     },
   })
   return { accessToken, refreshToken }
+}
+
+export const register = async (body: RegisterBodyType) => {
+  const studentRole = await prisma.role.findFirstOrThrow({
+    where: { name: RoleName.Student },
+  })
+  const hashedPassword = await hashPassword(body.password)
+  try {
+    // Tạo user + cấp token trong CÙNG 1 transaction:
+    // cấp token lỗi thì DB hoàn tác luôn việc tạo user, không để lại tài khoản "nửa vời"
+    return await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email: body.email,
+          name: body.name,
+          phoneNumber: body.phoneNumber,
+          password: hashedPassword,
+          roleId: studentRole.id,
+          status: 'ACTIVE',
+        },
+        select: { id: true, name: true, email: true },
+      })
+      // Đăng ký xong là đăng nhập luôn, trả về giống hệt login
+      const tokens = await generateTokens({ userId: user.id, roleName: studentRole.name }, tx)
+      return { ...tokens, account: { ...user, role: studentRole.name } }
+    })
+  } catch (error) {
+    // P2002 = vi phạm unique, ở đây là email đã tồn tại
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      throw new HttpError(409, 'Email đã được sử dụng')
+    }
+    throw error
+  }
 }
 
 export const login = async (body: LoginBodyType) => {
@@ -81,7 +85,14 @@ export const login = async (body: LoginBodyType) => {
   }
 
   // 4. Tạo access token + refresh token (refresh token được lưu DB)
-  return generateTokens({ userId: user.id, roleName: user.role.name })
+  const tokens = await generateTokens({ userId: user.id, roleName: user.role.name })
+
+  // 5. Kèm thông tin cơ bản để frontend hiển thị tên + điều hướng theo role ngay,
+  // role trả dạng chuỗi ('ADMIN' | 'INSTRUCTOR' | 'STUDENT'). Thông tin đầy đủ xem GET /auth/me
+  return {
+    ...tokens,
+    account: { id: user.id, name: user.name, email: user.email, role: user.role.name },
+  }
 }
 
 export const getMe = async (userId: number) => {
