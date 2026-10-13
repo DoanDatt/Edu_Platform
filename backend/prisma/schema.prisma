@@ -1,7 +1,9 @@
 generator client {
-  provider     = "prisma-client"
-  output       = "../src/generated/prisma"
-  moduleFormat = "cjs"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  moduleFormat    = "cjs"
+  // partialIndexes: cho phép @@unique(..., where: ...) = unique chỉ áp dụng cho dòng chưa xóa mềm
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
@@ -95,6 +97,10 @@ model Permission {
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  // Không có 2 permission ĐANG HOẠT ĐỘNG trùng method + path (dòng đã xóa mềm thì không tính).
+  // DB tự chặn → 2 request tạo cùng lúc cũng không lọt
+  @@unique([method, path], where: { deletedAt: null })
 }
 
 model Role {
@@ -113,6 +119,9 @@ model Role {
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  // Tên role (luôn IN HOA) không trùng trong các role đang hoạt động
+  @@unique([name], where: { deletedAt: null })
 }
 
 model Category {
@@ -129,6 +138,10 @@ model Category {
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  // Tên danh mục không trùng trong các danh mục đang hoạt động.
+  // Index phân biệt hoa thường; trùng kiểu "web" / "Web" vẫn do service chặn (so sánh insensitive)
+  @@unique([name], where: { deletedAt: null })
 }
 
 model Course {

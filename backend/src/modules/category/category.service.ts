@@ -1,5 +1,5 @@
 import prisma from '../../lib/prisma'
-import { HttpError } from '../../utils/error'
+import { HttpError, onUniqueViolation } from '../../utils/error'
 import { CreateCategoryBodyType, GetCategoriesQueryType, UpdateCategoryBodyType } from './category.schema'
 
 // API công khai -> chỉ trả các field cần hiển thị, không lộ createdId, deletedAt
@@ -57,23 +57,29 @@ const ensureNameNotDuplicate = async (name: string, excludeId?: number) => {
 
 export const createCategory = async (body: CreateCategoryBodyType, createdById: number) => {
   await ensureNameNotDuplicate(body.name)
-  return prisma.category.create({
-    data: {
-      ...body,
-      createdById,
-    },
-    select: categorySelect,
-  })
+  return onUniqueViolation(
+    prisma.category.create({
+      data: {
+        ...body,
+        createdById,
+      },
+      select: categorySelect,
+    }),
+    `Danh mục "${body.name}" đã tồn tại`,
+  )
 }
 
 export const updateCategory = async (id: number, body: UpdateCategoryBodyType, updatedById: number) => {
   await getCategoryById(id)
   await ensureNameNotDuplicate(body.name, id)
-  return prisma.category.update({
-    where: { id },
-    data: { ...body, updatedById },
-    select: categorySelect,
-  })
+  return onUniqueViolation(
+    prisma.category.update({
+      where: { id },
+      data: { ...body, updatedById },
+      select: categorySelect,
+    }),
+    `Danh mục "${body.name}" đã tồn tại`,
+  )
 }
 
 export const deleteCategory = async (id: number, deleteById: number) => {
