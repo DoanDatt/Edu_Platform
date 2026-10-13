@@ -13,8 +13,9 @@ import {
 } from '../../utils/jwt'
 import { LoginBodyType, RegisterBodyType } from './auth.schema'
 
-// db: mặc định là prisma thường; truyền tx khi cần chạy trong transaction (xem refreshToken)
-const generateTokens = async ({ userId, roleName }: AccessTokenPayload, db: Prisma.TransactionClient = prisma) => {
+// db: mặc định là prisma thường; truyền tx khi cần chạy trong transaction (xem refreshToken).
+// export để module profile cấp token mới sau khi đổi mật khẩu
+export const generateTokens = async ({ userId, roleName }: AccessTokenPayload, db: Prisma.TransactionClient = prisma) => {
   const accessToken = signAccessToken({ userId, roleName })
   const refreshToken = signRefreshToken({ userId })
 

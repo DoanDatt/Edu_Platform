@@ -64,3 +64,26 @@ export const RejectCourseBodySchema = z
   .strict()
 
 export type RejectCourseBodyType = z.infer<typeof RejectCourseBodySchema>
+
+// ----- Admin: tất cả khóa học -----
+
+// ?search=react&status=PUBLISHED&instructorId=3&categoryId=1&page=1&limit=10
+export const GetAdminCoursesQuerySchema = PaginationQuerySchema.extend({
+  search: z.string().trim().max(200).optional(),
+  status: z.enum(CourseStatus).optional(),
+  instructorId: z.coerce.number().int().positive().optional(),
+  categoryId: z.coerce.number().int().positive().optional(),
+}).strict()
+
+export type GetAdminCoursesQueryType = z.infer<typeof GetAdminCoursesQuerySchema>
+
+// Gỡ khóa đã xuất bản: bắt buộc ghi lý do để giảng viên biết mà sửa
+export const UnpublishCourseBodySchema = RejectCourseBodySchema
+
+export type UnpublishCourseBodyType = z.infer<typeof UnpublishCourseBodySchema>
+
+// ----- Giảng viên: học viên của khóa mình -----
+
+export const GetCourseStudentsQuerySchema = PaginationQuerySchema
+
+export type GetCourseStudentsQueryType = z.infer<typeof GetCourseStudentsQuerySchema>

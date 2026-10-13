@@ -11,6 +11,9 @@ import sectionRouter from './modules/section/section.route'
 import lectureRouter from './modules/lecture/lecture.route'
 import enrollmentRouter from './modules/enrollment/enrollment.route'
 import reviewRouter from './modules/review/review.route'
+import userRouter from './modules/user/user.route'
+import statsRouter from './modules/stats/stats.route'
+import profileRouter from './modules/profile/profile.route'
 
 // Các router có route cần kiểm tra quyền theo bảng Permission.
 // Script sync-permissions đọc danh sách này để sinh permission → thêm module mới thì thêm vào đây
@@ -23,6 +26,8 @@ export const protectedRouters: { prefix: string; router: Router }[] = [
   { prefix: '/lectures', router: lectureRouter },
   { prefix: '/enrollments', router: enrollmentRouter },
   { prefix: '/reviews', router: reviewRouter },
+  { prefix: '/users', router: userRouter },
+  { prefix: '/stats', router: statsRouter },
 ]
 
 const app = express()
@@ -37,6 +42,8 @@ app.get('/', (req, res) => {
   res.json({ message: 'Hello World!' })
 })
 app.use('/auth', authRouter)
+// Hồ sơ của chính mình: chỉ cần đăng nhập, không cần permission
+app.use('/profile', profileRouter)
 for (const { prefix, router } of protectedRouters) {
   app.use(prefix, router)
 }

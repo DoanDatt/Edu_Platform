@@ -5,10 +5,13 @@ import { validateBody, validateParams, validateQuery } from '../../middleware/va
 import {
   CourseParamsSchema,
   CreateCourseBodySchema,
+  GetAdminCoursesQuerySchema,
+  GetCourseStudentsQuerySchema,
   GetCoursesQuerySchema,
   GetMyCoursesQuerySchema,
   GetPendingCoursesQuerySchema,
   RejectCourseBodySchema,
+  UnpublishCourseBodySchema,
   UpdateCourseBodySchema,
 } from './course.schema'
 
@@ -32,6 +35,24 @@ courseRouter.get(
   requirePermission,
   validateParams(CourseParamsSchema),
   courseController.getMyCourseById,
+)
+// Học viên của khóa mình + tiến độ từng người
+courseRouter.get(
+  '/mine/:courseId/students',
+  requireAuth,
+  requirePermission,
+  validateParams(CourseParamsSchema),
+  validateQuery(GetCourseStudentsQuerySchema),
+  courseController.getCourseStudents,
+)
+
+// ----- Admin: tất cả khóa học (mọi trạng thái) -----
+courseRouter.get(
+  '/admin',
+  requireAuth,
+  requirePermission,
+  validateQuery(GetAdminCoursesQuerySchema),
+  courseController.getAdminCourses,
 )
 
 // ----- Admin: danh sách chờ duyệt (route cố định → cũng phải đứng trước "/:courseId") -----
@@ -106,6 +127,15 @@ courseRouter.post(
   validateParams(CourseParamsSchema),
   validateBody(RejectCourseBodySchema),
   courseController.rejectCourse,
+)
+// Admin gỡ khóa đang công khai: PUBLISHED → REJECTED (kèm lý do)
+courseRouter.post(
+  '/:courseId/unpublish',
+  requireAuth,
+  requirePermission,
+  validateParams(CourseParamsSchema),
+  validateBody(UnpublishCourseBodySchema),
+  courseController.unpublishCourse,
 )
 
 export default courseRouter

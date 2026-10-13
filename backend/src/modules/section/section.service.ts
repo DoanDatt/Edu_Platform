@@ -1,7 +1,8 @@
 import prisma from '../../lib/prisma'
 import { HttpError } from '../../utils/error'
-import { getEditableOwnCourse } from '../course/course.service'
-import { CreateSectionBodyType, UpdateSectionBodyType } from './section.schema'
+import { hasExactlyIds } from '../../utils/ids'
+import { ensurePublishedCourseKeepsLectures, getEditableOwnCourse } from '../course/course.service'
+import { CreateSectionBodyType, ReorderSectionsBodyType, UpdateSectionBodyType } from './section.schema'
 
 // Chương còn tồn tại + khóa học là của mình và còn sửa được.
 // Dùng cho sửa/xóa chương và tạo bài giảng trong chương
@@ -37,8 +38,33 @@ export const updateSection = async (sectionId: number, body: UpdateSectionBodyTy
   })
 }
 
+// Đổi thứ tự TẤT CẢ chương của 1 khóa trong 1 lần (frontend kéo thả xong gửi lên)
+export const reorderSections = async ({ courseId, sectionIds }: ReorderSectionsBodyType, instructorId: number) => {
+  await getEditableOwnCourse(courseId, instructorId)
+  const sections = await prisma.section.findMany({
+    where: { courseId, deletedAt: null },
+    select: { id: true },
+  })
+  const currentIds = sections.map((s) => s.id)
+  if (!hasExactlyIds(sectionIds, currentIds)) {
+    throw new HttpError(422, 'Dữ liệu không hợp lệ', [
+      { field: 'sectionIds', message: 'Phải gửi đúng và đủ tất cả chương hiện có của khóa học' },
+    ])
+  }
+  // Vị trí mới = thứ tự trong mảng. Nhiều lệnh update → gom vào 1 transaction
+  await prisma.$transaction(
+    sectionIds.map((id, index) => prisma.section.update({ where: { id }, data: { position: index } })),
+  )
+  return prisma.section.findMany({
+    where: { courseId, deletedAt: null },
+    orderBy: [{ position: 'asc' }, { id: 'asc' }],
+  })
+}
+
 export const deleteSection = async (sectionId: number, instructorId: number) => {
-  await getEditableOwnSection(sectionId, instructorId)
+  const section = await getEditableOwnSection(sectionId, instructorId)
+  // Khóa đã xuất bản: xóa chương này mà khóa hết sạch bài thì không cho
+  await ensurePublishedCourseKeepsLectures(section.courseId, { sectionId })
   const now = new Date()
   // Xóa chương thì xóa luôn các bài giảng bên trong.
   // $transaction: 2 lệnh cùng thành công hoặc cùng thất bại

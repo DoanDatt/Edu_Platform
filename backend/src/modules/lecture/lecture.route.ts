@@ -3,7 +3,12 @@ import * as lectureController from './lecture.controller'
 import * as enrollmentController from '../enrollment/enrollment.controller'
 import { requireAuth, requirePermission } from '../../middleware/auth.middleware'
 import { validateBody, validateParams } from '../../middleware/validate.middleware'
-import { CreateLectureBodySchema, LectureParamsSchema, UpdateLectureBodySchema } from './lecture.schema'
+import {
+  CreateLectureBodySchema,
+  LectureParamsSchema,
+  ReorderLecturesBodySchema,
+  UpdateLectureBodySchema,
+} from './lecture.schema'
 
 const lectureRouter = Router()
 
@@ -23,6 +28,14 @@ lectureRouter.post(
   requirePermission,
   validateBody(CreateLectureBodySchema),
   lectureController.createLecture,
+)
+// Route cố định "/reorder" phải đứng TRƯỚC "/:lectureId" (cùng method PUT)
+lectureRouter.put(
+  '/reorder',
+  requireAuth,
+  requirePermission,
+  validateBody(ReorderLecturesBodySchema),
+  lectureController.reorderLectures,
 )
 lectureRouter.put(
   '/:lectureId',

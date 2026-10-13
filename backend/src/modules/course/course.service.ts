@@ -6,6 +6,8 @@ import { isEnrolled } from '../enrollment/enrollment.service'
 import { getRatingByCourse, getRatingSummary } from '../review/review.service'
 import {
   CreateCourseBodyType,
+  GetAdminCoursesQueryType,
+  GetCourseStudentsQueryType,
   GetCoursesQueryType,
   GetMyCoursesQueryType,
   GetPendingCoursesQueryType,
@@ -31,10 +33,15 @@ const curriculumInclude = {
   },
 } satisfies Prisma.CourseInclude
 
-// chỉ sửa/xóa được khi khóa học còn ở tay giảng viên
-// pending: đang chờ admin duyệt -> khóa lại, tránh sửa giữa chừng
-// published: đã có học viên thấy -> không cho sửa/xóa tự do
-const EDITABLE_STATUSES: CourseStatus[] = [CourseStatus.DRAFT, CourseStatus.REJECTED]
+// Khóa còn "ở tay giảng viên" (chưa từng / không còn công khai):
+// được XÓA khóa và được GỬI DUYỆT
+const DRAFT_STATUSES: CourseStatus[] = [CourseStatus.DRAFT, CourseStatus.REJECTED]
+
+// Được SỬA nội dung (thông tin khóa, chương, bài giảng):
+//  - DRAFT / REJECTED: đang soạn
+//  - PUBLISHED: sửa lỗi, thêm bài mới cho học viên đang học (có hiệu lực ngay, không duyệt lại)
+//  - PENDING: KHÔNG được sửa, để admin duyệt đúng bản đã gửi
+const EDITABLE_STATUSES: CourseStatus[] = [...DRAFT_STATUSES, CourseStatus.PUBLISHED]
 
 export const getMyCourses = async (instructorId: number, { page, limit, status }: GetMyCoursesQueryType) => {
   // status không gửi -> undefined -> prisma bỏ qua điều kiện này (lấy mọi trạng thái)
@@ -72,14 +79,27 @@ const getOwnCourse = async (courseId: number, instructorId: number) => {
   return course
 }
 
-// Khóa của mình + còn ở trạng thái được sửa (DRAFT / REJECTED).
-// Dùng cho sửa/xóa khóa học và mọi thao tác trên chương, bài giảng
+// Khóa của mình + đang ở trạng thái được sửa (DRAFT / REJECTED / PUBLISHED).
+// Dùng cho sửa khóa học và mọi thao tác trên chương, bài giảng
 export const getEditableOwnCourse = async (courseId: number, instructorId: number) => {
   const course = await getOwnCourse(courseId, instructorId)
   if (!EDITABLE_STATUSES.includes(course.status)) {
     throw new HttpError(409, `Không thể chỉnh sửa khóa học đang ở trạng thái ${course.status}`)
   }
   return course
+}
+
+// Khóa đã xuất bản (đang có học viên học) phải luôn còn ít nhất 1 bài giảng.
+// Gọi TRƯỚC khi xóa chương / bài: `removing` mô tả các bài sắp bị xóa
+export const ensurePublishedCourseKeepsLectures = async (courseId: number, removing: Prisma.LectureWhereInput) => {
+  const course = await prisma.course.findUniqueOrThrow({ where: { id: courseId }, select: { status: true } })
+  if (course.status !== CourseStatus.PUBLISHED) return
+  const remaining = await prisma.lecture.count({
+    where: { deletedAt: null, section: { courseId, deletedAt: null }, NOT: removing },
+  })
+  if (remaining === 0) {
+    throw new HttpError(409, 'Khóa học đã xuất bản phải còn ít nhất 1 bài giảng')
+  }
 }
 
 // Chi tiết khóa của mình, kèm mục lục đầy đủ để giảng viên soạn bài
@@ -125,7 +145,11 @@ export const updateCourse = async (courseId: number, body: UpdateCourseBodyType,
 }
 
 export const deleteCourse = async (courseId: number, instructorId: number) => {
-  await getEditableOwnCourse(courseId, instructorId)
+  const course = await getOwnCourse(courseId, instructorId)
+  // Khóa đã xuất bản có học viên → không cho xóa (muốn ẩn thì nhờ admin gỡ)
+  if (!DRAFT_STATUSES.includes(course.status)) {
+    throw new HttpError(409, `Không thể xóa khóa học đang ở trạng thái ${course.status}`)
+  }
   await prisma.course.update({
     where: { id: courseId },
     data: { deletedAt: new Date() },
@@ -290,7 +314,7 @@ export const submitCourse = async (courseId: number, instructorId: number) => {
   if (lectureCount === 0) {
     throw new HttpError(409, 'Khóa học cần có ít nhất 1 bài giảng trước khi gửi duyệt')
   }
-  return changeStatus(courseId, EDITABLE_STATUSES, {
+  return changeStatus(courseId, DRAFT_STATUSES, {
     status: CourseStatus.PENDING,
     rejectReason: null, // gửi lại sau khi bị từ chối → xóa lý do cũ
   })
@@ -344,3 +368,95 @@ export const rejectCourse = (courseId: number, reason: string) =>
     status: CourseStatus.REJECTED,
     rejectReason: reason,
   })
+
+// Admin gỡ khóa đang công khai (vi phạm, nội dung sai...): PUBLISHED → REJECTED kèm lý do.
+// Khóa biến mất khỏi trang công khai, học viên đã ghi danh tạm không vào học được.
+// Giảng viên sửa xong gửi duyệt lại như bình thường
+export const unpublishCourse = (courseId: number, reason: string) =>
+  changeStatus(courseId, [CourseStatus.PUBLISHED], {
+    status: CourseStatus.REJECTED,
+    rejectReason: reason,
+  })
+
+// ===== Admin: tất cả khóa học (mọi trạng thái, mọi giảng viên) =====
+
+export const getAdminCourses = async ({
+  page,
+  limit,
+  search,
+  status,
+  instructorId,
+  categoryId,
+}: GetAdminCoursesQueryType) => {
+  const where: Prisma.CourseWhereInput = {
+    deletedAt: null,
+    status,
+    instructorId,
+    categoryId,
+    OR: search ? [{ title: { contains: search, mode: 'insensitive' } }] : undefined,
+  }
+  const [totalItems, courses] = await Promise.all([
+    prisma.course.count({ where }),
+    prisma.course.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        ...courseInclude,
+        instructor: { select: { id: true, name: true, email: true } },
+        _count: { select: { enrollments: true } },
+      },
+    }),
+  ])
+  const data = courses.map(({ _count, ...course }) => ({ ...course, studentCount: _count.enrollments }))
+  return { data, totalItems, page, limit, totalPages: Math.ceil(totalItems / limit) }
+}
+
+// ===== Giảng viên: học viên của khóa mình + tiến độ từng người =====
+
+export const getCourseStudents = async (
+  courseId: number,
+  instructorId: number,
+  { page, limit }: GetCourseStudentsQueryType,
+) => {
+  await getOwnCourse(courseId, instructorId) // 404 / 403
+
+  const where = { courseId }
+  const [totalItems, enrollments, totalLectures] = await Promise.all([
+    prisma.enrollment.count({ where }),
+    prisma.enrollment.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: { user: { select: { id: true, name: true, email: true, avatar: true } } },
+    }),
+    prisma.lecture.count({ where: { deletedAt: null, section: { courseId, deletedAt: null } } }),
+  ])
+
+  // Số bài đã xong của từng học viên trong trang này: 1 query GROUP BY userId
+  const completedByUser = await prisma.lectureProgress.groupBy({
+    by: ['userId'],
+    where: {
+      userId: { in: enrollments.map((e) => e.userId) },
+      lecture: { deletedAt: null, section: { courseId, deletedAt: null } },
+    },
+    _count: { _all: true },
+  })
+  const completedMap = new Map(completedByUser.map((g) => [g.userId, g._count._all]))
+
+  const data = enrollments.map((e) => {
+    const completedLectures = completedMap.get(e.userId) ?? 0
+    return {
+      enrolledAt: e.createdAt,
+      user: e.user,
+      progress: {
+        totalLectures,
+        completedLectures,
+        percent: totalLectures === 0 ? 0 : Math.round((completedLectures * 100) / totalLectures),
+      },
+    }
+  })
+  return { data, totalItems, page, limit, totalPages: Math.ceil(totalItems / limit) }
+}

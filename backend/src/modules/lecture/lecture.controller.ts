@@ -1,6 +1,16 @@
 import { Request, Response } from 'express'
 import * as lectureService from './lecture.service'
-import { CreateLectureBodyType, LectureParamsType, UpdateLectureBodyType } from './lecture.schema'
+import {
+  CreateLectureBodyType,
+  LectureParamsType,
+  ReorderLecturesBodyType,
+  UpdateLectureBodyType,
+} from './lecture.schema'
+
+export const reorderLectures = async (req: Request, res: Response) => {
+  const lectures = await lectureService.reorderLectures(req.body as ReorderLecturesBodyType, req.user!.userId)
+  res.json({ message: 'Đổi thứ tự bài giảng thành công', data: lectures })
+}
 
 export const getLecture = async (req: Request, res: Response) => {
   const { lectureId } = req.params as unknown as LectureParamsType
