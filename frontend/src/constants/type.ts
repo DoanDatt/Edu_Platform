@@ -29,6 +29,14 @@ export const CourseLevel = {
   ALL_LEVELS: 'ALL_LEVELS'
 } as const
 
+// Nhãn tiếng Việt để hiển thị
+export const CourseLevelLabels: Record<keyof typeof CourseLevel, string> = {
+  BEGINNER: 'Cơ bản',
+  INTERMEDIATE: 'Trung cấp',
+  ADVANCED: 'Nâng cao',
+  ALL_LEVELS: 'Mọi trình độ'
+}
+
 export const CourseStatus = {
   DRAFT: 'DRAFT',
   PENDING: 'PENDING',

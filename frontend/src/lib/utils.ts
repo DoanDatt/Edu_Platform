@@ -14,6 +14,18 @@ export const normalizePath = (path: string) => {
   return path.startsWith('/') ? path.slice(1) : path
 }
 
+// Object → chuỗi query, BỎ QUA giá trị undefined / null / '' (không gửi = không lọc)
+// { search: 'react', level: undefined, page: 2 } → '?search=react&page=2'
+// Không có tham số nào → '' (không thêm dấu ?)
+export const toQueryString = (query?: Record<string, string | number | boolean | undefined | null>) => {
+  if (!query) return ''
+  const params = new URLSearchParams()
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') params.set(key, String(value))
+  })
+  const result = params.toString()
+  return result ? `?${result}` : ''
+}
 
 export const handleErrorApi = ({
   error,

@@ -2,6 +2,7 @@ import z from 'zod'
 import { CourseLevel, CourseStatus } from '@/constants/type'
 import { CategorySchema } from './category.schema'
 import { PaginationQuery, PaginationRes } from './common.schema'
+import { ProgressSchema } from './enrollment.schema'
 import { RatingSchema, RatingSummarySchema } from './review.schema'
 import { PublicSectionSchema, SectionWithLecturesSchema } from './section.schema'
 
@@ -124,7 +125,38 @@ export type CourseResType = z.infer<typeof CourseRes>
 
 // DELETE /courses/:id → dùng MessageRes trong common.schema
 
+// GET /courses/mine/:id/students?page&limit: học viên của khóa mình + tiến độ
+export const GetCourseStudentsQuery = PaginationQuery
+export type GetCourseStudentsQueryType = z.infer<typeof GetCourseStudentsQuery>
+
+export const CourseStudentListRes = PaginationRes.extend({
+  data: z.array(
+    z.object({
+      enrolledAt: z.string(),
+      user: z.object({ id: z.number(), name: z.string(), email: z.string(), avatar: z.string().nullable() }),
+      progress: ProgressSchema
+    })
+  ),
+  message: z.string()
+})
+export type CourseStudentListResType = z.infer<typeof CourseStudentListRes>
+
 // ===== Admin duyệt =====
+
+// GET /courses/admin?search&status&instructorId&categoryId&page&limit: mọi khóa, mọi trạng thái
+export const GetAdminCoursesQuery = PaginationQuery.extend({
+  search: z.string().trim().max(200).optional(),
+  status: z.enum(CourseStatus).optional(),
+  instructorId: z.coerce.number().int().positive().optional(),
+  categoryId: z.coerce.number().int().positive().optional()
+}).strict()
+export type GetAdminCoursesQueryType = z.infer<typeof GetAdminCoursesQuery>
+
+export const AdminCourseListRes = PaginationRes.extend({
+  data: z.array(CourseSchema.extend({ instructor: InstructorContact, studentCount: z.number() })),
+  message: z.string()
+})
+export type AdminCourseListResType = z.infer<typeof AdminCourseListRes>
 
 // GET /courses/pending?page&limit
 export const GetPendingCoursesQuery = PaginationQuery
@@ -153,3 +185,7 @@ export const RejectCourseBody = z
   })
   .strict()
 export type RejectCourseBodyType = z.infer<typeof RejectCourseBody>
+
+// POST /courses/:id/unpublish: gỡ khóa đã xuất bản, cũng bắt buộc ghi lý do
+export const UnpublishCourseBody = RejectCourseBody
+export type UnpublishCourseBodyType = z.infer<typeof UnpublishCourseBody>
