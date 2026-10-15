@@ -1,8 +1,7 @@
 export const TokenType = {
   ForgotPasswordToken: 'ForgotPasswordToken',
   AccessToken: 'AccessToken',
-  RefreshToken: 'RefreshToken',
-  TableToken: 'TableToken'
+  RefreshToken: 'RefreshToken'
 } as const
 
 export const RoleValues = {
@@ -10,6 +9,9 @@ export const RoleValues = {
   Instructor: 'INSTRUCTOR',
   Student: 'STUDENT'
 } as const
+
+// 'ADMIN' | 'INSTRUCTOR' | 'STUDENT'
+export type RoleType = (typeof RoleValues)[keyof typeof RoleValues]
 
 // Các enum dưới đây khớp với enum trong backend/prisma/schema.prisma,
 // backend thêm giá trị mới thì nhớ thêm ở đây
