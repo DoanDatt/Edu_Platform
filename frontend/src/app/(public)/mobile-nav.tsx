@@ -4,7 +4,7 @@ import Logo from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Menu } from 'lucide-react'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import NavItems from './nav-items'
 
 // Menu trượt từ phải, chỉ hiện trên màn hình nhỏ (md:hidden)
@@ -33,7 +33,9 @@ export default function MobileNav() {
             if ((e.target as HTMLElement).closest('a')) setOpen(false)
           }}
         >
-          <NavItems className='rounded-md px-3 py-2 text-base transition-colors hover:bg-accent hover:text-foreground' />
+          <Suspense>
+            <NavItems className='rounded-md px-3 py-2 text-base transition-colors hover:bg-accent hover:text-foreground' />
+          </Suspense>
         </nav>
       </SheetContent>
     </Sheet>

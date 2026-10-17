@@ -57,14 +57,14 @@ Trang cần SEO hoặc hiện ngay khi mở (danh sách, chi tiết khóa học)
 - [x] `authApiRequest.logout` / `sLogout`, `useLogoutMutation`
 - [x] Cài `dropdown-menu`; biến `AccountBadge` thành menu: Hồ sơ, Về trang chủ / Vào trang quản trị, **Đăng xuất**
 - [x] Header công khai: khi đã đăng nhập thì hiện menu tài khoản thay cho "Đăng nhập / Đăng ký"
-- [ ] Trang `/logout` (cho trường hợp Server Component gặp 401)
+- [x] Trang `/logout` (cho trường hợp Server Component gặp 401)
 
 ### Giữ đăng nhập (refresh token)
-- [ ] Route Handler `app/api/auth/refresh-token/route.ts`
-- [ ] `authApiRequest.refreshToken` có **chống gọi trùng** (một promise dùng chung)
-- [ ] `checkAndRefreshToken` trong `lib/utils.ts`, component `RefreshToken` đặt trong `AppProvider`
-- [ ] Trang `/refresh-token?redirect=...`
-- [ ] `proxy.ts`: `isAuth` theo cookie `refreshToken`; mất access token thì chuyển sang `/refresh-token`
+- [x] Route Handler `app/api/auth/refresh-token/route.ts`
+- [x] `authApiRequest.refreshToken` có **chống gọi trùng** (một promise dùng chung)
+- [x] `checkAndRefreshToken` trong `lib/utils.ts`, component `RefreshToken` đặt trong `AppProvider`
+- [x] Trang `/refresh-token?redirect=...`
+- [x] `proxy.ts`: `isAuth` theo cookie `refreshToken`; mất access token thì chuyển sang `/refresh-token`
 
 ### Quên mật khẩu
 - [ ] Schema `ForgotPasswordBody`, `ResetPasswordBody` (copy từ `backend/.../auth.schema.ts`)

@@ -2,6 +2,7 @@ import AccountMenu from '@/components/account-menu'
 import DarkModeToggle from '@/components/dark-mode-toggle'
 import Logo from '@/components/logo'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import MobileNav from './mobile-nav'
 import NavItems from './nav-items'
 
@@ -15,7 +16,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <Logo />
           {/* Màn hình từ md (768px) trở lên: menu nằm ngang */}
           <nav className='hidden items-center gap-6 text-sm md:flex'>
-            <NavItems className='transition-colors hover:text-foreground' />
+            {/* NavItems dùng usePathname(): ở route động (/courses/[slug]) pathname chỉ biết lúc chạy
+                → phải bọc Suspense, không thì Next báo lỗi blocking-prerender */}
+            <Suspense>
+              <NavItems className='transition-colors hover:text-foreground' />
+            </Suspense>
           </nav>
           <div className='ml-auto flex items-center gap-2'>
             <DarkModeToggle />

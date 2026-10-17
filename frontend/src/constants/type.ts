@@ -44,13 +44,3 @@ export const CourseStatus = {
   REJECTED: 'REJECTED'
 } as const
 
-// Method của permission (trang quản trị phân quyền)
-export const HTTPMethod = {
-  GET: 'GET',
-  POST: 'POST',
-  PUT: 'PUT',
-  DELETE: 'DELETE',
-  PATCH: 'PATCH',
-  OPTIONS: 'OPTIONS',
-  HEAD: 'HEAD'
-} as const

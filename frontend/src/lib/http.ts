@@ -47,13 +47,17 @@ export class EntityError extends HttpError {
 // mà ném HttpError bình thường để form hiện "Email hoặc mật khẩu không đúng"
 // Logout cũng vậy: refresh token đã bị thu hồi từ trước (đổi mật khẩu ở máy khác...) thì
 // backend trả 401; không được xử lý như hết phiên, nếu không logout sẽ lại gọi logout
+// Refresh token cũng vậy: lỗi 401 phải được NÉM RA để checkAndRefreshToken tự xử lý
+// (dừng interval, setRole(), về /login), không để http.ts tự logout + tải lại trang giữa chừng
 const AUTH_REQUEST_PATHS = [
   'auth/login',
   'auth/register',
   'auth/logout',
+  'auth/refresh-token',
   'api/auth/login',
   'api/auth/register',
-  'api/auth/logout'
+  'api/auth/logout',
+  'api/auth/refresh-token'
 ]
 const isAuthRequest = (url: string) => AUTH_REQUEST_PATHS.includes(normalizePath(url))
 
