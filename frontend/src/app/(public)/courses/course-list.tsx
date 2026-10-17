@@ -14,11 +14,18 @@ const first = (value: string | string[] | undefined) => (Array.isArray(value) ? 
 export default async function CourseList({ searchParams }: { searchParams: Promise<SearchParams> }) {
   // raw.page có thể là: undefined | '2' | 'abc' | ['1', '2'] (khi URL là ?page=1&page=2)
   const raw = await searchParams
-  const parsed = GetCoursesQuery.safeParse({ page: first(raw.page) })
-  const page = parsed.success ? parsed.data.page : 1
+  const parsed = GetCoursesQuery.safeParse({
+    search: first(raw.search),
+    page: first(raw.page),
+    categoryId: first(raw.categoryId),
+    level: first(raw.level),
+    price: first(raw.price),
+    sort: first(raw.sort)
+  })
+  const query = parsed.success ? parsed.data : undefined
   let result
   try {
-    result = (await courseApiRequest.list({ page, limit: PAGE_SIZE })).payload
+    result = (await courseApiRequest.list({ ...query, limit: PAGE_SIZE })).payload
   } catch {
     return (
       <p className='rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive'>
