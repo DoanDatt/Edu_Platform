@@ -24,23 +24,7 @@ export const UserStatus = {
 
 export const CourseLevel = {
   BEGINNER: 'BEGINNER',
-  INTERMEDIATE: 'INTERMEDIATE',
+  ALL_LEVELS: 'ALL_LEVELS',
   ADVANCED: 'ADVANCED',
-  ALL_LEVELS: 'ALL_LEVELS'
+  INTERMEDIATE: 'INTERMEDIATE'
 } as const
-
-// Nhãn tiếng Việt để hiển thị
-export const CourseLevelLabels: Record<keyof typeof CourseLevel, string> = {
-  BEGINNER: 'Cơ bản',
-  INTERMEDIATE: 'Trung cấp',
-  ADVANCED: 'Nâng cao',
-  ALL_LEVELS: 'Mọi trình độ'
-}
-
-export const CourseStatus = {
-  DRAFT: 'DRAFT',
-  PENDING: 'PENDING',
-  PUBLISHED: 'PUBLISHED',
-  REJECTED: 'REJECTED'
-} as const
-
