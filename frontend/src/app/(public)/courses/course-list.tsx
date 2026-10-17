@@ -63,7 +63,7 @@ export default async function CourseList({ searchParams }: { searchParams: Promi
         ))}
       </div>
       {/* ===== Phân trang (chưa hoạt động): đang ở trang 1 / 2 ===== */}
-      <CoursePagination page={result.page} totalPages={result.totalPages} />
+      <CoursePagination page={result.page} totalPages={result.totalPages} searchParams={raw} />
     </div>
   )
 }
