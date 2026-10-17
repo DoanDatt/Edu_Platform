@@ -83,7 +83,7 @@ Kiểm tra:
 | `npm run lint` | oxlint (`--type-aware`). Nếu `tsgolint.exe` không chạy được thì dùng `npx oxlint src tests` |
 | `npm run format` | Prettier |
 | `npm run seed` | Tạo role + admin (chỉ chạy được khi DB chưa có role) |
-| `npm run seed:demo` | Dữ liệu mẫu (bỏ qua nếu đã có) |
+| `npm run seed:demo` | Dữ liệu mẫu (chạy lại được: chỉ tạo khóa / tài khoản chưa có) |
 | `npm run sync-permissions` | Đồng bộ bảng Permission với route. **Thêm `-- --dry` để xem trước** |
 | `npx prisma migrate dev --name <tên>` | Sau khi sửa `schema.prisma` |
 | `npx prisma studio` | Xem / sửa dữ liệu bằng giao diện web |
