@@ -5,6 +5,7 @@ import { EntityError } from './http'
 import { toast } from 'sonner'
 import { UseFormSetError } from 'react-hook-form'
 import { RoleType } from '@/constants/type'
+import authApiRequest from '@/apiRequests/auth'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -59,6 +60,9 @@ export const getAccessTokenFromLocalStorage = () => (isBrowser ? localStorage.ge
 
 export const getRefreshTokenFromLocalStorage = () => (isBrowser ? localStorage.getItem('refreshToken') : null)
 
+export const setAccessTokenToLocalStorage = (value: string) => isBrowser && localStorage.setItem('accessToken', value)
+export const setRefreshTokenToLocalStorage = (value: string) => isBrowser && localStorage.setItem('refreshToken', value)
+
 export const removeTokensFromLocalStorage = () => {
   if (!isBrowser) return
   localStorage.removeItem('accessToken')
@@ -75,12 +79,60 @@ export type AccessTokenPayload = {
   jti: string // id riêng của token, để 2 token tạo cùng 1 giây vẫn khác nhau
 }
 
-// Đọc phần payload của JWT: header.PAYLOAD.signature
-// KHÔNG kiểm tra chữ ký, chỉ dùng để hiển thị giao diện (ẩn/hiện menu...).
+// Nội dung bên trong refresh token: KHÔNG có roleName (role đọc từ access token)
+export type RefreshTokenPayload = {
+  userId: number
+  iat: number
+  exp: number
+  jti: string
+}
+
+// Đọc phần payload của JWT bất kỳ: header.PAYLOAD.signature
+// Dùng atob có sẵn của trình duyệt, KHÔNG dùng thư viện jsonwebtoken (viết cho Node.js / server).
+// KHÔNG kiểm tra chữ ký, chỉ dùng để hiển thị / hẹn giờ làm mới token.
 // Kiểm tra quyền thật sự là việc của backend
-export const decodeAccessToken = (token: string) => {
+// <T>: kiểu của payload, người gọi tự chọn (AccessTokenPayload hoặc RefreshTokenPayload)
+export const decodeToken = <T>(token: string) => {
   const payload = token.split('.')[1]
   // JWT dùng base64url (- và _), atob cần base64 thường (+ và /)
   const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
-  return JSON.parse(json) as AccessTokenPayload
+  return JSON.parse(json) as T
+}
+
+// Giữ tên cũ cho các file đang dùng (app-provider.tsx...)
+export const decodeAccessToken = (token: string) => decodeToken<AccessTokenPayload>(token)
+
+// force: true → làm mới NGAY, không cần đợi access token còn dưới 1/3 thời gian sống.
+// Trang /refresh-token dùng: cookie accessToken đã mất (proxy chuyển tới) nhưng access token
+// trong localStorage có thể vẫn còn hạn → nếu không ép thì hàm không làm gì, trang bị kẹt
+export const checkAndRefreshToken = async (params?: {
+  onError?: () => void
+  onSuccess?: () => void
+  force?: boolean
+}) => {
+  const accessToken = getAccessTokenFromLocalStorage()
+  const refreshToken = getRefreshTokenFromLocalStorage()
+  if (!accessToken || !refreshToken) return
+  const decodedAccessToken = decodeAccessToken(accessToken)
+  const decodedRefreshToken = decodeToken<RefreshTokenPayload>(refreshToken)
+
+  const now = Math.round(new Date().getTime() / 1000)
+
+  if (decodedRefreshToken.exp <= now) {
+    removeTokensFromLocalStorage()
+    params?.onError?.()
+    return
+  }
+
+  // Access token sống 15 phút → còn dưới 5 phút (1/3) thì làm mới
+  if (params?.force || decodedAccessToken.exp - now < (decodedAccessToken.exp - decodedAccessToken.iat) / 3) {
+    try {
+      const res = await authApiRequest.refreshToken()
+      setAccessTokenToLocalStorage(res.payload.data.accessToken)
+      setRefreshTokenToLocalStorage(res.payload.data.refreshToken)
+      params?.onSuccess?.()
+    } catch {
+      params?.onError?.()
+    }
+  }
 }

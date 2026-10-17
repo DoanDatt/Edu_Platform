@@ -32,12 +32,15 @@ const getRoleFromAccessToken = (accessToken: string): RoleType | undefined => {
 }
 
 export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl
-  // Cookie accessToken do Route Handler /api/auth/login (register) đặt, tự hết hạn sau 15 phút
+  const { pathname, search } = request.nextUrl
+  // 2 cookie do Route Handler /api/auth/login, register, refresh-token đặt, mỗi cookie tự mất khi token hết hạn:
+  //   accessToken: 15 phút · refreshToken: 7 ngày
   const accessToken = request.cookies.get('accessToken')?.value
-  const isAuth = Boolean(accessToken)
+  const refreshToken = request.cookies.get('refreshToken')?.value
+  // Còn refresh token = phiên đăng nhập còn (access token hết hạn thì làm mới được)
+  const isAuth = Boolean(refreshToken)
 
-  // 1. Chưa đăng nhập mà vào trang riêng → về trang đăng nhập
+  // 1. Chưa đăng nhập (hoặc phiên 7 ngày đã hết) mà vào trang riêng → về trang đăng nhập
   if (matchPath(pathname, privatePaths) && !isAuth) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
@@ -47,7 +50,16 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // 3. Đăng nhập rồi nhưng sai role → về trang chủ
+  // 3. Còn phiên nhưng access token đã hết hạn (thường là lâu ngày mới quay lại web)
+  //    → sang /refresh-token làm mới, xong quay về đúng trang này (giữ cả ?query)
+  //    Phải làm TRƯỚC bước 4: refresh token của Edu không có role, cần access token mới đọc được role
+  if (matchPath(pathname, privatePaths) && !accessToken) {
+    const url = new URL('/refresh-token', request.url)
+    url.searchParams.set('redirect', pathname + search)
+    return NextResponse.redirect(url)
+  }
+
+  // 4. Đăng nhập rồi nhưng sai role → về trang chủ (role đọc từ ACCESS token)
   if (accessToken) {
     const role = getRoleFromAccessToken(accessToken)
     if (matchPath(pathname, instructorPaths) && role !== RoleValues.Instructor) {

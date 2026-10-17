@@ -3,7 +3,8 @@ import { RoleType } from '@/constants/type'
 import { decodeAccessToken, getAccessTokenFromLocalStorage, removeTokensFromLocalStorage } from '@/lib/utils'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { createContext, Suspense, useCallback, useContext, useEffect, useState } from 'react'
+import RefreshToken from './refresh-token'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,7 +68,14 @@ function Provider({ children }: { children: React.ReactNode }) {
 export default function AppProvider({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <Provider>{children}</Provider>
+      <Provider>
+        {children}
+
+        {/* RefreshToken cũng dùng usePathname() → bọc Suspense. Nó không hiển thị gì nên không cần fallback */}
+        <Suspense>
+          <RefreshToken />
+        </Suspense>
+      </Provider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   )
