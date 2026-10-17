@@ -31,3 +31,5 @@ Thumbs.db
 uploads/
 
 backend/src/generated/
+# Code tham khảo để tự viết lại (không commit)
+docs/reference-courses.md
