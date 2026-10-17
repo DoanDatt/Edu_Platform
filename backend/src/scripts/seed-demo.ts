@@ -103,19 +103,162 @@ const COURSES: DemoCourse[] = [
     status: CourseStatus.DRAFT, // giảng viên đang soạn
     sections: [{ title: 'Generic', lectures: ['Generic cơ bản'] }],
   },
+  // Thêm khóa đã xuất bản để danh sách đủ nhiều trang (frontend hiện 12 khóa / trang)
+  {
+    title: 'HTML & CSS cho người mới',
+    subtitle: 'Dựng trang web đầu tiên, Flexbox, Grid và responsive',
+    category: 'Lập trình Web',
+    instructor: 'giangvien1@edu.local',
+    price: 0,
+    level: CourseLevel.BEGINNER,
+    status: CourseStatus.PUBLISHED,
+    sections: [
+      { title: 'HTML', lectures: ['Thẻ cơ bản', 'Form và bảng'] },
+      { title: 'CSS', lectures: ['Selector', 'Flexbox', 'Grid'] },
+    ],
+  },
+  {
+    title: 'JavaScript hiện đại (ES6+)',
+    subtitle: 'Arrow function, destructuring, promise, async/await và module',
+    category: 'Lập trình Web',
+    instructor: 'giangvien1@edu.local',
+    price: 349000,
+    level: CourseLevel.BEGINNER,
+    status: CourseStatus.PUBLISHED,
+    sections: [
+      { title: 'Cú pháp mới', lectures: ['let, const', 'Arrow function', 'Destructuring'] },
+      { title: 'Bất đồng bộ', lectures: ['Promise', 'async/await'] },
+    ],
+  },
+  {
+    title: 'Next.js App Router thực chiến',
+    subtitle: 'Server Component, Route Handler, cache và SEO',
+    category: 'Lập trình Web',
+    instructor: 'giangvien1@edu.local',
+    price: 599000,
+    level: CourseLevel.ADVANCED,
+    status: CourseStatus.PUBLISHED,
+    sections: [
+      { title: 'Routing', lectures: ['Layout và page', 'Route động'] },
+      { title: 'Dữ liệu', lectures: ['Server Component', 'Cache và revalidate'] },
+    ],
+  },
+  {
+    title: 'Git và GitHub cho lập trình viên',
+    subtitle: 'Commit, branch, merge, pull request và làm việc nhóm',
+    category: 'Lập trình Web',
+    instructor: 'giangvien1@edu.local',
+    price: 0,
+    level: CourseLevel.ALL_LEVELS,
+    status: CourseStatus.PUBLISHED,
+    sections: [{ title: 'Cơ bản', lectures: ['Commit', 'Branch', 'Pull request'] }],
+  },
+  {
+    title: 'SQL và PostgreSQL căn bản',
+    subtitle: 'Truy vấn, JOIN, index và thiết kế cơ sở dữ liệu',
+    category: 'Khoa học dữ liệu',
+    instructor: 'giangvien1@edu.local',
+    price: 249000,
+    level: CourseLevel.BEGINNER,
+    status: CourseStatus.PUBLISHED,
+    sections: [
+      { title: 'Truy vấn', lectures: ['SELECT', 'WHERE và ORDER BY'] },
+      { title: 'Nâng cao', lectures: ['JOIN', 'Index'] },
+    ],
+  },
+  {
+    title: 'Machine Learning nhập môn',
+    subtitle: 'Hồi quy, phân loại và đánh giá mô hình với scikit-learn',
+    category: 'Khoa học dữ liệu',
+    instructor: 'giangvien1@edu.local',
+    price: 799000,
+    level: CourseLevel.INTERMEDIATE,
+    status: CourseStatus.PUBLISHED,
+    sections: [
+      { title: 'Nền tảng', lectures: ['ML là gì?', 'Chuẩn bị dữ liệu'] },
+      { title: 'Mô hình', lectures: ['Hồi quy tuyến tính', 'Cây quyết định'] },
+    ],
+  },
+  {
+    title: 'Excel cho phân tích số liệu',
+    subtitle: 'Hàm thông dụng, PivotTable và biểu đồ',
+    category: 'Khoa học dữ liệu',
+    instructor: 'giangvien2@edu.local',
+    price: 0,
+    level: CourseLevel.BEGINNER,
+    status: CourseStatus.PUBLISHED,
+    sections: [{ title: 'Excel', lectures: ['Hàm IF, VLOOKUP', 'PivotTable', 'Biểu đồ'] }],
+  },
+  {
+    title: 'UI/UX Design căn bản',
+    subtitle: 'Nguyên tắc thiết kế, wireframe và nghiên cứu người dùng',
+    category: 'Thiết kế',
+    instructor: 'giangvien2@edu.local',
+    price: 399000,
+    level: CourseLevel.BEGINNER,
+    status: CourseStatus.PUBLISHED,
+    sections: [
+      { title: 'Nguyên tắc', lectures: ['Màu sắc', 'Typography', 'Khoảng trắng'] },
+      { title: 'Quy trình', lectures: ['Wireframe', 'User research'] },
+    ],
+  },
+  {
+    title: 'Photoshop chỉnh sửa ảnh',
+    subtitle: 'Layer, mask, chỉnh màu và ghép ảnh',
+    category: 'Thiết kế',
+    instructor: 'giangvien2@edu.local',
+    price: 199000,
+    level: CourseLevel.INTERMEDIATE,
+    status: CourseStatus.PUBLISHED,
+    sections: [{ title: 'Công cụ', lectures: ['Layer', 'Mask', 'Chỉnh màu'] }],
+  },
+  {
+    title: 'Thiết kế logo và nhận diện thương hiệu',
+    subtitle: 'Từ ý tưởng đến bộ nhận diện hoàn chỉnh',
+    category: 'Thiết kế',
+    instructor: 'giangvien2@edu.local',
+    price: 449000,
+    level: CourseLevel.ADVANCED,
+    status: CourseStatus.PUBLISHED,
+    sections: [{ title: 'Logo', lectures: ['Tìm ý tưởng', 'Phác thảo', 'Hoàn thiện'] }],
+  },
+  {
+    title: 'SEO website từ A đến Z',
+    subtitle: 'Nghiên cứu từ khóa, SEO onpage và xây dựng liên kết',
+    category: 'Marketing',
+    instructor: 'giangvien2@edu.local',
+    price: 0,
+    level: CourseLevel.ALL_LEVELS,
+    status: CourseStatus.PUBLISHED,
+    sections: [{ title: 'SEO', lectures: ['Từ khóa', 'SEO onpage', 'Backlink'] }],
+  },
+  {
+    title: 'Quảng cáo Facebook Ads',
+    subtitle: 'Tạo chiến dịch, nhắm đối tượng và tối ưu chi phí',
+    category: 'Marketing',
+    instructor: 'giangvien2@edu.local',
+    price: 549000,
+    level: CourseLevel.INTERMEDIATE,
+    status: CourseStatus.PUBLISHED,
+    sections: [
+      { title: 'Chiến dịch', lectures: ['Cấu trúc tài khoản', 'Nhắm đối tượng'] },
+      { title: 'Tối ưu', lectures: ['Đọc số liệu', 'A/B test'] },
+    ],
+  },
 ]
 
+// Chạy lại nhiều lần được: tài khoản đã có thì dùng lại, khóa đã có (cùng tên) thì bỏ qua.
+// Thêm khóa vào COURSES rồi chạy lại → chỉ tạo khóa mới, không đụng dữ liệu cũ
 const main = async () => {
-  const existing = await prisma.user.findFirst({ where: { email: DEMO_USERS[0].email } })
-  if (existing) {
-    console.log('Dữ liệu demo đã tồn tại, bỏ qua (muốn tạo lại thì xóa các user *@edu.local demo trước)')
-    return
-  }
-
   // 1. Tài khoản
   const password = await hashPassword(DEMO_PASSWORD)
   const users = new Map<string, number>()
   for (const demoUser of DEMO_USERS) {
+    const existing = await prisma.user.findFirst({ where: { email: demoUser.email } })
+    if (existing) {
+      users.set(demoUser.email, existing.id)
+      continue
+    }
     const role = await prisma.role.findFirstOrThrow({ where: { name: demoUser.role, deletedAt: null } })
     const user = await prisma.user.create({
       data: {
@@ -142,6 +285,8 @@ const main = async () => {
   // 3. Khóa học + chương + bài giảng (bài đầu tiên của mỗi khóa cho xem thử)
   const courseIds: number[] = []
   for (const [index, demo] of COURSES.entries()) {
+    const existing = await prisma.course.findFirst({ where: { title: demo.title, deletedAt: null } })
+    if (existing) continue
     const course = await prisma.course.create({
       data: {
         title: demo.title,
@@ -175,7 +320,7 @@ const main = async () => {
     courseIds.push(course.id)
   }
 
-  // 4. Ghi danh + tiến độ + đánh giá (chỉ khóa miễn phí đã xuất bản)
+  // 4. Ghi danh + tiến độ + đánh giá (chỉ khóa miễn phí đã xuất bản, vừa tạo ở bước 3)
   const freePublished = await prisma.course.findMany({
     where: { id: { in: courseIds }, price: 0, status: CourseStatus.PUBLISHED },
     include: { sections: { include: { lectures: true } } },
@@ -208,8 +353,7 @@ const main = async () => {
 
 main()
   .then((result) => {
-    if (!result) return
-    console.log(`Đã tạo ${result.users} tài khoản, ${result.categories} danh mục, ${result.courses} khóa học`)
+    console.log(`${result.users} tài khoản, ${result.categories} danh mục, tạo mới ${result.courses} khóa học`)
     console.log(`Mật khẩu chung cho tài khoản demo: ${DEMO_PASSWORD}`)
     for (const user of DEMO_USERS) console.log(`  ${user.role.padEnd(10)} ${user.email}`)
   })
