@@ -64,10 +64,11 @@ export default async function CourseList({ searchParams }: { searchParams: Promi
 }
 
 // Hiện trong lúc chờ API (fallback của <Suspense>): khung xám có hình dạng giống thẻ thật
-export function CourseListSkeleton() {
+// count: số thẻ giả (trang chủ khối 4 khóa thì truyền 4)
+export function CourseListSkeleton({ count = 8 }: { count?: number }) {
   return (
     <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-      {Array.from({ length: 8 }).map((_, index) => (
+      {Array.from({ length: count }).map((_, index) => (
         <div key={index} className='flex flex-col gap-3 overflow-hidden rounded-xl border'>
           <Skeleton className='aspect-video rounded-none' />
           <div className='flex flex-col gap-2 p-4'>
