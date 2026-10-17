@@ -1,15 +1,24 @@
 import courseApiRequest from '@/apiRequests/course'
 import CourseCard from './course-card'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, SearchX } from 'lucide-react'
+import { SearchX } from 'lucide-react'
 import Link from 'next/link'
+import { GetCoursesQuery } from '@/schemaValidations/course.schema'
+import CoursePagination from './course-pagination'
 
 const PAGE_SIZE = 12
+type SearchParams = Record<string, string | string[] | undefined>
+// Hàm này gặp mảng thì trả về phần tử đầu, gặp chuỗi hoặc undefined thì trả về nguyên giá trị đó
+const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value)
 
-export default async function CourseList() {
+export default async function CourseList({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  // raw.page có thể là: undefined | '2' | 'abc' | ['1', '2'] (khi URL là ?page=1&page=2)
+  const raw = await searchParams
+  const parsed = GetCoursesQuery.safeParse({ page: first(raw.page) })
+  const page = parsed.success ? parsed.data.page : 1
   let result
   try {
-    result = (await courseApiRequest.list({ limit: PAGE_SIZE })).payload
+    result = (await courseApiRequest.list({ page, limit: PAGE_SIZE })).payload
   } catch {
     return (
       <p className='rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive'>
@@ -47,20 +56,7 @@ export default async function CourseList() {
         ))}
       </div>
       {/* ===== Phân trang (chưa hoạt động): đang ở trang 1 / 2 ===== */}
-      <nav aria-label='Phân trang' className='flex items-center justify-center gap-1'>
-        <Button variant='outline' size='icon' disabled aria-label='Trang trước'>
-          <ChevronLeft />
-        </Button>
-        <Button size='icon' aria-current='page'>
-          1
-        </Button>
-        <Button variant='outline' size='icon'>
-          2
-        </Button>
-        <Button variant='outline' size='icon' aria-label='Trang sau'>
-          <ChevronRight />
-        </Button>
-      </nav>
+      <CoursePagination page={result.page} totalPages={result.totalPages} />
     </div>
   )
 }

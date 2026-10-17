@@ -2,7 +2,6 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Search } from 'lucide-react'
 import type { Metadata } from 'next'
-import courseApiRequest from '@/apiRequests/course'
 import CourseList from './course-list'
 import { Suspense } from 'react'
 
@@ -10,13 +9,7 @@ export const metadata: Metadata = {
   title: 'Khóa học',
   description: 'Khám phá các khóa học lập trình, thiết kế, marketing, khoa học dữ liệu trên EduPlatform'
 }
-
-// BẢN GIAO DIỆN TĨNH: chưa gọi API, bộ lọc và phân trang chưa hoạt động.
-// Các bước bạn tự làm tiếp (theo docs/reference-courses.md):
-//   1. Thay mockCourses bằng courseApiRequest.list() (tách ra CourseList, bọc <Suspense>)
-//   2. Phân trang: mỗi nút là <Link> đổi ?page=
-//   3. Bộ lọc: tách ra CourseFilters ('use client'), đổi URL bằng router.push
-async function CoursesPage() {
+async function CoursesPage({ searchParams }: PageProps<'/courses'>) {
   return (
     <div className='flex flex-col gap-6'>
       {/* ===== Tiêu đề ===== */}
@@ -86,7 +79,7 @@ async function CoursesPage() {
 
       {/* ===== Danh sách ===== */}
       <Suspense fallback={<p className='text-muted-foreground'>Đang tải khóa học...</p>}>
-        <CourseList />
+        <CourseList searchParams={searchParams} />
       </Suspense>
     </div>
   )
