@@ -5,13 +5,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CategoryType } from '@/schemaValidations/category.schema'
 import { Search } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useState } from 'react'
 
 export default function CourseFilters({ categories }: { categories: CategoryType[] }) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [searchText, setSearchText] = useState(searchParams.get('search') ?? '')
+
+  // Đổi 1 bộ lọc trên URL, giữ nguyên các bộ lọc khác
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString())
-    if (value === 'all') {
+    // Chuỗi rỗng (xóa hết chữ trong ô tìm kiếm) hoặc 'all' (chọn "Tất cả...") → bỏ bộ lọc này khỏi URL
+    if (!value || value === 'all') {
       params.delete(key)
     } else {
       params.set(key, value)
@@ -20,12 +25,25 @@ export default function CourseFilters({ categories }: { categories: CategoryType
     const query = params.toString() // ghep chuoi
     router.push(query ? `/courses?${query}` : '/courses')
   }
+
+  // Bấm Enter trong ô tìm kiếm = gửi form → đưa chữ đã gõ lên URL
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault() // chặn form tải lại cả trang
+    updateParam('search', searchText.trim()) // trim: bỏ khoảng trắng 2 đầu
+  }
+
   return (
     <div className='flex flex-col gap-3 lg:flex-row lg:items-center'>
-      <div className='relative flex-1'>
+      <form className='relative flex-1' onSubmit={handleSubmit}>
         <Search className='pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground' />
-        <Input placeholder='Tìm khóa học, ví dụ: React' className='h-10 pl-9' aria-label='Tìm khóa học' />
-      </div>
+        <Input
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder='Tìm khóa học'
+          className='h-10 pl-9'
+          aria-label='Tìm khóa học'
+        />
+      </form>
 
       {/* Điện thoại: 2 cột, máy tính bảng: 4 cột, máy tính: nằm cùng hàng với ô tìm kiếm */}
       <div className='grid grid-cols-2 gap-3 sm:grid-cols-4 lg:flex'>
