@@ -2,25 +2,13 @@
 
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { CategoryType } from '@/schemaValidations/category.schema'
 import { Search } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function CourseFilters() {
+export default function CourseFilters({ categories }: { categories: CategoryType[] }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-
-  //   const updateParam = (key: string, value: string) => {
-  //     const params = new URLSearchParams(searchParams.toString()) //chép url hiện tại
-  //     if (value === 'all') {
-  //       params.delete(key)
-  //     } else {
-  //       params.set(key, value)
-  //     }
-  //     params.delete('page') // đổi bộ lọc về trang 1
-  //     const query = params.toString() // ghép link và chuyển trang
-  //     router.push(query ? `/courses?${query}` : `/courses`)
-  //   }
-
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString())
     if (value === 'all') {
@@ -47,10 +35,11 @@ export default function CourseFilters() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value='all'>Tất cả danh mục</SelectItem>
-            <SelectItem value='17'>Lập trình Web</SelectItem>
-            <SelectItem value='18'>Thiết kế</SelectItem>
-            <SelectItem value='19'>Marketing</SelectItem>
-            <SelectItem value='20'>Khoa học dữ liệu</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={String(category.id)}>
+                {category.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
