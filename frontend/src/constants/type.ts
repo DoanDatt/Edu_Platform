@@ -28,3 +28,12 @@ export const CourseLevel = {
   ADVANCED: 'ADVANCED',
   INTERMEDIATE: 'INTERMEDIATE'
 } as const
+
+// Nhãn tiếng Việt để hiển thị. Record<...>: bắt buộc có đủ nhãn cho MỌI trình độ trong CourseLevel,
+// backend thêm trình độ mới mà quên thêm nhãn ở đây → TypeScript báo lỗi
+export const CourseLevelLabels: Record<keyof typeof CourseLevel, string> = {
+  BEGINNER: 'Cơ bản',
+  INTERMEDIATE: 'Trung cấp',
+  ADVANCED: 'Nâng cao',
+  ALL_LEVELS: 'Mọi trình độ'
+}

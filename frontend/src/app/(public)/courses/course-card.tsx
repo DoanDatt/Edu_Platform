@@ -1,24 +1,17 @@
 import { Badge } from '@/components/ui/badge'
+import { CourseLevelLabels } from '@/constants/type'
+import { formatPrice, generateSlugUrl } from '@/lib/format'
 import { PublicCourseType } from '@/schemaValidations/course.schema'
 import { ImageOff, Star, Users } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-// TODO (bạn tự làm): chuyển sang constants/type.ts thành CourseLevelLabels
-const levelLabels = {
-  BEGINNER: 'Cơ bản',
-  INTERMEDIATE: 'Trung cấp',
-  ADVANCED: 'Nâng cao',
-  ALL_LEVELS: 'Mọi trình độ'
-}
-
 // Thẻ 1 khóa học. Cả thẻ là 1 link tới trang chi tiết
 export default function CourseCard({ course }: { course: PublicCourseType }) {
-  // TODO (bạn tự làm): href dạng slug /courses/react-tu-co-ban-i.15 (generateSlugUrl)
-  const href = `/courses/${course.id}`
-  // TODO (bạn tự làm): đưa vào lib/format.ts thành formatPrice
-  const price = course.price === 0 ? 'Miễn phí' : `${course.price.toLocaleString('vi-VN')} ₫`
+  // Link dạng slug: /courses/react-tu-co-ban-den-nang-cao-i.15
+  const href = `/courses/${generateSlugUrl({ name: course.title, id: course.id })}`
 
+  const price = formatPrice(course.price)
   return (
     <Link
       href={href}
@@ -44,7 +37,7 @@ export default function CourseCard({ course }: { course: PublicCourseType }) {
       <div className='flex flex-1 flex-col gap-2 p-4'>
         <div className='flex flex-wrap gap-1.5'>
           <Badge variant='secondary'>{course.category.name}</Badge>
-          <Badge variant='outline'>{levelLabels[course.level]}</Badge>
+          <Badge variant='outline'>{CourseLevelLabels[course.level]}</Badge>
         </div>
 
         {/* line-clamp-2: tên dài quá 2 dòng thì cắt bằng "..." để các thẻ cao bằng nhau */}
