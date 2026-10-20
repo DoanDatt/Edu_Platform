@@ -61,6 +61,9 @@ const configSchema = z.object({
   MAX_IMAGE_MB: z.coerce.number().positive().default(5),
   MAX_VIDEO_MB: z.coerce.number().positive().default(500),
 
+  // Số proxy đứng trước app khi deploy (Render: 1) để đọc đúng IP người dùng. Local: 0
+  TRUST_PROXY: z.coerce.number().int().min(0).default(0),
+
   // Giới hạn số request (chống dò mật khẩu, spam). Tắt khi chạy test tự động
   RATE_LIMIT_ENABLED: z
     .enum(['true', 'false'])

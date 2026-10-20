@@ -38,6 +38,11 @@ export const protectedRouters: { prefix: string; router: Router }[] = [
 
 const app = express()
 
+// Chạy sau proxy (Render, Nginx...): IP thật của người dùng nằm trong header X-Forwarded-For.
+// Không bật thì req.ip là IP của proxy → mọi người dùng chung 1 IP → rate limit khóa tất cả cùng lúc.
+// TRUST_PROXY = số proxy đứng trước app (Render: 1). Chạy máy local: 0 (tắt)
+if (envConfig.TRUST_PROXY > 0) app.set('trust proxy', envConfig.TRUST_PROXY)
+
 // Header bảo mật (chống clickjacking, sniff MIME...). crossOriginResourcePolicy = cross-origin
 // để frontend ở cổng khác vẫn hiển thị được ảnh / video trong /uploads
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
