@@ -2,7 +2,6 @@ import courseApiRequest from '@/apiRequests/course'
 import reviewApiRequest from '@/apiRequests/review'
 import RatingStars from '@/components/rating-stars'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CourseLevelLabels } from '@/constants/type'
 import { formatDate, formatDuration, formatPrice, generateSlugUrl, getIdFromSlugUrl } from '@/lib/format'
@@ -15,6 +14,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { cache, Suspense } from 'react'
 import CourseReviews from './course-reviews'
+import EnrollButton from './enroll-button'
 import Curriculum from './curriculum'
 
 // Lấy 1 khóa học, dùng chung cho generateMetadata VÀ CourseDetail.
@@ -168,10 +168,8 @@ async function CourseDetail({ params }: { params: Promise<{ slug: string }> }) {
             <div className='flex flex-col gap-4 p-5'>
               <span className='text-3xl font-bold'>{formatPrice(course.price)}</span>
 
-              {/* TODO vòng 6: thay bằng nút ghi danh thật (useMutation). Tạm thời chỉ hiện đúng chữ theo isEnrolled */}
-              <Button size='lg' className='w-full' disabled>
-                {course.isEnrolled === null ? 'Đăng nhập để ghi danh' : course.isEnrolled ? 'Vào học' : 'Ghi danh'}
-              </Button>
+              {/* Client Component: trang vẫn là Server Component, chỉ riêng nút này chạy ở trình duyệt */}
+              <EnrollButton courseId={course.id} isEnrolled={course.isEnrolled} price={course.price} />
 
               <ul className='flex flex-col gap-2.5 text-sm text-muted-foreground'>
                 <li className='flex items-center gap-2'>
