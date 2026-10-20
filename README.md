@@ -6,6 +6,54 @@ Nền tảng học trực tuyến kiểu Udemy, với 3 vai trò:
 - **Giảng viên (Instructor)**: tạo khóa học, soạn chương và bài giảng, upload video, gửi duyệt, xem học viên của mình.
 - **Admin**: duyệt / gỡ khóa học, quản lý người dùng, danh mục, role và quyền, xem thống kê.
 
+## Demo
+
+**Website: <https://edu-platform-8b8a.vercel.app>**
+
+| Vai trò | Email | Mật khẩu |
+|---|---|---|
+| Học viên | `hocvien1@edu.local` | `Demo@1234` |
+| Giảng viên | `giangvien1@edu.local` | `Demo@1234` |
+
+Hoặc tự đăng ký tài khoản mới rồi ghi danh một khóa miễn phí.
+
+> Backend chạy gói miễn phí của Render, **tự ngủ sau 15 phút không có ai dùng**: lần mở đầu tiên có thể mất khoảng 1 phút, các lần sau nhanh bình thường.
+
+| Trang chủ | Danh sách khóa học (lọc trên URL) |
+|---|---|
+| ![Trang chủ](docs/screenshots/home.png) | ![Danh sách khóa học](docs/screenshots/courses.png) |
+
+![Trang chi tiết khóa học](docs/screenshots/course-detail.png)
+
+## Tình trạng
+
+Frontend đang làm theo [lộ trình](docs/frontend-roadmap.md):
+
+| Phần | Trạng thái |
+|---|---|
+| Xác thực: đăng ký, đăng nhập, đăng xuất, tự làm mới access token, chặn route theo role | ✅ |
+| Trang công khai: danh sách (tìm kiếm, lọc, sắp xếp, phân trang trên URL), chi tiết khóa học, trang chủ | ✅ |
+| Ghi danh khóa miễn phí | ✅ |
+| Học viên: khóa học của tôi, trang học, đánh giá, hồ sơ | Đang làm |
+| Giảng viên, admin | Chưa làm (backend đã có đủ API) |
+
+**Phân công:** frontend do mình tự viết, dùng Claude để review và giải thích. Backend (Express, Prisma, hàng đợi, test, CI) được xây dựng cùng Claude để mình tập trung vào frontend; mình đọc hiểu, chạy thử và kiểm tra lại toàn bộ.
+
+## Kiến trúc triển khai
+
+```
+Trình duyệt ──▶ Vercel (Next.js 16) ──▶ Render (Express API) ──▶ Neon (PostgreSQL)
+                                              └──────────────▶ Render Key Value (Redis, hàng đợi BullMQ)
+```
+
+| Frontend | Công nghệ |
+|---|---|
+| Framework | Next.js 16 (App Router, Server Components, Cache Components, Partial Prerendering) + React 19 + TypeScript |
+| Dữ liệu | Fetch wrapper riêng, TanStack Query cho thao tác ghi (mutation) |
+| Form + validate | React Hook Form + Zod 4 (schema viết khớp với backend) |
+| Giao diện | Tailwind CSS 4 + shadcn/ui, giao diện sáng / tối |
+| Xác thực | JWT trong httpOnly cookie qua Route Handler, `proxy.ts` chặn route theo role, refresh token chống gọi trùng |
+
 Thư mục:
 
 ```
@@ -233,6 +281,36 @@ npm test
 
 ---
 
+## Triển khai (deploy)
+
+Đang chạy trên gói miễn phí: Vercel (frontend), Render (backend + Key Value), Neon (PostgreSQL). Cả Vercel và Render tự deploy lại khi push lên nhánh `main`.
+
+**Database (Neon):** dùng chuỗi kết nối **trực tiếp** (tên host không có `-pooler`, kết nối qua pooler làm `prisma migrate deploy` bị treo). Tạo bảng và dữ liệu ban đầu từ máy local:
+
+```powershell
+cd backend
+$env:DATABASE_URL="<chuỗi kết nối Neon>"; $env:ADMIN_PASSWORD="<mật khẩu admin>"
+npx prisma migrate deploy
+npm run seed
+npm run sync-permissions   # bắt buộc, thiếu thì mọi API cần quyền trả 403
+npm run seed:demo
+Remove-Item Env:DATABASE_URL; Remove-Item Env:ADMIN_PASSWORD
+```
+
+**Backend (Render Web Service):** Root Directory `backend`, region Singapore
+
+| | |
+|---|---|
+| Build Command | `npm ci && npx prisma generate && npm run build` |
+| Start Command | `npx prisma migrate deploy && npm start` |
+| Biến môi trường | Như `.env.example`, thêm `TRUST_PROXY=1`, `RUN_WORKER=true`, `REDIS_URL` là Internal URL của Key Value (maxmemory policy `noeviction`), `CORS_ORIGINS` có domain Vercel |
+
+**Frontend (Vercel):** Root Directory `frontend`, function region Singapore, biến `NEXT_PUBLIC_API_END_POINT` (link Render, không có `/` cuối) và `NEXT_PUBLIC_URL`. Biến `NEXT_PUBLIC_*` gắn vào lúc build: đổi xong phải Redeploy.
+
+**Giới hạn của gói miễn phí:** Render ngủ sau 15 phút, ổ đĩa bị xóa khi khởi động lại (upload chưa dùng được, cần chuyển sang Cloudinary), chặn cổng SMTP (email cần dịch vụ gửi qua HTTP API).
+
+---
+
 ## Lỗi thường gặp
 
 | Triệu chứng | Nguyên nhân / cách sửa |
@@ -274,4 +352,4 @@ npm test
 - [ ] Upload lên cloud (S3 / Cloudinary) thay vì ổ đĩa server
 - [ ] Xác thực email khi đăng ký
 - [ ] Hỏi đáp theo bài giảng, thông báo
-- [ ] Deploy
+- [x] Deploy (Vercel + Render + Neon)
