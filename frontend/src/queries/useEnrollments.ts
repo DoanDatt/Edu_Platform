@@ -1,5 +1,6 @@
 import enrollmentApiRequest from '@/apiRequests/enrollment'
-import { useMutation } from '@tanstack/react-query'
+import { PaginationQueryType } from '@/schemaValidations/common.schema'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 // useMutation: dùng cho thao tác LÀM THAY ĐỔI dữ liệu (thêm / sửa / xóa), chạy khi người dùng bấm.
 // Khác useQuery (đọc dữ liệu, tự chạy khi component hiện ra).
@@ -8,7 +9,16 @@ import { useMutation } from '@tanstack/react-query'
 // Sau khi ghi danh, trang chi tiết lấy dữ liệu ở SERVER nên làm mới bằng router.refresh() trong nút.
 // Khi có dữ liệu course lấy ở client (trang /my-courses, Mốc 3) thì thêm onSuccess: invalidateQueries
 export const useEnrollMutation = () => {
+  const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: enrollmentApiRequest.create
+    mutationFn: enrollmentApiRequest.create,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['enrollments'] })
+  })
+}
+
+export const useMyEnrollmentQuery = (query?: Partial<PaginationQueryType>) => {
+  return useQuery({
+    queryKey: ['enrollments', 'mine', query],
+    queryFn: () => enrollmentApiRequest.mine(query)
   })
 }
