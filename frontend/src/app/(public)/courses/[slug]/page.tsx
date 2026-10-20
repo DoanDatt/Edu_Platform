@@ -5,16 +5,52 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CourseLevelLabels } from '@/constants/type'
-import { formatDate, formatDuration, formatPrice, getIdFromSlugUrl } from '@/lib/format'
+import { formatDate, formatDuration, formatPrice, generateSlugUrl, getIdFromSlugUrl } from '@/lib/format'
 import { HttpError } from '@/lib/http'
 import { BarChart3, Clock, Globe, ImageOff, PlayCircle, Users } from 'lucide-react'
+import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import Image from 'next/image'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
+import { notFound, redirect } from 'next/navigation'
+import { cache, Suspense } from 'react'
 import CourseReviews from './course-reviews'
 import Curriculum from './curriculum'
+
+// Lấy 1 khóa học, dùng chung cho generateMetadata VÀ CourseDetail.
+// cache() của React: trong CÙNG 1 lần render trang, gọi bao nhiêu lần với cùng id
+// thì cũng chỉ gọi API 1 lần, các lần sau dùng lại kết quả (kể cả khi lỗi)
+// Đọc token ngay trong hàm (không truyền vào) để 2 nơi gọi có CÙNG tham số → cache mới trùng được
+const getCourse = cache(async (id: number) => {
+  const accessToken = (await cookies()).get('accessToken')?.value
+  return courseApiRequest.getDetail(id, accessToken)
+})
+
+// Tiêu đề tab, mô tả, ảnh khi dán link lên Facebook / Zalo (Open Graph).
+// Tiêu đề phụ thuộc dữ liệu → dùng HÀM generateMetadata thay vì object metadata cố định như /courses.
+// title 'React...' + template '%s | EduPlatform' ở layout gốc → tab hiện 'React... | EduPlatform'
+export async function generateMetadata({ params }: PageProps<'/courses/[slug]'>): Promise<Metadata> {
+  const id = getIdFromSlugUrl((await params).slug)
+  const notFoundMetadata: Metadata = { title: 'Không tìm thấy khóa học' }
+  if (!Number.isInteger(id) || id <= 0) return notFoundMetadata
+
+  try {
+    const course = (await getCourse(id)).payload.data
+    // Không có subtitle → tự viết 1 câu mô tả để Google vẫn có đoạn mô tả
+    const description = course.subtitle || `Khóa học ${course.title} của ${course.instructor.name} trên EduPlatform`
+    return {
+      title: course.title,
+      description,
+      openGraph: {
+        title: course.title,
+        description,
+        images: course.thumbnail ? [course.thumbnail] : undefined
+      }
+    }
+  } catch {
+    return notFoundMetadata
+  }
+}
 
 export default function CourseDetailPage({ params }: PageProps<`/courses/[slug]`>) {
   return (
@@ -32,14 +68,14 @@ async function CourseDetail({ params }: { params: Promise<{ slug: string }> }) {
   const id = getIdFromSlugUrl(slug)
   // 3. Slug bậy (/courses/abc → NaN) → hiện trang 404 của Next, KHÔNG gọi API
   if (!Number.isInteger(id) || id <= 0) notFound()
-  // 4. Server không có localStorage → tự đọc token trong cookie (route handler login đã lưu vào đây)
-  const accessToken = (await cookies()).get('accessToken')?.value
 
-  // 5. Gọi 2 API CÙNG LÚC (không cái nào phải chờ cái nào) → nhanh gần gấp đôi gọi lần lượt.
+  // 4. Gọi 2 API CÙNG LÚC (không cái nào phải chờ cái nào) → nhanh gần gấp đôi gọi lần lượt.
   //    allSettled (không phải all): chờ CẢ HAI xong, cho biết từng cái thành công hay thất bại
   //    → đánh giá lỗi thì trang vẫn hiện, chỉ thiếu phần đánh giá
+  //    getCourse (có cache): generateMetadata đã gọi rồi thì ở đây dùng lại, không gọi API lần 2.
+  //    Token đọc từ cookie nằm bên trong getCourse (server không có localStorage)
   const [courseResult, reviewResult] = await Promise.allSettled([
-    courseApiRequest.getDetail(id, accessToken),
+    getCourse(id),
     reviewApiRequest.list({ courseId: id, limit: 5 })
   ])
 
@@ -60,6 +96,11 @@ async function CourseDetail({ params }: { params: Promise<{ slug: string }> }) {
   const course = courseResult.value.payload.data
   // Đánh giá lỗi → mảng rỗng, trang vẫn hiện
   const reviews = reviewResult.status === 'fulfilled' ? reviewResult.value.payload.data : []
+
+  // 5. Slug sai chữ nhưng đúng id (gõ tay, link cũ trước khi khóa đổi tên...) → chuyển về URL chuẩn.
+  //    Mỗi khóa chỉ có ĐÚNG 1 URL → Google không coi là nội dung trùng lặp
+  const canonicalSlug = generateSlugUrl({ name: course.title, id: course.id })
+  if (slug !== canonicalSlug) redirect(`/courses/${canonicalSlug}`)
 
   return (
     <div className='flex flex-col gap-8'>
