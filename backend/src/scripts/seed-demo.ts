@@ -17,8 +17,10 @@ const DEMO_USERS = [
 
 const CATEGORIES = ['Lập trình Web', 'Thiết kế', 'Marketing', 'Khoa học dữ liệu']
 
-// Video mẫu công khai (Google sample videos) + ảnh minh họa ngẫu nhiên theo seed
-const SAMPLE_VIDEO = 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+// Video mẫu công khai: video CC0 trong tài liệu MDN của Mozilla (hỗ trợ tua) + ảnh minh họa ngẫu nhiên theo seed
+const SAMPLE_VIDEO = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4'
+// Link cũ (Google sample videos) đã bị khóa (403) → chạy lại seed:demo sẽ đổi sang SAMPLE_VIDEO
+const OLD_SAMPLE_VIDEO = 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
 const thumbnail = (seed: string) => `https://picsum.photos/seed/${seed}/640/360`
 
 type DemoCourse = {
@@ -281,6 +283,13 @@ const main = async () => {
       (await prisma.category.create({ data: { name } }))
     categories.set(name, category.id)
   }
+
+  // Database tạo từ bản seed cũ: đổi link video mẫu đã bị khóa sang link mới
+  const fixedVideos = await prisma.lecture.updateMany({
+    where: { videoUrl: OLD_SAMPLE_VIDEO },
+    data: { videoUrl: SAMPLE_VIDEO },
+  })
+  if (fixedVideos.count > 0) console.log(`Đã đổi link video mẫu cho ${fixedVideos.count} bài giảng`)
 
   // 3. Khóa học + chương + bài giảng (bài đầu tiên của mỗi khóa cho xem thử)
   const courseIds: number[] = []
