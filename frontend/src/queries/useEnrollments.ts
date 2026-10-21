@@ -22,3 +22,10 @@ export const useMyEnrollmentQuery = (query?: Partial<PaginationQueryType>) => {
     queryFn: () => enrollmentApiRequest.mine(query)
   })
 }
+
+export const useMyLearningQuery = (courseId: number) => {
+  return useQuery({
+    queryKey: ['enrollments', 'mine', courseId],
+    queryFn: () => enrollmentApiRequest.getMine(courseId)
+  })
+}
