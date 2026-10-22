@@ -36,3 +36,30 @@ export const GetReviewsQuery = PaginationQuery.extend({
 })
 
 export type GetReviewsQueryType = z.infer<typeof GetReviewsQuery>
+
+const ReviewContentSchema = z.object({
+  rating: z.number().int().min(1, 'Số sao từ 1 đến 5').max(5, 'Số sao từ 1 đến 5'),
+  comment: z.string().trim().max(2000).optional()
+})
+
+export const CreateReviewBodySchema = ReviewContentSchema.extend({
+  courseId: z.number().int().positive()
+}).strict()
+
+export type CreateReviewBodyType = z.infer<typeof CreateReviewBodySchema>
+
+export const UpdateReviewBodySchema = ReviewContentSchema.strict()
+
+export type UpdateReviewBodyType = z.infer<typeof UpdateReviewBodySchema>
+
+export const ReviewRes = z.object({
+  data: ReviewSchema,
+  message: z.string()
+})
+export type ReviewResType = z.infer<typeof ReviewRes>
+
+export const MyReviewRes = z.object({
+  data: ReviewSchema.nullable(),
+  message: z.string()
+})
+export type MyReviewResType = z.infer<typeof MyReviewRes>
