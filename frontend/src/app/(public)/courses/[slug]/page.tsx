@@ -15,6 +15,7 @@ import { notFound, redirect } from 'next/navigation'
 import { cache, Suspense } from 'react'
 import CourseReviews from './course-reviews'
 import EnrollButton from './enroll-button'
+import MyReview from './my-review'
 import Curriculum from './curriculum'
 
 // Lấy 1 khóa học, dùng chung cho generateMetadata VÀ CourseDetail.
@@ -217,6 +218,9 @@ async function CourseDetail({ params }: { params: Promise<{ slug: string }> }) {
               <h2 className='text-xl font-semibold'>Đánh giá của học viên</h2>
               {course.rating.totalReviews > 0 && <Badge variant='secondary'>{course.rating.totalReviews}</Badge>}
             </div>
+            {/* Chỉ người ĐÃ GHI DANH mới viết / sửa / xóa đánh giá (backend cũng chặn: 403).
+                isEnrolled: null = khách, false = chưa ghi danh */}
+            {course.isEnrolled === true && <MyReview courseId={course.id} />}
             <CourseReviews rating={course.rating} reviews={reviews} />
           </section>
         </div>
