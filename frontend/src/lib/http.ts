@@ -162,7 +162,9 @@ const request = async <Response>(
     const normalizeUrl = normalizePath(url)
     // Backend Edu Platform: đăng ký xong là đăng nhập luôn, trả token giống hệt login
     // nên register và login dùng chung một nhánh (RegisterBodyRes chính là LoginBodyRes)
-    if (['api/auth/login', 'api/auth/register'].includes(normalizeUrl)) {
+    // đăng nhập, đăng ký (đăng ký xong là đăng nhập luôn), đổi mật khẩu → ghi đè localStorage
+
+    if (['api/auth/login', 'api/auth/register', 'api/profile/password'].includes(normalizeUrl)) {
       const { accessToken, refreshToken } = (payload as LoginBodyResType).data
       localStorage.setItem('accessToken', accessToken)
       localStorage.setItem('refreshToken', refreshToken)
