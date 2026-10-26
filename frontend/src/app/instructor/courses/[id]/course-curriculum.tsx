@@ -6,12 +6,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { CourseStatus } from '@/constants/type'
 import { formatDuration } from '@/lib/format'
 import { handleErrorApi, moveItem } from '@/lib/utils'
-import { useInstructorCourseDetailQuery } from '@/queries/useCourse'
+import { useInstructorCourseDetailQuery, useSubmitCourseMutation } from '@/queries/useCourse'
 import { useCreateSectionMutation, useReorderSectionsMutation } from '@/queries/useSection'
 import { InstructorLectureType } from '@/schemaValidations/section.schema'
-import { AlertCircle, Clock, Layers, Pencil } from 'lucide-react'
+import { AlertCircle, Clock, FileEdit, Globe, Layers, Loader2, Pencil, Send, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import CourseLoadError from '../course-load-error'
 import CourseNotice from '../course-notice'
 import LectureSheet, { LectureTarget } from './lecture-sheet'
@@ -24,6 +25,7 @@ export default function CourseCurriculum({ courseId }: { courseId: number }) {
   const { data, isLoading, isError, error } = useInstructorCourseDetailQuery(courseId)
   const createSectionMutation = useCreateSectionMutation()
   const reorderSectionsMutation = useReorderSectionsMutation()
+  const submitMutation = useSubmitCourseMutation()
   // Bài đang mở trong khung soạn bài (Sheet). null = đóng
   const [lectureTarget, setLectureTarget] = useState<LectureTarget | null>(null)
 
@@ -50,6 +52,21 @@ export default function CourseCurriculum({ courseId }: { courseId: number }) {
     await createSectionMutation.mutateAsync({ courseId, title })
   }
 
+  // Nháp / bị từ chối mới gửi duyệt được (backend: DRAFT_STATUSES)
+  const canSubmit = course.status === CourseStatus.DRAFT || course.status === CourseStatus.REJECTED
+  const hasLectures = lectures.length > 0
+
+  const submitCourse = async () => {
+    if (!confirm('Gửi khóa học cho admin duyệt? Trong lúc chờ duyệt bạn sẽ không chỉnh sửa được.')) return
+    try {
+      const result = await submitMutation.mutateAsync(courseId)
+      // Hook invalidate ['courses'] → trang tải lại → trạng thái thành "Chờ duyệt", các nút sửa tự ẩn
+      toast.success(result.payload.message)
+    } catch (error) {
+      handleErrorApi({ error })
+    }
+  }
+
   return (
     <div className='flex flex-col gap-6'>
       {/* ===== Tiêu đề + tổng quan ===== */}
@@ -63,23 +80,55 @@ export default function CourseCurriculum({ courseId }: { courseId: number }) {
             </span>
           </div>
         </div>
-        {editable && (
+        <div className='flex flex-wrap gap-2'>
           <Button asChild variant='outline'>
-            <Link href={`/instructor/courses/${course.id}/edit`}>
-              <Pencil />
-              Sửa thông tin
+            <Link href={`/instructor/courses/${course.id}/students`}>
+              <Users />
+              Học viên
             </Link>
           </Button>
-        )}
+          {editable && (
+            <Button asChild variant='outline'>
+              <Link href={`/instructor/courses/${course.id}/edit`}>
+                <Pencil />
+                Sửa thông tin
+              </Link>
+            </Button>
+          )}
+          {canSubmit && (
+            // Chưa có bài nào: backend trả 409 → khóa nút luôn, lý do hiện ở khung thông báo bên dưới
+            <Button onClick={submitCourse} disabled={!hasLectures || submitMutation.isPending}>
+              {submitMutation.isPending ? <Loader2 className='animate-spin' /> : <Send />}
+              Gửi duyệt
+            </Button>
+          )}
+        </div>
       </div>
 
+      {/* Thông báo theo trạng thái: cho giảng viên biết khóa đang ở bước nào, cần làm gì tiếp */}
+      {course.status === CourseStatus.DRAFT && (
+        <CourseNotice Icon={FileEdit}>
+          Khóa học đang là <span className='font-medium'>bản nháp</span>, chỉ bạn nhìn thấy.{' '}
+          {hasLectures
+            ? 'Soạn xong nội dung thì bấm "Gửi duyệt" để admin xem và xuất bản.'
+            : 'Thêm ít nhất 1 bài giảng để có thể gửi duyệt.'}
+        </CourseNotice>
+      )}
       {course.status === CourseStatus.PENDING && (
         <CourseNotice Icon={Clock}>Khóa học đang chờ admin duyệt nên tạm thời không thể chỉnh sửa nội dung.</CourseNotice>
       )}
-      {course.status === CourseStatus.REJECTED && course.rejectReason && (
+      {course.status === CourseStatus.REJECTED && (
         <CourseNotice tone='destructive' Icon={AlertCircle}>
-          <span className='font-medium'>Lý do từ chối:</span> {course.rejectReason}
+          {course.rejectReason && (
+            <>
+              <span className='font-medium'>Lý do từ chối:</span> {course.rejectReason}.{' '}
+            </>
+          )}
+          Sửa theo góp ý rồi bấm &quot;Gửi duyệt&quot; lại.
         </CourseNotice>
+      )}
+      {course.status === CourseStatus.PUBLISHED && (
+        <CourseNotice Icon={Globe}>Khóa học đang công khai: thay đổi nội dung sẽ hiển thị ngay cho học viên.</CourseNotice>
       )}
 
       {/* ===== Danh sách chương ===== */}

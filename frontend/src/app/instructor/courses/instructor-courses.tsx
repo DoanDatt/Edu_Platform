@@ -4,15 +4,23 @@ import CourseCover from '@/components/course-cover'
 import CourseStatusBadge from '@/components/course-status-badge'
 import PaginationLinks from '@/components/pagination-links'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CourseStatus, CourseStatusLabels } from '@/constants/type'
 import { formatDate, formatPrice } from '@/lib/format'
-import { cn } from '@/lib/utils'
-import { useInstructorCourseQuery } from '@/queries/useCourse'
+import { cn, handleErrorApi } from '@/lib/utils'
+import { useDeleteCourseMutation, useInstructorCourseQuery } from '@/queries/useCourse'
 import { GetMyCoursesQuery, InstructorCourseType } from '@/schemaValidations/course.schema'
-import { AlertCircle, BookOpen, ListTree, Loader2, Pencil } from 'lucide-react'
+import { AlertCircle, BookOpen, ListTree, Loader2, MoreHorizontal, Pencil, Trash2, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 
 const PAGE_SIZE = 10
 const PATHNAME = '/instructor/courses'
@@ -117,6 +125,22 @@ export default function InstructorCourses() {
 }
 
 function CourseRow({ course }: { course: InstructorCourseType }) {
+  const deleteMutation = useDeleteCourseMutation()
+  // Chỉ khóa chưa từng / không còn công khai mới xóa được (backend: DRAFT_STATUSES, sai → 409)
+  const canDelete = course.status === CourseStatus.DRAFT || course.status === CourseStatus.REJECTED
+
+  // Xóa ở BẢNG chứ không ở trang soạn nội dung: xóa xong bảng tự tải lại (invalidate ['courses']).
+  // Nếu xóa ở trang soạn, query chi tiết khóa đó cũng bị tải lại → nhận 404 → nháy trang lỗi trước khi chuyển trang
+  const deleteCourse = async () => {
+    if (!confirm(`Xóa khóa học "${course.title}"? Toàn bộ chương và bài giảng cũng sẽ bị xóa.`)) return
+    try {
+      const result = await deleteMutation.mutateAsync(course.id)
+      toast.success(result.payload.message)
+    } catch (error) {
+      handleErrorApi({ error })
+    }
+  }
+
   return (
     <tr className='border-t align-top'>
       <td className='px-4 py-3'>
@@ -143,20 +167,47 @@ function CourseRow({ course }: { course: InstructorCourseType }) {
       <td className='px-4 py-3 text-right tabular-nums'>{formatPrice(course.price)}</td>
       <td className='px-4 py-3 text-muted-foreground'>{formatDate(course.updatedAt)}</td>
       <td className='px-4 py-3 text-right'>
-        <div className='flex justify-end gap-2'>
-          {/* Soạn: chương + bài giảng · Sửa: thông tin khóa (tên, giá, ảnh bìa...) */}
+        <div className='flex justify-end gap-1'>
+          {/* Việc hay làm nhất (soạn chương / bài) để ngoài; còn lại gom vào menu ⋯ cho bảng gọn */}
           <Button asChild variant='outline' size='sm'>
             <Link href={`${PATHNAME}/${course.id}`}>
               <ListTree />
               Soạn
             </Link>
           </Button>
-          <Button asChild variant='ghost' size='sm'>
-            <Link href={`${PATHNAME}/${course.id}/edit`}>
-              <Pencil />
-              Sửa
-            </Link>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant='ghost' size='icon-sm' aria-label={`Thao tác với khóa ${course.title}`}>
+                {deleteMutation.isPending ? <Loader2 className='animate-spin' /> : <MoreHorizontal />}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end'>
+              {/* PENDING: backend không cho sửa → ẩn mục Sửa */}
+              {course.status !== CourseStatus.PENDING && (
+                <DropdownMenuItem asChild>
+                  <Link href={`${PATHNAME}/${course.id}/edit`}>
+                    <Pencil />
+                    Sửa thông tin
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem asChild>
+                <Link href={`${PATHNAME}/${course.id}/students`}>
+                  <Users />
+                  Học viên
+                </Link>
+              </DropdownMenuItem>
+              {canDelete && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant='destructive' disabled={deleteMutation.isPending} onSelect={deleteCourse}>
+                    <Trash2 />
+                    Xóa khóa học
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </td>
     </tr>
