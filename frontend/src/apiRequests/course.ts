@@ -1,11 +1,15 @@
 import http from '@/lib/http'
 import { toQueryString } from '@/lib/utils'
+import { MessageResType } from '@/schemaValidations/common.schema'
 import {
+  CreateCourseBodyType,
   GetCoursesQueryType,
   GetMyCoursesQueryType,
+  InstructorCourseDetailResType,
   InstructorCourseListResType,
   PublicCourseDetailResType,
-  PublicCourseListResType
+  PublicCourseListResType,
+  UpdateCourseBodyType
 } from '@/schemaValidations/course.schema'
 
 export const courseApiRequest = {
@@ -17,7 +21,11 @@ export const courseApiRequest = {
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
     }),
   mine: (query?: Partial<GetMyCoursesQueryType>) =>
-    http.get<InstructorCourseListResType>(`/courses/mine${toQueryString(query)}`)
+    http.get<InstructorCourseListResType>(`/courses/mine${toQueryString(query)}`),
+  getMine: (id: number) => http.get<InstructorCourseDetailResType>(`/courses/mine/${id}`),
+  create: (body: CreateCourseBodyType) => http.post<InstructorCourseDetailResType>('/courses', body),
+  update: (id: number, body: UpdateCourseBodyType) => http.put<InstructorCourseDetailResType>(`/courses/${id}`, body),
+  delete: (id: number) => http.delete<MessageResType>(`/courses/${id}`)
 }
 
 export default courseApiRequest

@@ -94,3 +94,27 @@ export const GetMyCoursesQuery = PaginationQuery.extend({
 }).strict()
 
 export type GetMyCoursesQueryType = z.infer<typeof GetMyCoursesQuery>
+
+export const CreateCourseBodySchema = z
+  .object({
+    title: z.string().trim().min(1, 'Vui lòng nhập tên khoá học').max(300),
+    subtitle: z.string().trim().max(500).optional(),
+    description: z.string().trim().max(20000).optional(),
+    thumbnail: z.url('Ảnh bìa phải là một đường dẫn hợp lệ').max(1000).optional(),
+    price: z.number().int().min(0, 'Giá không được âm').max(100_000_000),
+    level: z.enum(CourseLevel).optional(),
+    language: z.string().trim().min(2).max(10).optional(),
+    categoryId: z.number().int().positive()
+  })
+  .strict()
+export type CreateCourseBodyType = z.infer<typeof CreateCourseBodySchema>
+
+export const InstructorCourseDetailRes = z.object({
+  message: z.string(),
+  data: InstructorCourseSchema
+})
+
+export type InstructorCourseDetailResType = z.infer<typeof InstructorCourseDetailRes>
+
+export const UpdateCourseBodySchema = CreateCourseBodySchema
+export type UpdateCourseBodyType = z.infer<typeof UpdateCourseBodySchema>
