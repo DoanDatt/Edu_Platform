@@ -51,6 +51,7 @@ const MyCourseSchema = z.object({
   subtitle: z.string(),
   thumbnail: z.string().nullable(),
   level: z.enum(CourseLevel),
+  category: z.object({ id: z.number(), name: z.string() }),
   instructor: z.object({ id: z.number(), name: z.string() })
 })
 
@@ -91,7 +92,7 @@ export type MySectionType = z.infer<typeof MySectionSchema>
 // Giống 1 phần tử của danh sách, chỉ khác course: bỏ level, thêm mục lục sections
 export const MyEnrollmentDetailRes = z.object({
   data: MyEnrollmentSchema.extend({
-    course: MyCourseSchema.omit({ level: true }).extend({
+    course: MyCourseSchema.omit({ level: true, category: true }).extend({
       sections: z.array(MySectionSchema)
     })
   }),

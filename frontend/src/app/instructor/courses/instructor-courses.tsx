@@ -1,5 +1,6 @@
 'use client'
 
+import CourseCover from '@/components/course-cover'
 import CourseStatusBadge from '@/components/course-status-badge'
 import PaginationLinks from '@/components/pagination-links'
 import { Button } from '@/components/ui/button'
@@ -9,8 +10,7 @@ import { formatDate, formatPrice } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { useInstructorCourseQuery } from '@/queries/useCourse'
 import { GetMyCoursesQuery, InstructorCourseType } from '@/schemaValidations/course.schema'
-import { AlertCircle, BookOpen, ImageOff, ListTree, Loader2, Pencil } from 'lucide-react'
-import Image from 'next/image'
+import { AlertCircle, BookOpen, ListTree, Loader2, Pencil } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
@@ -121,15 +121,7 @@ function CourseRow({ course }: { course: InstructorCourseType }) {
     <tr className='border-t align-top'>
       <td className='px-4 py-3'>
         <div className='flex gap-3'>
-          <div className='relative aspect-video w-24 shrink-0 overflow-hidden rounded-md bg-muted'>
-            {course.thumbnail ? (
-              <Image src={course.thumbnail} alt={course.title} fill sizes='96px' className='object-cover' />
-            ) : (
-              <div className='flex size-full items-center justify-center text-muted-foreground'>
-                <ImageOff className='size-4' />
-              </div>
-            )}
-          </div>
+          <CourseCover course={course} size='sm' sizes='96px' className='w-24 shrink-0 rounded-md' />
           <div className='flex min-w-0 flex-col gap-1'>
             <Link href={`${PATHNAME}/${course.id}`} className='line-clamp-2 font-medium hover:text-primary'>
               {course.title}

@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { GetCoursesQueryType } from '@/schemaValidations/course.schema'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-import CourseCard from './courses/course-card'
+import CourseCard, { CourseCardSkeleton } from './courses/course-card'
 
 // Một khối khóa học trên trang chủ: tiêu đề + "Xem tất cả" + lưới CourseCard.
 // Dùng lại cho nhiều khối, chỉ khác query (nổi bật, miễn phí...).
@@ -55,14 +55,7 @@ export function CourseSectionSkeleton({ count }: { count: number }) {
       <Skeleton className='h-8 w-56' />
       <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
         {Array.from({ length: count }, (_, index) => (
-          <div key={index} className='flex flex-col overflow-hidden rounded-xl border'>
-            <Skeleton className='aspect-video rounded-none' />
-            <div className='flex flex-col gap-2 p-4'>
-              <Skeleton className='h-4 w-1/3' />
-              <Skeleton className='h-5 w-full' />
-              <Skeleton className='h-4 w-1/2' />
-            </div>
-          </div>
+          <CourseCardSkeleton key={index} />
         ))}
       </div>
     </div>

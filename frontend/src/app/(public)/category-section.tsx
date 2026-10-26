@@ -1,16 +1,8 @@
 import categoryApiRequest from '@/apiRequests/category'
 import { Skeleton } from '@/components/ui/skeleton'
-import { BarChart3, Code, LayoutGrid, LucideIcon, Megaphone, Palette } from 'lucide-react'
+import { getCategoryStyle } from '@/constants/category'
+import { cn } from '@/lib/utils'
 import Link from 'next/link'
-
-// DB không lưu icon cho danh mục → tự gán theo tên.
-// Danh mục mới (admin thêm sau) không có trong bảng này → dùng icon mặc định LayoutGrid
-const categoryIcons: Record<string, LucideIcon> = {
-  'Lập trình Web': Code,
-  'Thiết kế': Palette,
-  Marketing: Megaphone,
-  'Khoa học dữ liệu': BarChart3
-}
 
 // Bấm 1 ô → /courses?categoryId=... Bộ lọc nằm trên URL nên trang /courses tự lọc sẵn, không cần viết thêm gì
 export default async function CategorySection() {
@@ -26,19 +18,24 @@ export default async function CategorySection() {
       <h2 className='text-2xl font-bold tracking-tight'>Khám phá theo danh mục</h2>
       <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
         {categories.map((category) => {
-          // ?? : tên không có trong bảng → icon mặc định
-          const Icon = categoryIcons[category.name] ?? LayoutGrid
+          // Icon + màu gradient theo danh mục: trùng màu với ảnh bìa tự vẽ của khóa trong danh mục đó
+          const { Icon, gradient } = getCategoryStyle(category)
           return (
             <Link
               key={category.id}
               href={`/courses?categoryId=${category.id}`}
-              className='group flex items-center gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary hover:bg-accent'
+              className='group flex items-center gap-3 rounded-2xl bg-muted/70 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:bg-card'
             >
-              {/* group-hover: rê chuột vào CẢ Ô thì ô icon đổi màu */}
-              <span className='flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground'>
+              {/* group-hover: rê chuột vào CẢ Ô thì icon phóng to nhẹ */}
+              <span
+                className={cn(
+                  'flex size-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br text-white shadow-sm transition-transform group-hover:scale-105',
+                  gradient
+                )}
+              >
                 <Icon className='size-5' />
               </span>
-              <span className='font-medium'>{category.name}</span>
+              <span className='font-medium transition-colors group-hover:text-primary'>{category.name}</span>
             </Link>
           )
         })}

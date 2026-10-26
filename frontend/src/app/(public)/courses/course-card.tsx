@@ -1,68 +1,74 @@
-import { Badge } from '@/components/ui/badge'
+import CourseCover from '@/components/course-cover'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Skeleton } from '@/components/ui/skeleton'
 import { CourseLevelLabels } from '@/constants/type'
 import { formatPrice, generateSlugUrl } from '@/lib/format'
 import { PublicCourseType } from '@/schemaValidations/course.schema'
-import { ImageOff, Star, Users } from 'lucide-react'
-import Image from 'next/image'
+import { Star, Users } from 'lucide-react'
 import Link from 'next/link'
 
-// Thẻ 1 khóa học. Cả thẻ là 1 link tới trang chi tiết
+// Thẻ 1 khóa học. Cả thẻ là 1 link tới trang chi tiết.
+// Phong cách: không viền, nền xám nhạt, bo góc lớn, rê chuột thì nổi lên (translate + shadow)
 export default function CourseCard({ course }: { course: PublicCourseType }) {
   // Link dạng slug: /courses/react-tu-co-ban-den-nang-cao-i.15
   const href = `/courses/${generateSlugUrl({ name: course.title, id: course.id })}`
 
-  const price = formatPrice(course.price)
   return (
     <Link
       href={href}
-      className='group flex flex-col overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-md'
+      className='group flex flex-col overflow-hidden rounded-2xl bg-muted/70 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:bg-card'
     >
-      {/* Ảnh bìa tỉ lệ 16:9. Không có ảnh → khung xám + icon */}
-      <div className='relative aspect-video overflow-hidden bg-muted'>
-        {course.thumbnail ? (
-          <Image
-            src={course.thumbnail}
-            alt={course.title}
-            fill
-            sizes='(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'
-            className='object-cover transition-transform duration-300 group-hover:scale-[1.02]'
-          />
-        ) : (
-          <div className='flex size-full items-center justify-center text-muted-foreground'>
-            <ImageOff className='size-8' />
-          </div>
-        )}
-      </div>
+      <CourseCover
+        course={course}
+        sizes='(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'
+      />
 
-      <div className='flex flex-1 flex-col gap-2 p-4'>
-        <div className='flex flex-wrap gap-1.5'>
-          <Badge variant='secondary'>{course.category.name}</Badge>
-          <Badge variant='outline'>{CourseLevelLabels[course.level]}</Badge>
-        </div>
-
+      <div className='flex flex-1 flex-col gap-1.5 p-4'>
+        <span className='text-xs font-medium text-muted-foreground'>{CourseLevelLabels[course.level]}</span>
         {/* line-clamp-2: tên dài quá 2 dòng thì cắt bằng "..." để các thẻ cao bằng nhau */}
-        <h3 className='line-clamp-2 font-semibold leading-snug group-hover:text-primary'>{course.title}</h3>
-        <p className='text-sm text-muted-foreground'>{course.instructor.name}</p>
+        <h3 className='line-clamp-2 font-semibold leading-snug transition-colors group-hover:text-primary'>
+          {course.title}
+        </h3>
+        <p className='font-bold text-primary'>{formatPrice(course.price)}</p>
 
-        <div className='flex items-center gap-3 text-sm'>
-          {course.rating.totalReviews > 0 ? (
-            <span className='flex items-center gap-1'>
-              <Star className='size-4 fill-amber-400 text-amber-400' />
-              <span className='font-semibold'>{course.rating.averageRating}</span>
-              <span className='text-muted-foreground'>({course.rating.totalReviews})</span>
+        {/* mt-auto: đẩy hàng cuối xuống đáy thẻ → thẻ nào cũng thẳng hàng */}
+        <div className='mt-auto flex items-center justify-between gap-3 pt-3 text-sm text-muted-foreground'>
+          <span className='flex min-w-0 items-center gap-2'>
+            <Avatar className='size-6'>
+              <AvatarImage src={course.instructor.avatar ?? undefined} alt={course.instructor.name} />
+              <AvatarFallback className='text-[10px]'>{course.instructor.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <span className='truncate'>{course.instructor.name}</span>
+          </span>
+          <span className='flex shrink-0 items-center gap-3'>
+            {course.rating.totalReviews > 0 && (
+              <span className='flex items-center gap-1'>
+                <Star className='size-3.5 fill-amber-400 text-amber-400' />
+                <span className='font-medium text-foreground'>{course.rating.averageRating}</span>
+              </span>
+            )}
+            <span className='flex items-center gap-1' title='Học viên'>
+              <Users className='size-3.5' />
+              {course.studentCount}
             </span>
-          ) : (
-            <span className='text-muted-foreground'>Chưa có đánh giá</span>
-          )}
-          <span className='flex items-center gap-1 text-muted-foreground'>
-            <Users className='size-4' />
-            {course.studentCount}
           </span>
         </div>
-
-        {/* mt-auto: đẩy giá xuống đáy thẻ, thẻ nào cũng thẳng hàng */}
-        <p className='mt-auto pt-2 text-lg font-bold'>{price}</p>
       </div>
     </Link>
+  )
+}
+
+// Thẻ giả lúc đang tải: cùng khung với CourseCard để trang không bị nhảy khi dữ liệu về
+export function CourseCardSkeleton() {
+  return (
+    <div className='flex flex-col overflow-hidden rounded-2xl border'>
+      <Skeleton className='aspect-video rounded-none' />
+      <div className='flex flex-col gap-2 p-4'>
+        <Skeleton className='h-3 w-1/4' />
+        <Skeleton className='h-5 w-full' />
+        <Skeleton className='h-4 w-1/3' />
+        <Skeleton className='mt-3 h-6 w-1/2' />
+      </div>
+    </div>
   )
 }

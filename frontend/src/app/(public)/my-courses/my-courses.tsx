@@ -1,12 +1,12 @@
 'use client'
 
+import CourseCover from '@/components/course-cover'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useMyEnrollmentQuery } from '@/queries/useEnrollments'
 import { MyEnrollmentType } from '@/schemaValidations/enrollment.schema'
-import { BookOpen, ImageOff } from 'lucide-react'
-import Image from 'next/image'
+import { BookOpen } from 'lucide-react'
 import Link from 'next/link'
 
 // Danh sách khóa đã ghi danh. Client Component vì dùng useQuery.
@@ -66,21 +66,9 @@ function MyCourseCard({ enrollment }: { enrollment: MyEnrollmentType }) {
   const actionLabel = progress.percent === 0 ? 'Bắt đầu học' : isCompleted ? 'Xem lại' : 'Tiếp tục học'
 
   return (
-    <div className='flex flex-col overflow-hidden rounded-xl border bg-card'>
-      <Link href={href} className='group relative aspect-video overflow-hidden bg-muted'>
-        {course.thumbnail ? (
-          <Image
-            src={course.thumbnail}
-            alt={course.title}
-            fill
-            sizes='(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'
-            className='object-cover transition-transform duration-300 group-hover:scale-[1.02]'
-          />
-        ) : (
-          <div className='flex size-full items-center justify-center text-muted-foreground'>
-            <ImageOff className='size-8' />
-          </div>
-        )}
+    <div className='flex flex-col overflow-hidden rounded-2xl bg-muted/70 dark:bg-card'>
+      <Link href={href} className='group'>
+        <CourseCover course={course} sizes='(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw' />
       </Link>
 
       <div className='flex flex-1 flex-col gap-3 p-4'>
@@ -97,7 +85,7 @@ function MyCourseCard({ enrollment }: { enrollment: MyEnrollmentType }) {
             {/* Thanh tiến độ: nền xám, bên trong thanh màu dài bằng percent%
                 role / aria-*: trình đọc màn hình đọc được "67%" */}
             <div
-              className='h-2 overflow-hidden rounded-full bg-muted'
+              className='h-2 overflow-hidden rounded-full bg-foreground/10'
               role='progressbar'
               aria-valuenow={progress.percent}
               aria-valuemin={0}
