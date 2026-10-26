@@ -37,7 +37,8 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       className={`${beVietnamPro.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className='flex min-h-full flex-col'>
-        <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
+        {/* Mặc định giao diện SÁNG (giống đa số web học), người dùng vẫn bật tối bằng nút ở header */}
+        <ThemeProvider attribute='class' defaultTheme='light' disableTransitionOnChange>
           <AppProvider>{children}</AppProvider>
           {/* Nơi hiện thông báo toast (handleErrorApi trong lib/utils dùng nó) */}
           <Toaster />
