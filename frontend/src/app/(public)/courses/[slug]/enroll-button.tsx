@@ -28,7 +28,7 @@ export default function EnrollButton({
 
   if (isEnrolled === null) {
     return (
-      <Button asChild size='lg' className='w-full'>
+      <Button asChild size='lg' className='h-11 w-full rounded-full text-base'>
         <Link href='/login'>Đăng nhập để ghi danh</Link>
       </Button>
     )
@@ -36,7 +36,7 @@ export default function EnrollButton({
 
   if (isEnrolled) {
     return (
-      <Button asChild size='lg' className='w-full'>
+      <Button asChild size='lg' className='h-11 w-full rounded-full text-base'>
         <Link href={`/learn/${courseId}`}>Vào học</Link>
       </Button>
     )
@@ -63,7 +63,7 @@ export default function EnrollButton({
   }
 
   return (
-    <Button size='lg' className='w-full' onClick={enroll} disabled={enrollMutation.isPending}>
+    <Button size='lg' className='h-11 w-full rounded-full text-base' onClick={enroll} disabled={enrollMutation.isPending}>
       {enrollMutation.isPending && <Loader2 className='animate-spin' />}
       {price === 0 ? 'Ghi danh miễn phí' : 'Ghi danh'}
     </Button>

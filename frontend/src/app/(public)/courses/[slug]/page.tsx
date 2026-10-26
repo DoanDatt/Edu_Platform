@@ -1,15 +1,16 @@
 import courseApiRequest from '@/apiRequests/course'
 import reviewApiRequest from '@/apiRequests/review'
+import CourseCover from '@/components/course-cover'
 import RatingStars from '@/components/rating-stars'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CourseLevelLabels } from '@/constants/type'
 import { formatDate, formatDuration, formatPrice, generateSlugUrl, getIdFromSlugUrl } from '@/lib/format'
 import { HttpError } from '@/lib/http'
-import { BarChart3, Clock, Globe, ImageOff, PlayCircle, Users } from 'lucide-react'
+import { BarChart3, Clock, Globe, House, Infinity as InfinityIcon, PlayCircle, Users } from 'lucide-react'
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { cache, Suspense } from 'react'
@@ -104,15 +105,22 @@ async function CourseDetail({ params }: { params: Promise<{ slug: string }> }) {
   if (slug !== canonicalSlug) redirect(`/courses/${canonicalSlug}`)
 
   return (
-    <div className='flex flex-col gap-8'>
+    // Máy tính: 2 cột (nội dung bên trái, khung giá 360px bên phải, dính khi cuộn).
+    // Điện thoại: 1 cột theo đúng thứ tự trong code: đầu trang → khung giá → nội dung
+    <div className='grid gap-x-10 gap-y-8 lg:grid-cols-[1fr_360px]'>
       {/* ===== ① Đầu trang ===== */}
-      <section className='flex flex-col gap-4 rounded-2xl bg-muted/50 p-6 md:p-8'>
+      <section className='flex min-w-0 flex-col gap-4'>
         {/* Đường dẫn: bấm danh mục → /courses đã lọc sẵn danh mục đó (bộ lọc nằm trên URL) */}
-        <nav className='text-sm text-muted-foreground' aria-label='Đường dẫn'>
+        <nav className='flex flex-wrap items-center gap-2 text-sm text-muted-foreground' aria-label='Đường dẫn'>
+          <Link href='/' className='flex items-center gap-1 hover:text-foreground'>
+            <House className='size-3.5 text-primary' />
+            Trang chủ
+          </Link>
+          <span>/</span>
           <Link href='/courses' className='hover:text-foreground'>
             Khóa học
           </Link>
-          <span className='mx-2'>/</span>
+          <span>/</span>
           <Link href={`/courses?categoryId=${course.category.id}`} className='hover:text-foreground'>
             {course.category.name}
           </Link>
@@ -124,106 +132,115 @@ async function CourseDetail({ params }: { params: Promise<{ slug: string }> }) {
         <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm'>
           {course.rating.totalReviews > 0 ? (
             <span className='flex items-center gap-1.5'>
-              <span className='font-semibold text-amber-600 dark:text-amber-400'>{course.rating.averageRating}</span>
               <RatingStars value={course.rating.averageRating} />
+              <span className='font-semibold'>{course.rating.averageRating}</span>
               <span className='text-muted-foreground'>({course.rating.totalReviews} đánh giá)</span>
             </span>
           ) : (
             <span className='text-muted-foreground'>Chưa có đánh giá</span>
           )}
-          <span className='flex items-center gap-1.5 text-muted-foreground'>
-            <Users className='size-4' />
-            {course.studentCount} học viên
+          <span className='flex items-center gap-1.5'>
+            <Users className='size-4 text-muted-foreground' />
+            <span className='font-semibold'>{course.studentCount}</span>
+            <span className='text-muted-foreground'>học viên</span>
           </span>
-          <span className='text-muted-foreground'>
-            Giảng viên: <span className='font-medium text-foreground'>{course.instructor.name}</span>
-          </span>
-          <span className='text-muted-foreground'>Xuất bản {formatDate(course.publishedAt)}</span>
+        </div>
+
+        <div className='flex flex-wrap items-center gap-3 text-sm'>
+          <Avatar className='size-9'>
+            <AvatarImage src={course.instructor.avatar ?? undefined} alt={course.instructor.name} />
+            <AvatarFallback>{course.instructor.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div className='flex flex-col'>
+            <span className='text-muted-foreground'>Giảng viên</span>
+            <span className='font-medium'>{course.instructor.name}</span>
+          </div>
+          <span className='ml-2 border-l pl-4 text-muted-foreground'>Xuất bản {formatDate(course.publishedAt)}</span>
         </div>
       </section>
 
-      {/* Máy tính: 3 cột (nội dung 2 cột + khung bên phải 1 cột). Điện thoại: 1 cột */}
-      <div className='grid gap-8 lg:grid-cols-3'>
-        {/* ===== ② Khung bên phải =====
-            lg:order-last: trên máy tính đứng bên PHẢI; trên điện thoại vẫn đứng TRƯỚC nội dung (thấy giá + nút ngay)
-            lg:sticky lg:top-24: cuộn trang thì khung này dính lại, nút ghi danh luôn trong tầm mắt */}
-        <aside className='lg:sticky lg:top-24 lg:order-last lg:self-start'>
-          <div className='overflow-hidden rounded-xl border bg-card shadow-sm'>
-            <div className='relative aspect-video bg-muted'>
-              {course.thumbnail ? (
-                <Image
-                  src={course.thumbnail}
-                  alt={course.title}
-                  fill
-                  priority // ảnh chính của trang, tải ngay không chờ cuộn tới
-                  sizes='(min-width: 1024px) 33vw, 100vw'
-                  className='object-cover'
-                />
-              ) : (
-                <div className='flex size-full items-center justify-center text-muted-foreground'>
-                  <ImageOff className='size-8' />
-                </div>
-              )}
+      {/* ===== ② Khung giá =====
+          lg:col-start-2 lg:row-start-1 lg:row-span-2: trên máy tính nằm ở cột phải, cao bằng đầu trang + nội dung
+          lg:sticky lg:top-24 lg:self-start: cuộn trang thì khung dính lại, nút ghi danh luôn trong tầm mắt */}
+      <aside className='lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start'>
+        <div className='overflow-hidden rounded-2xl border bg-card p-3 shadow-sm'>
+          <CourseCover
+            course={course}
+            priority // ảnh chính của trang, tải ngay không chờ cuộn tới
+            sizes='(min-width: 1024px) 360px, 100vw'
+            className='rounded-xl'
+          />
+
+          <div className='flex flex-col items-center gap-4 px-3 pt-5 pb-3'>
+            <div className='flex flex-col items-center'>
+              <span className='text-sm text-muted-foreground'>Học phí</span>
+              <span className='text-3xl font-bold text-primary'>{formatPrice(course.price)}</span>
             </div>
 
-            <div className='flex flex-col gap-4 p-5'>
-              <span className='text-3xl font-bold'>{formatPrice(course.price)}</span>
+            {/* Client Component: trang vẫn là Server Component, chỉ riêng nút này chạy ở trình duyệt */}
+            <EnrollButton courseId={course.id} isEnrolled={course.isEnrolled} price={course.price} />
 
-              {/* Client Component: trang vẫn là Server Component, chỉ riêng nút này chạy ở trình duyệt */}
-              <EnrollButton courseId={course.id} isEnrolled={course.isEnrolled} price={course.price} />
-
-              <ul className='flex flex-col gap-2.5 text-sm text-muted-foreground'>
-                <li className='flex items-center gap-2'>
-                  <PlayCircle className='size-4' />
-                  {course.totalLectures} bài giảng
-                </li>
-                <li className='flex items-center gap-2'>
-                  <Clock className='size-4' />
-                  {formatDuration(course.totalDurationSec)} video
-                </li>
-                <li className='flex items-center gap-2'>
-                  <BarChart3 className='size-4' />
-                  {CourseLevelLabels[course.level]}
-                </li>
-                <li className='flex items-center gap-2'>
-                  <Globe className='size-4' />
-                  {course.language === 'vi' ? 'Tiếng Việt' : course.language}
-                </li>
-              </ul>
-            </div>
+            <ul className='flex w-full flex-col gap-3 border-t pt-4 text-sm'>
+              <li className='flex items-center gap-3'>
+                <BarChart3 className='size-4 shrink-0 text-primary' />
+                <span>
+                  Trình độ <span className='font-semibold'>{CourseLevelLabels[course.level]}</span>
+                </span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <PlayCircle className='size-4 shrink-0 text-primary' />
+                <span>
+                  Tổng số <span className='font-semibold'>{course.totalLectures}</span> bài giảng
+                </span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <Clock className='size-4 shrink-0 text-primary' />
+                <span>
+                  Thời lượng <span className='font-semibold'>{formatDuration(course.totalDurationSec)}</span>
+                </span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <Globe className='size-4 shrink-0 text-primary' />
+                {course.language === 'vi' ? 'Tiếng Việt' : course.language}
+              </li>
+              <li className='flex items-center gap-3'>
+                <InfinityIcon className='size-4 shrink-0 text-primary' />
+                Học mọi lúc, mọi nơi
+              </li>
+            </ul>
           </div>
-        </aside>
-
-        <div className='flex flex-col gap-10 lg:col-span-2'>
-          {/* ===== ③ Giới thiệu =====
-              whitespace-pre-line: giữ xuống dòng (\n) trong mô tả, không thì cả đoạn dính thành 1 dòng */}
-          <section className='flex flex-col gap-3'>
-            <h2 className='text-xl font-semibold'>Giới thiệu khóa học</h2>
-            <p className='whitespace-pre-line leading-relaxed text-muted-foreground'>{course.description}</p>
-          </section>
-
-          {/* ===== ④ Mục lục ===== */}
-          <section className='flex flex-col gap-3'>
-            <h2 className='text-xl font-semibold'>Nội dung khóa học</h2>
-            <Curriculum
-              sections={course.sections}
-              totalLectures={course.totalLectures}
-              totalDurationSec={course.totalDurationSec}
-            />
-          </section>
-
-          {/* ===== ⑤ Đánh giá ===== */}
-          <section className='flex flex-col gap-3'>
-            <div className='flex items-center gap-2'>
-              <h2 className='text-xl font-semibold'>Đánh giá của học viên</h2>
-              {course.rating.totalReviews > 0 && <Badge variant='secondary'>{course.rating.totalReviews}</Badge>}
-            </div>
-            {/* Chỉ người ĐÃ GHI DANH mới viết / sửa / xóa đánh giá (backend cũng chặn: 403).
-                isEnrolled: null = khách, false = chưa ghi danh */}
-            {course.isEnrolled === true && <MyReview courseId={course.id} />}
-            <CourseReviews rating={course.rating} reviews={reviews} />
-          </section>
         </div>
+      </aside>
+
+      <div className='flex min-w-0 flex-col gap-10'>
+        {/* ===== ③ Giới thiệu =====
+            whitespace-pre-line: giữ xuống dòng (\n) trong mô tả, không thì cả đoạn dính thành 1 dòng */}
+        <section className='flex flex-col gap-3'>
+          <h2 className='text-xl font-bold'>Giới thiệu khóa học</h2>
+          <p className='whitespace-pre-line leading-relaxed text-muted-foreground'>{course.description}</p>
+        </section>
+
+        {/* ===== ④ Mục lục ===== */}
+        <section className='flex flex-col gap-3'>
+          <h2 className='text-xl font-bold'>Nội dung khóa học</h2>
+          <Curriculum
+            sections={course.sections}
+            totalLectures={course.totalLectures}
+            totalDurationSec={course.totalDurationSec}
+          />
+        </section>
+
+        {/* ===== ⑤ Đánh giá ===== */}
+        <section className='flex flex-col gap-3'>
+          <div className='flex items-center gap-2'>
+            <h2 className='text-xl font-bold'>Đánh giá của học viên</h2>
+            {course.rating.totalReviews > 0 && <Badge variant='secondary'>{course.rating.totalReviews}</Badge>}
+          </div>
+          {/* Chỉ người ĐÃ GHI DANH mới viết / sửa / xóa đánh giá (backend cũng chặn: 403).
+              isEnrolled: null = khách, false = chưa ghi danh */}
+          {course.isEnrolled === true && <MyReview courseId={course.id} />}
+          <CourseReviews rating={course.rating} reviews={reviews} />
+        </section>
       </div>
     </div>
   )
@@ -232,21 +249,19 @@ async function CourseDetail({ params }: { params: Promise<{ slug: string }> }) {
 // Khung xám giả trong lúc chờ API (fallback của Suspense), hình dạng giống trang thật
 function CourseDetailSkeleton() {
   return (
-    <div className='flex flex-col gap-8'>
-      <div className='flex flex-col gap-4 rounded-2xl bg-muted/50 p-6 md:p-8'>
-        <Skeleton className='h-4 w-40' />
+    <div className='grid gap-x-10 gap-y-8 lg:grid-cols-[1fr_360px]'>
+      <div className='flex flex-col gap-4'>
+        <Skeleton className='h-4 w-56' />
         <Skeleton className='h-10 w-3/4' />
         <Skeleton className='h-6 w-1/2' />
         <Skeleton className='h-4 w-2/3' />
       </div>
-      <div className='grid gap-8 lg:grid-cols-3'>
-        <Skeleton className='h-96 rounded-xl lg:order-last' />
-        <div className='flex flex-col gap-4 lg:col-span-2'>
-          <Skeleton className='h-6 w-48' />
-          <Skeleton className='h-24 w-full' />
-          <Skeleton className='h-6 w-48' />
-          <Skeleton className='h-48 w-full' />
-        </div>
+      <Skeleton className='h-120 rounded-2xl lg:col-start-2 lg:row-span-2 lg:row-start-1' />
+      <div className='flex flex-col gap-4'>
+        <Skeleton className='h-6 w-48' />
+        <Skeleton className='h-24 w-full' />
+        <Skeleton className='h-6 w-48' />
+        <Skeleton className='h-48 w-full' />
       </div>
     </div>
   )
