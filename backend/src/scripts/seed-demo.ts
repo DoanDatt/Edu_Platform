@@ -17,11 +17,13 @@ const DEMO_USERS = [
 
 const CATEGORIES = ['Lập trình Web', 'Thiết kế', 'Marketing', 'Khoa học dữ liệu']
 
-// Video mẫu công khai: video CC0 trong tài liệu MDN của Mozilla (hỗ trợ tua) + ảnh minh họa ngẫu nhiên theo seed
+// Video mẫu công khai: video CC0 trong tài liệu MDN của Mozilla (hỗ trợ tua)
 const SAMPLE_VIDEO = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4'
 // Link cũ (Google sample videos) đã bị khóa (403) → chạy lại seed:demo sẽ đổi sang SAMPLE_VIDEO
 const OLD_SAMPLE_VIDEO = 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
-const thumbnail = (seed: string) => `https://picsum.photos/seed/${seed}/640/360`
+// Khóa demo KHÔNG có ảnh bìa: frontend tự vẽ ảnh bìa gradient theo danh mục + tên khóa (CourseCover).
+// Bản seed cũ dùng ảnh phong cảnh ngẫu nhiên của picsum → chạy lại seed:demo sẽ xóa các ảnh đó
+const OLD_THUMBNAIL_PREFIX = 'https://picsum.photos/'
 
 type DemoCourse = {
   title: string
@@ -291,6 +293,12 @@ const main = async () => {
   })
   if (fixedVideos.count > 0) console.log(`Đã đổi link video mẫu cho ${fixedVideos.count} bài giảng`)
 
+  const clearedThumbnails = await prisma.course.updateMany({
+    where: { thumbnail: { startsWith: OLD_THUMBNAIL_PREFIX } },
+    data: { thumbnail: null },
+  })
+  if (clearedThumbnails.count > 0) console.log(`Đã bỏ ảnh bìa ngẫu nhiên của ${clearedThumbnails.count} khóa học`)
+
   // 3. Khóa học + chương + bài giảng (bài đầu tiên của mỗi khóa cho xem thử)
   const courseIds: number[] = []
   for (const [index, demo] of COURSES.entries()) {
@@ -301,7 +309,6 @@ const main = async () => {
         title: demo.title,
         subtitle: demo.subtitle,
         description: `${demo.subtitle}.\n\nKhóa học gồm ${demo.sections.length} chương, có bài tập thực hành sau mỗi chương.`,
-        thumbnail: thumbnail(`edu-course-${index + 1}`),
         price: demo.price,
         level: demo.level,
         status: demo.status,

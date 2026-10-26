@@ -94,6 +94,8 @@ export const getMyEnrollments = async (userId: number, { page, limit }: GetMyEnr
             subtitle: true,
             thumbnail: true,
             level: true,
+            // Frontend vẽ ảnh bìa theo danh mục khi khóa chưa có thumbnail
+            category: { select: { id: true, name: true } },
             instructor: { select: { id: true, name: true } },
           },
         },
