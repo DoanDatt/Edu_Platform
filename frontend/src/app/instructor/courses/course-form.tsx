@@ -87,8 +87,8 @@ export default function CourseForm({ categories, course }: { categories: Categor
       } else {
         const result = await createMutation.mutateAsync(data)
         toast.success(result.payload.message)
-        // Vòng D: chuyển sang trang soạn chương / bài của khóa vừa tạo
-        router.push('/instructor/courses')
+        // Khóa mới chưa có nội dung → sang thẳng trang soạn chương / bài của khóa vừa tạo
+        router.push(`/instructor/courses/${result.payload.data.id}`)
       }
     } catch (error) {
       // 422 (ví dụ danh mục vừa bị xóa) → lỗi hiện dưới đúng ô; lỗi khác → toast

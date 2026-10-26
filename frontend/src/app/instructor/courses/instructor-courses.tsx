@@ -9,7 +9,7 @@ import { formatDate, formatPrice } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { useInstructorCourseQuery } from '@/queries/useCourse'
 import { GetMyCoursesQuery, InstructorCourseType } from '@/schemaValidations/course.schema'
-import { AlertCircle, BookOpen, ImageOff, Loader2, Pencil } from 'lucide-react'
+import { AlertCircle, BookOpen, ImageOff, ListTree, Loader2, Pencil } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -131,7 +131,7 @@ function CourseRow({ course }: { course: InstructorCourseType }) {
             )}
           </div>
           <div className='flex min-w-0 flex-col gap-1'>
-            <Link href={`${PATHNAME}/${course.id}/edit`} className='line-clamp-2 font-medium hover:text-primary'>
+            <Link href={`${PATHNAME}/${course.id}`} className='line-clamp-2 font-medium hover:text-primary'>
               {course.title}
             </Link>
             <span className='text-xs text-muted-foreground'>{course.category.name}</span>
@@ -151,13 +151,21 @@ function CourseRow({ course }: { course: InstructorCourseType }) {
       <td className='px-4 py-3 text-right tabular-nums'>{formatPrice(course.price)}</td>
       <td className='px-4 py-3 text-muted-foreground'>{formatDate(course.updatedAt)}</td>
       <td className='px-4 py-3 text-right'>
-        {/* Vòng D: thêm nút "Soạn" (trang soạn chương / bài) */}
-        <Button asChild variant='outline' size='sm'>
-          <Link href={`${PATHNAME}/${course.id}/edit`}>
-            <Pencil />
-            Sửa
-          </Link>
-        </Button>
+        <div className='flex justify-end gap-2'>
+          {/* Soạn: chương + bài giảng · Sửa: thông tin khóa (tên, giá, ảnh bìa...) */}
+          <Button asChild variant='outline' size='sm'>
+            <Link href={`${PATHNAME}/${course.id}`}>
+              <ListTree />
+              Soạn
+            </Link>
+          </Button>
+          <Button asChild variant='ghost' size='sm'>
+            <Link href={`${PATHNAME}/${course.id}/edit`}>
+              <Pencil />
+              Sửa
+            </Link>
+          </Button>
+        </div>
       </td>
     </tr>
   )

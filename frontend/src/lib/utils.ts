@@ -28,6 +28,15 @@ export const toQueryString = (query?: Record<string, string | number | boolean |
   return result ? `?${result}` : ''
 }
 
+// Trả MẢNG MỚI với phần tử ở vị trí from chuyển sang vị trí to (không sửa mảng cũ)
+// moveItem([1, 2, 3], 2, 0) → [3, 1, 2]
+export const moveItem = <T>(items: T[], from: number, to: number) => {
+  const next = [...items]
+  const [item] = next.splice(from, 1) // rút phần tử ra
+  next.splice(to, 0, item) // chèn vào chỗ mới
+  return next
+}
+
 export const handleErrorApi = ({
   error,
   setError,
@@ -45,8 +54,11 @@ export const handleErrorApi = ({
       })
     })
   } else {
+    // 422 mà không có form để gắn lỗi (ví dụ upload file hỏng) → hiện lỗi chi tiết đầu tiên,
+    // "Nội dung file không đúng định dạng" rõ hơn câu chung "Dữ liệu không hợp lệ"
+    const detail = error instanceof EntityError ? error.payload.errors[0]?.message : undefined
     toast('Lỗi', {
-      description: error?.payload?.message ?? 'Lỗi không xác định',
+      description: detail ?? error?.payload?.message ?? 'Lỗi không xác định',
       duration: duration ?? 5000
     })
   }
