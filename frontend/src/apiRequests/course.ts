@@ -7,6 +7,7 @@ import {
   GetMyCoursesQueryType,
   InstructorCourseDetailResType,
   InstructorCourseListResType,
+  InstructorCourseResType,
   PublicCourseDetailResType,
   PublicCourseListResType,
   UpdateCourseBodyType
@@ -23,8 +24,9 @@ export const courseApiRequest = {
   mine: (query?: Partial<GetMyCoursesQueryType>) =>
     http.get<InstructorCourseListResType>(`/courses/mine${toQueryString(query)}`),
   getMine: (id: number) => http.get<InstructorCourseDetailResType>(`/courses/mine/${id}`),
-  create: (body: CreateCourseBodyType) => http.post<InstructorCourseDetailResType>('/courses', body),
-  update: (id: number, body: UpdateCourseBodyType) => http.put<InstructorCourseDetailResType>(`/courses/${id}`, body),
+  // Tạo / sửa trả khóa KHÔNG kèm mục lục → InstructorCourseRes (getMine mới có sections)
+  create: (body: CreateCourseBodyType) => http.post<InstructorCourseResType>('/courses', body),
+  update: (id: number, body: UpdateCourseBodyType) => http.put<InstructorCourseResType>(`/courses/${id}`, body),
   delete: (id: number) => http.delete<MessageResType>(`/courses/${id}`)
 }
 

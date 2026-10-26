@@ -8,3 +8,9 @@ export const useUploadImageMutation = () => {
     mutationFn: uploadApiRequest.image
   })
 }
+
+export const useUploadVideoMutation = () => {
+  return useMutation({
+    mutationFn: uploadApiRequest.video
+  })
+}

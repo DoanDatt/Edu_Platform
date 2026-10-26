@@ -18,3 +18,8 @@ export const UploadRes = z.object({
   message: z.string()
 })
 export type UploadResType = z.infer<typeof UploadRes>
+
+// Video: khớp backend (VIDEO_TYPES trong upload.middleware.ts).
+// Dung lượng: backend mặc định 500 MB, nhưng bản deploy đặt MAX_VIDEO_MB=100 (giới hạn gói Cloudinary miễn phí)
+export const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime']
+export const MAX_VIDEO_MB = 100

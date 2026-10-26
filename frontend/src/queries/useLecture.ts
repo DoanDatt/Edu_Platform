@@ -1,4 +1,5 @@
 import lectureApiRequest from '@/apiRequests/lecture'
+import { UpdateLectureBodyType } from '@/schemaValidations/lecture.schema'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 // Nội dung 1 bài (video, ghi chú). lectureId có thể undefined lúc trang học mới mở
@@ -23,5 +24,48 @@ export const useToggleLectureCompleteMutation = () => {
       completed ? lectureApiRequest.complete(lectureId) : lectureApiRequest.uncomplete(lectureId),
     // Response chỉ có { lectureId, completed } → tải lại mục lục (dấu ✓, %) của trang học và /my-courses
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['enrollments'] })
+  })
+}
+
+// ===== Giảng viên soạn bài =====
+// Giống useSection: bài giảng nằm trong mục lục của ['courses', 'mine', id] → tải lại cái đó.
+// Thêm ['lectures']: nội dung bài (video, ghi chú) có thể đang được cache ở trang học /learn
+const useInvalidateLectures = () => {
+  const queryClient = useQueryClient()
+  return () => {
+    queryClient.invalidateQueries({ queryKey: ['courses', 'mine'] })
+    queryClient.invalidateQueries({ queryKey: ['lectures'] })
+  }
+}
+
+export const useCreateLectureMutation = () => {
+  const invalidate = useInvalidateLectures()
+  return useMutation({
+    mutationFn: lectureApiRequest.create,
+    onSuccess: invalidate
+  })
+}
+
+export const useUpdateLectureMutation = () => {
+  const invalidate = useInvalidateLectures()
+  return useMutation({
+    mutationFn: ({ id, body }: { id: number; body: UpdateLectureBodyType }) => lectureApiRequest.update(id, body),
+    onSuccess: invalidate
+  })
+}
+
+export const useDeleteLectureMutation = () => {
+  const invalidate = useInvalidateLectures()
+  return useMutation({
+    mutationFn: lectureApiRequest.delete,
+    onSuccess: invalidate
+  })
+}
+
+export const useReorderLecturesMutation = () => {
+  const invalidate = useInvalidateLectures()
+  return useMutation({
+    mutationFn: lectureApiRequest.reorder,
+    onSuccess: invalidate
   })
 }

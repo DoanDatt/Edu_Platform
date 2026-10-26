@@ -10,6 +10,12 @@ const uploadApiRequest = {
     const formData = new FormData()
     formData.append('file', file)
     return http.post<UploadResType>('/uploads/image', formData)
+  },
+  // Giống image, khác đường dẫn. Có Cloudinary thì data có thêm durationSec (thời lượng video, giây)
+  video: (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return http.post<UploadResType>('/uploads/video', formData)
   }
 }
 

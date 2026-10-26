@@ -1,7 +1,7 @@
 import { CourseLevel, CourseStatus } from '@/constants/type'
 import z from 'zod'
 import { PaginationQuery, PaginationRes } from './common.schema'
-import { PublicSectionSchema } from './section.schema'
+import { InstructorSectionSchema, PublicSectionSchema } from './section.schema'
 import { RatingSummarySchema } from './review.schema'
 
 // Public Course
@@ -110,11 +110,23 @@ export const CreateCourseBodySchema = z
   .strict()
 export type CreateCourseBodyType = z.infer<typeof CreateCourseBodySchema>
 
-export const InstructorCourseDetailRes = z.object({
+// POST /courses, PUT /courses/:id → khóa vừa tạo / sửa (không kèm mục lục)
+export const InstructorCourseRes = z.object({
   message: z.string(),
   data: InstructorCourseSchema
 })
+export type InstructorCourseResType = z.infer<typeof InstructorCourseRes>
 
+// GET /courses/mine/:id → khóa + mục lục ĐẦY ĐỦ (chương, bài, cả bài không cho xem thử) để soạn bài
+export const InstructorCourseDetailSchema = InstructorCourseSchema.extend({
+  sections: z.array(InstructorSectionSchema)
+})
+export type InstructorCourseDetailType = z.infer<typeof InstructorCourseDetailSchema>
+
+export const InstructorCourseDetailRes = z.object({
+  message: z.string(),
+  data: InstructorCourseDetailSchema
+})
 export type InstructorCourseDetailResType = z.infer<typeof InstructorCourseDetailRes>
 
 export const UpdateCourseBodySchema = CreateCourseBodySchema
