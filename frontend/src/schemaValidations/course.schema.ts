@@ -156,3 +156,48 @@ export const CourseStudentListRes = PaginationRes.extend({
   message: z.string()
 })
 export type CourseStudentListResType = z.infer<typeof CourseStudentListRes>
+
+// ===== Admin: tất cả khóa học + duyệt =====
+
+// ?search=react&status=PENDING&page=1 (backend còn lọc instructorId, categoryId; giao diện chưa dùng)
+export const GetAdminCoursesQuery = PaginationQuery.extend({
+  search: z.string().trim().max(200).optional(),
+  status: z.enum(CourseStatus).optional()
+}).strict()
+export type GetAdminCoursesQueryType = z.infer<typeof GetAdminCoursesQuery>
+
+// Giống khóa của giảng viên + biết của AI (admin cần) và bao nhiêu học viên
+const AdminInstructorSchema = z.object({ id: z.number(), name: z.string(), email: z.string() })
+
+export const AdminCourseSchema = InstructorCourseSchema.extend({
+  instructor: AdminInstructorSchema,
+  studentCount: z.number()
+})
+export type AdminCourseType = z.infer<typeof AdminCourseSchema>
+
+export const AdminCourseListRes = PaginationRes.extend({
+  data: z.array(AdminCourseSchema),
+  message: z.string()
+})
+export type AdminCourseListResType = z.infer<typeof AdminCourseListRes>
+
+// GET /courses/admin/:id → khóa ở MỌI trạng thái + mục lục đầy đủ (cả link video) để admin xem trước khi duyệt
+export const AdminCourseDetailSchema = InstructorCourseDetailSchema.extend({
+  instructor: AdminInstructorSchema
+})
+export type AdminCourseDetailType = z.infer<typeof AdminCourseDetailSchema>
+
+export const AdminCourseDetailRes = z.object({
+  message: z.string(),
+  data: AdminCourseDetailSchema
+})
+export type AdminCourseDetailResType = z.infer<typeof AdminCourseDetailRes>
+
+// Từ chối (PENDING → REJECTED) và gỡ khóa (PUBLISHED → REJECTED) cùng 1 body: bắt buộc lý do
+// để giảng viên biết mà sửa (copy từ backend RejectCourseBodySchema)
+export const RejectCourseBody = z
+  .object({
+    reason: z.string().trim().min(1, 'Vui lòng nhập lý do').max(1000)
+  })
+  .strict()
+export type RejectCourseBodyType = z.infer<typeof RejectCourseBody>

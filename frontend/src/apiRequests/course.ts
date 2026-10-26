@@ -2,8 +2,11 @@ import http from '@/lib/http'
 import { toQueryString } from '@/lib/utils'
 import { MessageResType } from '@/schemaValidations/common.schema'
 import {
+  AdminCourseDetailResType,
+  AdminCourseListResType,
   CourseStudentListResType,
   CreateCourseBodyType,
+  GetAdminCoursesQueryType,
   GetCourseStudentsQueryType,
   GetCoursesQueryType,
   GetMyCoursesQueryType,
@@ -12,6 +15,7 @@ import {
   InstructorCourseResType,
   PublicCourseDetailResType,
   PublicCourseListResType,
+  RejectCourseBodyType,
   UpdateCourseBodyType
 } from '@/schemaValidations/course.schema'
 
@@ -33,7 +37,18 @@ export const courseApiRequest = {
   // Gửi duyệt: DRAFT / REJECTED → PENDING. Không có body (id trên đường dẫn là đủ) → gửi null
   submit: (id: number) => http.post<InstructorCourseResType>(`/courses/${id}/submit`, null),
   students: (id: number, query?: Partial<GetCourseStudentsQueryType>) =>
-    http.get<CourseStudentListResType>(`/courses/mine/${id}/students${toQueryString(query)}`)
+    http.get<CourseStudentListResType>(`/courses/mine/${id}/students${toQueryString(query)}`),
+
+  // ===== Admin =====
+  adminList: (query?: Partial<GetAdminCoursesQueryType>) =>
+    http.get<AdminCourseListResType>(`/courses/admin${toQueryString(query)}`),
+  adminGetDetail: (id: number) => http.get<AdminCourseDetailResType>(`/courses/admin/${id}`),
+  // Duyệt / từ chối / gỡ chỉ đổi trạng thái → trả khóa KHÔNG kèm mục lục (giống tạo / sửa)
+  approve: (id: number) => http.post<InstructorCourseResType>(`/courses/${id}/approve`, null),
+  reject: (id: number, body: RejectCourseBodyType) =>
+    http.post<InstructorCourseResType>(`/courses/${id}/reject`, body),
+  unpublish: (id: number, body: RejectCourseBodyType) =>
+    http.post<InstructorCourseResType>(`/courses/${id}/unpublish`, body)
 }
 
 export default courseApiRequest
