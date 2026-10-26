@@ -16,7 +16,7 @@ export default function AuthButtons() {
       <Button asChild variant='ghost' className='hidden rounded-full sm:inline-flex'>
         <Link href='/register'>Đăng ký</Link>
       </Button>
-      <Button asChild className='rounded-full bg-linear-to-r from-orange-400 to-primary px-5 shadow-sm hover:opacity-90'>
+      <Button asChild className='rounded-full bg-linear-to-r from-sky-400 to-primary px-5 shadow-sm hover:opacity-90'>
         <Link href='/login'>Đăng nhập</Link>
       </Button>
     </div>

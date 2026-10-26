@@ -55,20 +55,21 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  /* Màu thương hiệu: cam (học theo phong cách F8). Nút chính, giá, link đang chọn, icon nhấn */
-  --primary: oklch(0.65 0.2 40);
+  /* Màu thương hiệu: xanh nước biển nhạt. Nút chính, giá, link đang chọn, icon nhấn.
+     Không lấy xanh quá nhạt: chữ trắng trên nút sẽ khó đọc (độ sáng 0.62 vẫn đủ tương phản) */
+  --primary: oklch(0.62 0.15 235);
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  /* accent: nền khi rê chuột (menu, nút ghost). Ngả cam rất nhạt cho đồng bộ màu chính */
-  --accent: oklch(0.96 0.02 50);
+  /* accent: nền khi rê chuột (menu, nút ghost). Ngả xanh rất nhạt cho đồng bộ màu chính */
+  --accent: oklch(0.96 0.02 230);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.75 0.15 45);
+  --ring: oklch(0.75 0.12 230);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -78,7 +79,7 @@
   --radius: 0.75rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.65 0.2 40);
+  --sidebar-primary: oklch(0.62 0.15 235);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
@@ -93,8 +94,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  /* Nền tối: cam sáng hơn một chút để đủ tương phản */
-  --primary: oklch(0.7 0.19 45);
+  /* Nền tối: xanh sáng hơn một chút để đủ tương phản */
+  --primary: oklch(0.7 0.14 230);
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -105,7 +106,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.6 0.15 45);
+  --ring: oklch(0.6 0.12 230);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -113,7 +114,7 @@
   --chart-5: oklch(0.269 0 0);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.7 0.19 45);
+  --sidebar-primary: oklch(0.7 0.14 230);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
