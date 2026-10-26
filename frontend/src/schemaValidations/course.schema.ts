@@ -1,4 +1,4 @@
-import { CourseLevel } from '@/constants/type'
+import { CourseLevel, CourseStatus } from '@/constants/type'
 import z from 'zod'
 import { PaginationQuery, PaginationRes } from './common.schema'
 import { PublicSectionSchema } from './section.schema'
@@ -62,3 +62,35 @@ export const PublicCourseDetailRes = z.object({
 })
 
 export type PublicCourseDetailResType = z.infer<typeof PublicCourseDetailRes>
+
+export const InstructorCourseSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  subtitle: z.string(),
+  description: z.string(),
+  thumbnail: z.string().nullable(),
+  price: z.number(),
+  level: z.enum(CourseLevel),
+  language: z.string(),
+  status: z.enum(CourseStatus),
+  updatedAt: z.string(),
+  rejectReason: z.string().nullable(),
+  category: z.object({
+    id: z.number(),
+    name: z.string()
+  })
+})
+export type InstructorCourseType = z.infer<typeof InstructorCourseSchema>
+
+export const InstructorCourseListRes = PaginationRes.extend({
+  data: z.array(InstructorCourseSchema),
+  message: z.string()
+})
+
+export type InstructorCourseListResType = z.infer<typeof InstructorCourseListRes>
+
+export const GetMyCoursesQuery = PaginationQuery.extend({
+  status: z.enum(CourseStatus).optional()
+}).strict()
+
+export type GetMyCoursesQueryType = z.infer<typeof GetMyCoursesQuery>
