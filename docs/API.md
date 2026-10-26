@@ -164,6 +164,8 @@ Lỗi: sai loại file, hoặc nội dung file không khớp loại khai báo (v
 
 File được phục vụ lại tại `url` (GET, công khai). Video hỗ trợ tua (HTTP Range), dùng thẳng trong thẻ `<video src="...">`.
 
+**Khi có `CLOUDINARY_URL`** (bản deploy): file được đẩy lên Cloudinary, `url` có dạng `https://res.cloudinary.com/<cloud>/image/upload/...`. Video có thêm **`durationSec`** (giây, Cloudinary tự đọc) để gửi tiếp khi tạo / sửa bài giảng. Lỗi khi đẩy lên Cloudinary → **502**. Gói miễn phí của Cloudinary giới hạn dung lượng mỗi file (ảnh khoảng 10 MB, video khoảng 100 MB), nên khi deploy đặt `MAX_VIDEO_MB` không vượt mức này.
+
 ---
 
 ## 4. Danh mục

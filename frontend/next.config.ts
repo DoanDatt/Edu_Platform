@@ -11,7 +11,9 @@ const nextConfig: NextConfig = {
       new URL('https://picsum.photos/**'),
       new URL('https://**.picsum.photos/**'),
       // Ảnh upload lên backend (dev). Deploy thật thì thêm tên miền của API vào đây
-      new URL('http://localhost:4000/uploads/**')
+      new URL('http://localhost:4000/uploads/**'),
+      // Ảnh upload khi deploy (backend đẩy lên Cloudinary)
+      new URL('https://res.cloudinary.com/**')
     ]
   },
   turbopack: {
