@@ -77,7 +77,7 @@ export default function InstructorDashboard() {
             <div className='flex flex-col items-center gap-3 py-8 text-center'>
               <p className='text-muted-foreground'>Bạn chưa có khóa học nào.</p>
               <Button asChild>
-                <Link href='/instructor/courses'>Tạo khóa học đầu tiên</Link>
+                <Link href='/instructor/courses/new'>Tạo khóa học đầu tiên</Link>
               </Button>
             </div>
           ) : (

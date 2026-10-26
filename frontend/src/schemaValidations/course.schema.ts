@@ -101,10 +101,11 @@ export const CreateCourseBodySchema = z
     subtitle: z.string().trim().max(500).optional(),
     description: z.string().trim().max(20000).optional(),
     thumbnail: z.url('Ảnh bìa phải là một đường dẫn hợp lệ').max(1000).optional(),
-    price: z.number().int().min(0, 'Giá không được âm').max(100_000_000),
+    // { error }: ô giá để trống (undefined) → hiện câu này thay vì "expected number, received undefined"
+    price: z.number({ error: 'Vui lòng nhập giá (0 = miễn phí)' }).int().min(0, 'Giá không được âm').max(100_000_000),
     level: z.enum(CourseLevel).optional(),
     language: z.string().trim().min(2).max(10).optional(),
-    categoryId: z.number().int().positive()
+    categoryId: z.number({ error: 'Vui lòng chọn danh mục' }).int().positive()
   })
   .strict()
 export type CreateCourseBodyType = z.infer<typeof CreateCourseBodySchema>

@@ -131,7 +131,7 @@ function CourseRow({ course }: { course: InstructorCourseType }) {
             )}
           </div>
           <div className='flex min-w-0 flex-col gap-1'>
-            <Link href={`${PATHNAME}/${course.id}`} className='line-clamp-2 font-medium hover:text-primary'>
+            <Link href={`${PATHNAME}/${course.id}/edit`} className='line-clamp-2 font-medium hover:text-primary'>
               {course.title}
             </Link>
             <span className='text-xs text-muted-foreground'>{course.category.name}</span>
@@ -151,11 +151,11 @@ function CourseRow({ course }: { course: InstructorCourseType }) {
       <td className='px-4 py-3 text-right tabular-nums'>{formatPrice(course.price)}</td>
       <td className='px-4 py-3 text-muted-foreground'>{formatDate(course.updatedAt)}</td>
       <td className='px-4 py-3 text-right'>
-        {/* Vòng D: trang soạn chương / bài */}
+        {/* Vòng D: thêm nút "Soạn" (trang soạn chương / bài) */}
         <Button asChild variant='outline' size='sm'>
-          <Link href={`${PATHNAME}/${course.id}`}>
+          <Link href={`${PATHNAME}/${course.id}/edit`}>
             <Pencil />
-            Soạn
+            Sửa
           </Link>
         </Button>
       </td>

@@ -1,4 +1,5 @@
 import courseApiRequest from '@/apiRequests/course'
+import { HttpError } from '@/lib/http'
 import { GetMyCoursesQueryType, UpdateCourseBodyType } from '@/schemaValidations/course.schema'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -13,7 +14,11 @@ export const useInstructorCourseQuery = (query?: Partial<GetMyCoursesQueryType>)
 export const useInstructorCourseDetailQuery = (id: number) => {
   return useQuery({
     queryKey: ['courses', 'mine', id],
-    queryFn: () => courseApiRequest.getMine(id)
+    queryFn: () => courseApiRequest.getMine(id),
+    // Mặc định React Query thử lại 3 lần khi lỗi (mất vài giây). 404 / 403 thử lại bao nhiêu lần vẫn vậy
+    // → báo lỗi ngay. Lỗi khác (mạng chập chờn, server khởi động chậm) vẫn thử lại tối đa 3 lần
+    retry: (failureCount, error) =>
+      !(error instanceof HttpError && [403, 404].includes(error.status)) && failureCount < 3
   })
 }
 
