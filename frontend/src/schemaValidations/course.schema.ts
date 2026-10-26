@@ -2,6 +2,7 @@ import { CourseLevel, CourseStatus } from '@/constants/type'
 import z from 'zod'
 import { PaginationQuery, PaginationRes } from './common.schema'
 import { InstructorSectionSchema, PublicSectionSchema } from './section.schema'
+import { EnrollmentProgressSchema } from './enrollment.schema'
 import { RatingSummarySchema } from './review.schema'
 
 // Public Course
@@ -131,3 +132,27 @@ export type InstructorCourseDetailResType = z.infer<typeof InstructorCourseDetai
 
 export const UpdateCourseBodySchema = CreateCourseBodySchema
 export type UpdateCourseBodyType = z.infer<typeof UpdateCourseBodySchema>
+
+// ===== Giảng viên: học viên của khóa mình (GET /courses/mine/:id/students) =====
+
+export const GetCourseStudentsQuery = PaginationQuery
+export type GetCourseStudentsQueryType = z.infer<typeof GetCourseStudentsQuery>
+
+// 1 học viên + tiến độ học khóa này (backend tính sẵn percent, giống "Khóa học của tôi")
+export const CourseStudentSchema = z.object({
+  enrolledAt: z.string(),
+  user: z.object({
+    id: z.number(),
+    name: z.string(),
+    email: z.string(),
+    avatar: z.string().nullable()
+  }),
+  progress: EnrollmentProgressSchema
+})
+export type CourseStudentType = z.infer<typeof CourseStudentSchema>
+
+export const CourseStudentListRes = PaginationRes.extend({
+  data: z.array(CourseStudentSchema),
+  message: z.string()
+})
+export type CourseStudentListResType = z.infer<typeof CourseStudentListRes>

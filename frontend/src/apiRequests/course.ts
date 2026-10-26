@@ -2,7 +2,9 @@ import http from '@/lib/http'
 import { toQueryString } from '@/lib/utils'
 import { MessageResType } from '@/schemaValidations/common.schema'
 import {
+  CourseStudentListResType,
   CreateCourseBodyType,
+  GetCourseStudentsQueryType,
   GetCoursesQueryType,
   GetMyCoursesQueryType,
   InstructorCourseDetailResType,
@@ -27,7 +29,11 @@ export const courseApiRequest = {
   // Tạo / sửa trả khóa KHÔNG kèm mục lục → InstructorCourseRes (getMine mới có sections)
   create: (body: CreateCourseBodyType) => http.post<InstructorCourseResType>('/courses', body),
   update: (id: number, body: UpdateCourseBodyType) => http.put<InstructorCourseResType>(`/courses/${id}`, body),
-  delete: (id: number) => http.delete<MessageResType>(`/courses/${id}`)
+  delete: (id: number) => http.delete<MessageResType>(`/courses/${id}`),
+  // Gửi duyệt: DRAFT / REJECTED → PENDING. Không có body (id trên đường dẫn là đủ) → gửi null
+  submit: (id: number) => http.post<InstructorCourseResType>(`/courses/${id}/submit`, null),
+  students: (id: number, query?: Partial<GetCourseStudentsQueryType>) =>
+    http.get<CourseStudentListResType>(`/courses/mine/${id}/students${toQueryString(query)}`)
 }
 
 export default courseApiRequest

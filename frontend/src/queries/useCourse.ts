@@ -1,6 +1,10 @@
 import courseApiRequest from '@/apiRequests/course'
 import { HttpError } from '@/lib/http'
-import { GetMyCoursesQueryType, UpdateCourseBodyType } from '@/schemaValidations/course.schema'
+import {
+  GetCourseStudentsQueryType,
+  GetMyCoursesQueryType,
+  UpdateCourseBodyType
+} from '@/schemaValidations/course.schema'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export const useInstructorCourseQuery = (query?: Partial<GetMyCoursesQueryType>) => {
@@ -52,5 +56,27 @@ export const useDeleteCourseMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] })
       queryClient.invalidateQueries({ queryKey: ['stats'] })
     }
+  })
+}
+
+// Gửi duyệt: trạng thái khóa đổi → bảng, trang soạn nội dung, số "Chờ duyệt" trên dashboard đều phải tải lại
+export const useSubmitCourseMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: courseApiRequest.submit,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] })
+      queryClient.invalidateQueries({ queryKey: ['stats'] })
+    }
+  })
+}
+
+// Học viên của 1 khóa. Key nằm DƯỚI ['courses', 'mine', id] → sửa / gửi duyệt khóa (invalidate ['courses'])
+// cũng làm mới luôn danh sách này. keepPreviousData: chuyển trang không nháy trống (giống bảng khóa học)
+export const useCourseStudentsQuery = (id: number, query?: Partial<GetCourseStudentsQueryType>) => {
+  return useQuery({
+    queryKey: ['courses', 'mine', id, 'students', query],
+    queryFn: () => courseApiRequest.students(id, query),
+    placeholderData: keepPreviousData
   })
 }
