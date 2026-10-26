@@ -27,6 +27,8 @@ export const buildTestEnv = () => {
     RATE_LIMIT_ENABLED: 'false', // test gọi login rất nhiều lần
     RUN_WORKER: 'false',
     UPLOAD_DIR: path.join(os.tmpdir(), 'edu-platform-test-uploads'),
+    // Test KHÔNG BAO GIỜ đẩy file lên Cloudinary thật (dù .env của máy có CLOUDINARY_URL): luôn lưu ổ đĩa
+    CLOUDINARY_URL: '',
     // Các biến bắt buộc: lấy từ .env nếu có, không thì dùng giá trị chỉ dành cho test (CI)
     ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET ?? 'test-access-secret',
     ACCESS_TOKEN_EXPIRES_IN: process.env.ACCESS_TOKEN_EXPIRES_IN ?? '15m',

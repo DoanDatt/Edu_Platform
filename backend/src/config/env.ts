@@ -63,10 +63,14 @@ const configSchema = z.object({
 
   // Cloudinary: có thì ảnh / video upload lên Cloudinary (deploy: ổ đĩa Render bị xóa khi khởi động lại).
   // Không có thì lưu ổ đĩa server như cũ (máy local, test). Dạng cloudinary://<api_key>:<api_secret>@<cloud_name>
-  CLOUDINARY_URL: z
-    .string()
-    .startsWith('cloudinary://', 'CLOUDINARY_URL phải có dạng cloudinary://<api_key>:<api_secret>@<cloud_name>')
-    .optional(),
+  // Chuỗi rỗng = không có (test đặt CLOUDINARY_URL='' để tắt hẳn: dotenv không ghi đè biến đã có, kể cả rỗng)
+  CLOUDINARY_URL: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z
+      .string()
+      .startsWith('cloudinary://', 'CLOUDINARY_URL phải có dạng cloudinary://<api_key>:<api_secret>@<cloud_name>')
+      .optional(),
+  ),
 
   // Số proxy đứng trước app khi deploy (Render: 1) để đọc đúng IP người dùng. Local: 0
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),
