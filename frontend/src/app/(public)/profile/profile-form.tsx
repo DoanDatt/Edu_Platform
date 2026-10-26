@@ -13,6 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import AvatarForm from './avatar-form'
 
 // Chia 2 tầng:
 //   ProfileForm (ngoài): tải hồ sơ, lo đang tải / lỗi
@@ -31,7 +32,13 @@ export default function ProfileForm() {
     )
   }
 
-  return <ProfileInfoForm profile={profileQuery.data.payload.data} />
+  const profile = profileQuery.data.payload.data
+  return (
+    <div className='flex flex-col gap-6'>
+      <AvatarForm profile={profile} />
+      <ProfileInfoForm profile={profile} />
+    </div>
+  )
 }
 
 function ProfileInfoForm({ profile }: { profile: ProfileType }) {
