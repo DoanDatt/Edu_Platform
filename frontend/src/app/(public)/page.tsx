@@ -1,34 +1,16 @@
-import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
-import Link from 'next/link'
 import { Suspense } from 'react'
 import CategorySection, { CategorySectionSkeleton } from './category-section'
 import CourseSection, { CourseSectionSkeleton } from './course-section'
+import HeroBanner from './hero-banner'
 
-// Hero hiện ngay (không gọi API). Mỗi khối gọi API nằm trong <Suspense> RIÊNG:
+// Banner hiện ngay (không gọi API). Mỗi khối gọi API nằm trong <Suspense> RIÊNG:
 // khối nào tải xong hiện khối đó, không khối nào phải chờ khối khác
 export default function HomePage() {
   return (
-    <div className='flex flex-col gap-16'>
-      <section className='flex flex-col items-center gap-6 py-10 text-center md:py-16'>
-        <span className='rounded-full border px-3 py-1 text-xs text-muted-foreground'>Học trực tuyến cùng giảng viên</span>
-        <h1 className='max-w-2xl text-4xl font-bold tracking-tight md:text-5xl'>
-          Nâng cấp kỹ năng của bạn với <span className='text-primary'>EduPlatform</span>
-        </h1>
-        <p className='max-w-xl text-muted-foreground md:text-lg'>
-          Lập trình, thiết kế, marketing, khoa học dữ liệu. Học theo tốc độ của bạn, theo dõi tiến độ từng bài.
-        </p>
-        <div className='flex flex-wrap justify-center gap-3'>
-          <Button asChild size='lg'>
-            <Link href='/courses'>
-              Khám phá khóa học <ArrowRight />
-            </Link>
-          </Button>
-          <Button asChild size='lg' variant='outline'>
-            <Link href='/register'>Đăng ký miễn phí</Link>
-          </Button>
-        </div>
-      </section>
+    <div className='flex flex-col gap-14'>
+      {/* h1 cho SEO / trình đọc màn hình: banner dùng h2 cho từng slide, trang vẫn cần đúng 1 h1 */}
+      <h1 className='sr-only'>EduPlatform: học lập trình, thiết kế, marketing trực tuyến</h1>
+      <HeroBanner />
 
       <Suspense fallback={<CategorySectionSkeleton />}>
         <CategorySection />

@@ -3,82 +3,65 @@
 import { useAppContext } from '@/components/app-provider'
 import { RoleType, RoleValues } from '@/constants/type'
 import { cn } from '@/lib/utils'
+import { BookOpen, GraduationCap, House, LucideIcon, Presentation, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 // Cách đọc:
-//   không có role, không có hideWhenLogin → ai cũng thấy
-//   role                                   → chỉ hiện khi đã đăng nhập VÀ role nằm trong danh sách
-//   hideWhenLogin: true                    → chỉ hiện khi CHƯA đăng nhập
+//   không có role → ai cũng thấy
+//   role          → chỉ hiện khi đã đăng nhập VÀ role nằm trong danh sách
+// Đăng nhập / Đăng ký không nằm ở đây: đã chuyển thành nút ở góc phải header (AuthButtons)
 const menuItems: {
   title: string
   href: string
+  Icon: LucideIcon
   role?: RoleType[]
-  hideWhenLogin?: boolean
 }[] = [
+  { title: 'Trang chủ', href: '/', Icon: House },
+  // Danh mục khóa học công khai: tìm kiếm, lọc (GET /courses)
+  { title: 'Khóa học', href: '/courses', Icon: BookOpen },
   {
-    title: 'Trang chủ',
-    href: '/'
-  },
-  {
-    // Danh mục khóa học công khai: tìm kiếm, lọc (GET /courses)
-    title: 'Khóa học',
-    href: '/courses'
-  },
-  {
-    // Khóa đã ghi danh + tiến độ (GET /enrollments/mine)
-    // Giảng viên và admin cũng ghi danh học được nên cũng thấy
-    title: 'Khóa học của tôi',
+    // Khóa đã ghi danh + tiến độ. Giảng viên và admin cũng ghi danh học được nên cũng thấy
+    title: 'Khóa của tôi',
     href: '/my-courses',
+    Icon: GraduationCap,
     role: [RoleValues.Student, RoleValues.Instructor, RoleValues.Admin]
   },
-  {
-    // Quản lý khóa mình dạy, soạn chương / bài, gửi duyệt (GET /courses/mine)
-    title: 'Giảng dạy',
-    href: '/instructor',
-    role: [RoleValues.Instructor]
-  },
-  {
-    // Duyệt khóa học, danh mục, phân quyền (GET /courses/pending...)
-    title: 'Quản trị',
-    href: '/admin',
-    role: [RoleValues.Admin]
-  },
-  {
-    title: 'Đăng nhập',
-    href: '/login',
-    hideWhenLogin: true
-  },
-  {
-    title: 'Đăng ký',
-    href: '/register',
-    hideWhenLogin: true
-  }
+  { title: 'Giảng dạy', href: '/instructor', Icon: Presentation, role: [RoleValues.Instructor] },
+  { title: 'Quản trị', href: '/admin', Icon: ShieldCheck, role: [RoleValues.Admin] }
 ]
 
-// Server: Trang chủ, Khóa học, Đăng nhập, Đăng ký. Do server không biết trạng thái đăng nhập
-// Client: lúc đầu hiển thị giống server, ngay sau đó AppProvider đọc token → hiện đúng menu theo role
-export default function NavItems({ className }: { className?: string }) {
+// Server: chỉ Trang chủ, Khóa học (server không biết trạng thái đăng nhập).
+// Client: ngay sau đó AppProvider đọc token → hiện thêm mục theo role
+//   variant 'rail': cột icon dọc bên trái (máy tính), icon ở trên, chữ nhỏ ở dưới
+//   variant 'list': danh sách dọc trong menu trượt (điện thoại), icon bên trái chữ
+export default function NavItems({ variant }: { variant: 'rail' | 'list' }) {
   const pathname = usePathname()
-  const { role, isAuth } = useAppContext()
+  const { role } = useAppContext()
 
-  return menuItems.map((item) => {
-    // Đã đăng nhập thì ẩn Đăng nhập / Đăng ký
-    if (item.hideWhenLogin && isAuth) return null
+  return menuItems.map(({ title, href, Icon, role: allowedRoles }) => {
     // Mục theo role: chưa đăng nhập, hoặc role không nằm trong danh sách → ẩn
-    if (item.role && (!role || !item.role.includes(role))) return null
+    if (allowedRoles && (!role || !allowedRoles.includes(role))) return null
 
-    // Đang ở đúng trang đó (hoặc trang con của nó) thì tô đậm
+    // Đang ở đúng trang đó (hoặc trang con của nó) thì tô nổi.
     // '/' phải so sánh bằng, không thì trang nào cũng bắt đầu bằng '/'
-    const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
+    const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href)
 
     return (
       <Link
-        key={item.href}
-        href={item.href}
-        className={cn(className, isActive ? 'font-semibold text-foreground' : 'text-muted-foreground')}
+        key={href}
+        href={href}
+        aria-current={isActive ? 'page' : undefined}
+        className={cn(
+          'transition-colors',
+          variant === 'rail'
+            ? 'flex w-18 flex-col items-center gap-1 rounded-2xl px-1 py-3 text-center text-[11px] font-medium'
+            : 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-base',
+          isActive ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+        )}
       >
-        {item.title}
+        <Icon className={cn(variant === 'rail' ? 'size-5' : 'size-4', isActive && 'text-primary')} />
+        {title}
       </Link>
     )
   })
