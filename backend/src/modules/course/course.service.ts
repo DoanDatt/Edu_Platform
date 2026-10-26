@@ -1,10 +1,11 @@
-import { CourseStatus } from '../../generated/prisma/enums'
+import { CourseStatus, NotificationType } from '../../generated/prisma/enums'
 import { Prisma } from '../../generated/prisma/client'
 import prisma from '../../lib/prisma'
 import { HttpError } from '../../utils/error'
 import { enqueueEmailSafely } from '../../queues/email.queue'
 import { courseApprovedEmail, courseRejectedEmail, EmailContent } from '../../emails/templates'
 import { isEnrolled } from '../enrollment/enrollment.service'
+import { NewNotification, notifyAdminsSafely, notifySafely } from '../notification/notification.service'
 import { getRatingByCourse, getRatingSummary } from '../review/review.service'
 import {
   CreateCourseBodyType,
@@ -316,10 +317,18 @@ export const submitCourse = async (courseId: number, instructorId: number) => {
   if (lectureCount === 0) {
     throw new HttpError(409, 'Khóa học cần có ít nhất 1 bài giảng trước khi gửi duyệt')
   }
-  return changeStatus(courseId, DRAFT_STATUSES, {
+  const course = await changeStatus(courseId, DRAFT_STATUSES, {
     status: CourseStatus.PENDING,
     rejectReason: null, // gửi lại sau khi bị từ chối → xóa lý do cũ
   })
+  const instructor = await prisma.user.findUniqueOrThrow({ where: { id: instructorId }, select: { name: true } })
+  await notifyAdminsSafely({
+    type: NotificationType.COURSE_SUBMITTED,
+    title: 'Có khóa học mới chờ duyệt',
+    message: `${instructor.name} đã gửi duyệt khóa "${course.title}".`,
+    link: `/admin/courses/${courseId}`,
+  })
+  return course
 }
 
 // Admin: danh sách chờ duyệt, gửi trước thì duyệt trước
@@ -358,16 +367,23 @@ export const getCourseForAdmin = async (courseId: number) => {
   return course
 }
 
-// Gửi email cho giảng viên của khóa (qua hàng đợi, lỗi không ảnh hưởng thao tác duyệt)
+// Báo cho giảng viên của khóa: email (qua hàng đợi) + thông báo trong web (chuông).
+// Cả hai đều 'Safely': lỗi chỉ ghi log, không ảnh hưởng thao tác duyệt
 const notifyInstructor = async (
   courseId: number,
   buildEmail: (instructorName: string, courseTitle: string) => EmailContent,
+  buildNotification: (courseTitle: string) => Omit<NewNotification, 'userId' | 'link'>,
 ) => {
   const course = await prisma.course.findUniqueOrThrow({
     where: { id: courseId },
-    select: { title: true, instructor: { select: { name: true, email: true } } },
+    select: { title: true, instructorId: true, instructor: { select: { name: true, email: true } } },
   })
   await enqueueEmailSafely({ to: course.instructor.email, ...buildEmail(course.instructor.name, course.title) })
+  await notifySafely({
+    userId: course.instructorId,
+    link: `/instructor/courses/${courseId}`, // trang soạn nội dung: thấy trạng thái + lý do từ chối
+    ...buildNotification(course.title),
+  })
 }
 
 export const approveCourse = async (courseId: number) => {
@@ -376,7 +392,15 @@ export const approveCourse = async (courseId: number) => {
     publishedAt: new Date(),
     rejectReason: null,
   })
-  await notifyInstructor(courseId, (name, title) => courseApprovedEmail(name, title, courseId))
+  await notifyInstructor(
+    courseId,
+    (name, title) => courseApprovedEmail(name, title, courseId),
+    (title) => ({
+      type: NotificationType.COURSE_APPROVED,
+      title: 'Khóa học đã được duyệt',
+      message: `Khóa "${title}" đã được xuất bản trên trang công khai.`,
+    }),
+  )
   return course
 }
 
@@ -385,7 +409,15 @@ export const rejectCourse = async (courseId: number, reason: string) => {
     status: CourseStatus.REJECTED,
     rejectReason: reason,
   })
-  await notifyInstructor(courseId, (name, title) => courseRejectedEmail(name, title, reason, false))
+  await notifyInstructor(
+    courseId,
+    (name, title) => courseRejectedEmail(name, title, reason, false),
+    (title) => ({
+      type: NotificationType.COURSE_REJECTED,
+      title: 'Khóa học bị từ chối',
+      message: `Khóa "${title}" bị từ chối. Lý do: ${reason}`,
+    }),
+  )
   return course
 }
 
@@ -397,7 +429,15 @@ export const unpublishCourse = async (courseId: number, reason: string) => {
     status: CourseStatus.REJECTED,
     rejectReason: reason,
   })
-  await notifyInstructor(courseId, (name, title) => courseRejectedEmail(name, title, reason, true))
+  await notifyInstructor(
+    courseId,
+    (name, title) => courseRejectedEmail(name, title, reason, true),
+    (title) => ({
+      type: NotificationType.COURSE_UNPUBLISHED,
+      title: 'Khóa học bị gỡ khỏi trang công khai',
+      message: `Khóa "${title}" đã bị gỡ. Lý do: ${reason}`,
+    }),
+  )
   return course
 }
 

@@ -381,6 +381,32 @@ Gợi ý trang học: bên trái là mục lục (`completed` hiện dấu ✓),
 
 ---
 
+## 10b. Thông báo (chuông ở header)
+
+🔒 Mọi role đều dùng được (chỉ cần đăng nhập), chỉ thấy thông báo của chính mình.
+
+| Method | Path | Query | Ghi chú |
+|---|---|---|---|
+| GET | `/notifications` | `?page&limit` | Mới nhất trước. Ngoài phân trang còn có `unreadCount`. Mỗi item: `{ id, type, title, message, link, readAt, createdAt }` (`readAt: null` = chưa đọc) |
+| GET | `/notifications/unread-count` | | `data: { unreadCount }`. API nhẹ để frontend hỏi định kỳ (polling) cho số đỏ trên chuông |
+| PATCH | `/notifications/:notificationId/read` | | Đánh dấu đã đọc (đọc lại không lỗi, giữ thời điểm đọc đầu). Thông báo của người khác → 404 |
+| PATCH | `/notifications/read-all` | | `data: { count }` = số thông báo vừa được đánh dấu |
+
+`link`: đường dẫn trang **frontend** mở khi bấm vào thông báo.
+
+| `type` | Khi nào | Ai nhận | `link` |
+|---|---|---|---|
+| `COURSE_SUBMITTED` | Giảng viên gửi duyệt | Tất cả admin | `/admin/courses/:id` |
+| `COURSE_APPROVED` | Admin duyệt | Giảng viên của khóa | `/instructor/courses/:id` |
+| `COURSE_REJECTED` | Admin từ chối (message có lý do) | Giảng viên của khóa | `/instructor/courses/:id` |
+| `COURSE_UNPUBLISHED` | Admin gỡ khóa đang công khai | Giảng viên của khóa | `/instructor/courses/:id` |
+| `NEW_ENROLLMENT` | Học viên ghi danh | Giảng viên của khóa | `/instructor/courses/:id/students` |
+| `NEW_REVIEW` | Học viên đánh giá | Giảng viên của khóa | `/courses/:id` (trang chi tiết tự chuyển sang URL có tên khóa) |
+
+Tạo thông báo lỗi thì chỉ ghi log, thao tác chính (duyệt, ghi danh...) vẫn thành công.
+
+---
+
 ## 11. Quản trị (admin) và thống kê
 
 ### Người dùng
@@ -448,6 +474,7 @@ Không sửa được ADMIN; không đổi tên, tắt hay xóa được INSTRUC
 | Trang học | `GET /enrollments/mine/:courseId`, `GET /lectures/:id`, `POST/DELETE /lectures/:id/complete` |
 | Viết đánh giá | `GET /reviews/mine/:courseId`, `POST` / `PUT /reviews` |
 | Tài khoản của tôi | `GET` / `PUT /profile`, `PUT /profile/password` |
+| Chuông thông báo (header) | `GET /notifications/unread-count` (hỏi định kỳ), `GET /notifications` khi mở, `PATCH /notifications/:id/read`, `PATCH /notifications/read-all` |
 | Dashboard giảng viên | `GET /stats/instructor`, `GET /courses/mine`, tạo/sửa khóa, `GET /courses/mine/:id` + `/sections` + `/lectures` (+ `/reorder`), `POST /courses/:id/submit`, `GET /courses/mine/:id/students` |
 | Trang admin | `GET /stats/admin`, `GET /courses/admin`, `GET /courses/pending`, `GET /courses/admin/:id`, approve/reject/unpublish, `/users`, `/categories`, `/roles`, `/permissions` |
 
@@ -465,4 +492,4 @@ Chạy `npm run seed` rồi `npm run seed:demo` trong thư mục `backend/`. M�
 
 ## 14. Chưa có (làm sau)
 
-Thanh toán (khóa có phí trả 402), xác thực email khi đăng ký, hỏi đáp theo bài giảng, thông báo. Upload hiện lưu trên ổ đĩa server (chưa dùng cloud như S3 / Cloudinary).
+Thanh toán (khóa có phí trả 402), xác thực email khi đăng ký, hỏi đáp theo bài giảng. Thông báo hiện là bản ghi + frontend hỏi định kỳ, chưa đẩy realtime (dự kiến SSE).

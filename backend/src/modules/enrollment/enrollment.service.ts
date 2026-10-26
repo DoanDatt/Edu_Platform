@@ -1,7 +1,8 @@
 import prisma from '../../lib/prisma'
 import { HttpError } from '../../utils/error'
-import { CourseStatus } from '../../generated/prisma/enums'
+import { CourseStatus, NotificationType } from '../../generated/prisma/enums'
 import { Prisma } from '../../generated/prisma/client'
+import { notifySafely } from '../notification/notification.service'
 import { CreateEnrollmentBodyType, GetMyEnrollmentsQueryType } from './enrollment.schema'
 
 export const isEnrolled = async (userId: number, courseId: number) => {
@@ -27,8 +28,9 @@ export const enroll = async ({ courseId }: CreateEnrollmentBodyType, userId: num
     throw new HttpError(402, 'Khóa học có phí, chức năng thanh toán chưa được hỗ trợ')
   }
 
+  let enrollment
   try {
-    return await prisma.enrollment.create({ data: { userId, courseId } })
+    enrollment = await prisma.enrollment.create({ data: { userId, courseId } })
   } catch (error) {
     // P2002: vi phạm @@unique([userId, courseId]) → đã ghi danh rồi.
     // Để DB chặn trùng (thay vì findUnique trước) thì 2 request cùng lúc cũng không tạo được 2 dòng
@@ -37,6 +39,17 @@ export const enroll = async ({ courseId }: CreateEnrollmentBodyType, userId: num
     }
     throw error
   }
+
+  // Báo giảng viên có học viên mới. Đặt NGOÀI try ở trên: lỗi ở đây không bị nhầm thành lỗi ghi danh
+  const student = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } })
+  await notifySafely({
+    userId: course.instructorId,
+    type: NotificationType.NEW_ENROLLMENT,
+    title: 'Có học viên mới',
+    message: `${student?.name ?? 'Một học viên'} đã ghi danh khóa "${course.title}".`,
+    link: `/instructor/courses/${courseId}/students`,
+  })
+  return enrollment
 }
 
 type ProgressCount = { totalLectures: number; completedLectures: number }

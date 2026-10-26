@@ -47,6 +47,8 @@ model User {
   enrollments       Enrollment[]
   lectureProgresses LectureProgress[]
   reviews           Review[]
+  // Thông báo trong web (chuông ở header) gửi tới user này
+  notifications     Notification[]
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -273,6 +275,37 @@ model Review {
   // Đánh giá xóa thật (không xóa mềm) để xóa xong còn viết lại được
   @@unique([userId, courseId])
   @@index([courseId, createdAt])
+}
+
+// Thông báo trong web: chuông ở header, có số chưa đọc. Tạo kèm các sự kiện (khóa được duyệt / bị từ chối,
+// có học viên ghi danh...). Chỉ là bản ghi để hiển thị: tạo lỗi thì bỏ qua, không làm hỏng thao tác chính
+model Notification {
+  id      Int              @id @default(autoincrement())
+  userId  Int
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  type    NotificationType
+  title   String           @db.VarChar(300)
+  message String           @db.VarChar(1000)
+  // Đường dẫn trang frontend mở ra khi bấm vào thông báo (ví dụ /instructor/courses/15)
+  link    String?          @db.VarChar(500)
+  // null = chưa đọc
+  readAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  // Danh sách thông báo của 1 người, mới nhất trước
+  @@index([userId, createdAt])
+  // Đếm số chưa đọc (readAt IS NULL) của 1 người
+  @@index([userId, readAt])
+}
+
+enum NotificationType {
+  COURSE_SUBMITTED // giảng viên gửi duyệt → admin
+  COURSE_APPROVED // admin duyệt → giảng viên
+  COURSE_REJECTED // admin từ chối → giảng viên
+  COURSE_UNPUBLISHED // admin gỡ khóa đang công khai → giảng viên
+  NEW_ENROLLMENT // học viên ghi danh → giảng viên
+  NEW_REVIEW // học viên đánh giá → giảng viên
 }
 
 enum CourseLevel {

@@ -1,10 +1,11 @@
 import prisma from '../../lib/prisma'
 import { HttpError } from '../../utils/error'
 import { RoleName } from '../../constants/role'
-import { CourseStatus } from '../../generated/prisma/enums'
+import { CourseStatus, NotificationType } from '../../generated/prisma/enums'
 import { Prisma } from '../../generated/prisma/client'
 import { AccessTokenPayload } from '../../utils/jwt'
 import { isEnrolled } from '../enrollment/enrollment.service'
+import { notifySafely } from '../notification/notification.service'
 import { CreateReviewBodyType, GetReviewsQueryType, UpdateReviewBodyType } from './review.schema'
 
 const reviewInclude = {
@@ -96,8 +97,9 @@ export const createReview = async ({ courseId, ...data }: CreateReviewBodyType, 
   if (!(await isEnrolled(userId, courseId))) {
     throw new HttpError(403, 'Bạn cần ghi danh khóa học trước khi đánh giá')
   }
+  let review
   try {
-    return await prisma.review.create({
+    review = await prisma.review.create({
       data: { ...data, courseId, userId },
       include: reviewInclude,
     })
@@ -107,6 +109,19 @@ export const createReview = async ({ courseId, ...data }: CreateReviewBodyType, 
     }
     throw error
   }
+
+  // Báo giảng viên có đánh giá mới. Link /courses/:id: trang chi tiết tự chuyển sang URL chuẩn có tên khóa
+  const course = await prisma.course.findUnique({ where: { id: courseId }, select: { title: true, instructorId: true } })
+  if (course) {
+    await notifySafely({
+      userId: course.instructorId,
+      type: NotificationType.NEW_REVIEW,
+      title: 'Có đánh giá mới',
+      message: `${review.user.name} đánh giá ${review.rating} sao cho khóa "${course.title}".`,
+      link: `/courses/${courseId}`,
+    })
+  }
+  return review
 }
 
 const getOwnReview = async (reviewId: number, userId: number) => {

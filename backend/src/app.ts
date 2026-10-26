@@ -18,6 +18,7 @@ import reviewRouter from './modules/review/review.route'
 import userRouter from './modules/user/user.route'
 import statsRouter from './modules/stats/stats.route'
 import profileRouter from './modules/profile/profile.route'
+import notificationRouter from './modules/notification/notification.route'
 
 // Các router có route cần kiểm tra quyền theo bảng Permission.
 // Script sync-permissions đọc danh sách này để sinh permission → thêm module mới thì thêm vào đây
@@ -71,6 +72,8 @@ app.use('/uploads', express.static(envConfig.UPLOAD_DIR, { maxAge: '7d', index: 
 app.use('/auth', authRouter)
 // Hồ sơ của chính mình: chỉ cần đăng nhập, không cần permission
 app.use('/profile', profileRouter)
+// Thông báo của chính mình: cũng chỉ cần đăng nhập
+app.use('/notifications', notificationRouter)
 for (const { prefix, router } of protectedRouters) {
   app.use(prefix, router)
 }
