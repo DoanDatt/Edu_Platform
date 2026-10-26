@@ -35,13 +35,13 @@ const menuItems: {
   {
     // Quản lý khóa mình dạy, soạn chương / bài, gửi duyệt (GET /courses/mine)
     title: 'Giảng dạy',
-    href: '/instructor/courses',
+    href: '/instructor',
     role: [RoleValues.Instructor]
   },
   {
     // Duyệt khóa học, danh mục, phân quyền (GET /courses/pending...)
     title: 'Quản trị',
-    href: '/admin/courses',
+    href: '/admin',
     role: [RoleValues.Admin]
   },
   {
