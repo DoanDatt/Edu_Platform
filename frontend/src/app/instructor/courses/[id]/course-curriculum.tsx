@@ -13,8 +13,8 @@ import { AlertCircle, Clock, FileEdit, Globe, Layers, Loader2, Pencil, Send, Use
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import CourseLoadError from '../course-load-error'
-import CourseNotice from '../course-notice'
+import CourseLoadError from '@/components/course-load-error'
+import CourseNotice from '@/components/course-notice'
 import LectureSheet, { LectureTarget } from './lecture-sheet'
 import SectionItem, { TitleForm } from './section-item'
 

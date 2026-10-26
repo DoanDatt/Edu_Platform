@@ -9,8 +9,8 @@ import { CategoryType } from '@/schemaValidations/category.schema'
 import { AlertCircle, Clock, Globe, ListTree } from 'lucide-react'
 import Link from 'next/link'
 import CourseForm, { CourseFormSkeleton } from '../../course-form'
-import CourseLoadError from '../../course-load-error'
-import CourseNotice from '../../course-notice'
+import CourseLoadError from '@/components/course-load-error'
+import CourseNotice from '@/components/course-notice'
 
 // Giống ProfileForm: tầng ngoài lo đang tải / lỗi, có dữ liệu rồi mới tạo CourseForm
 // → defaultValues điền thẳng dữ liệu cũ, không cần useEffect + form.reset
