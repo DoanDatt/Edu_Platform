@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { SearchX } from 'lucide-react'
 import Link from 'next/link'
 import { GetCoursesQuery } from '@/schemaValidations/course.schema'
-import CoursePagination from './course-pagination'
+import PaginationLinks from '@/components/pagination-links'
 
 const PAGE_SIZE = 12
 type SearchParams = Record<string, string | string[] | undefined>
@@ -63,7 +63,7 @@ export default async function CourseList({ searchParams }: { searchParams: Promi
         ))}
       </div>
       {/* ===== Phân trang (chưa hoạt động): đang ở trang 1 / 2 ===== */}
-      <CoursePagination page={result.page} totalPages={result.totalPages} searchParams={raw} />
+      <PaginationLinks pathname='/courses' page={result.page} totalPages={result.totalPages} searchParams={raw} />
     </div>
   )
 }

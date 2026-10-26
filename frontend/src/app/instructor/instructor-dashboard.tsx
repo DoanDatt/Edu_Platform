@@ -1,21 +1,13 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
+import CourseStatusBadge from '@/components/course-status-badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { CourseStatus, CourseStatusLabels } from '@/constants/type'
+import { CourseStatus } from '@/constants/type'
 import { useInstructorStatsQuery } from '@/queries/useStats'
 import { BookOpen, Clock, LucideIcon, Star, Users } from 'lucide-react'
 import Link from 'next/link'
-
-// Màu badge theo trạng thái: dùng lại ở bảng khóa học (vòng B) → export
-export const statusBadgeVariant: Record<keyof typeof CourseStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  DRAFT: 'outline',
-  PENDING: 'secondary',
-  PUBLISHED: 'default',
-  REJECTED: 'destructive'
-}
 
 // Client Component + useQuery: số liệu RIÊNG của giảng viên, không cần SEO,
 // và đổi theo thao tác (tạo khóa, gửi duyệt xong → invalidate ['stats'] là tự cập nhật)
@@ -62,7 +54,7 @@ export default function InstructorDashboard() {
           {/* Object.values(CourseStatus): đi qua đủ 4 trạng thái theo đúng thứ tự khai báo */}
           {Object.values(CourseStatus).map((status) => (
             <div key={status} className='flex items-center gap-2 rounded-lg border px-3 py-2'>
-              <Badge variant={statusBadgeVariant[status]}>{CourseStatusLabels[status]}</Badge>
+              <CourseStatusBadge status={status} />
               <span className='font-semibold tabular-nums'>{stats.courses.byStatus[status]}</span>
             </div>
           ))}
@@ -105,7 +97,7 @@ export default function InstructorDashboard() {
                     <tr key={course.id} className='border-b last:border-0'>
                       <td className='py-3 pr-4 font-medium'>{course.title}</td>
                       <td className='py-3 pr-4'>
-                        <Badge variant={statusBadgeVariant[course.status]}>{CourseStatusLabels[course.status]}</Badge>
+                        <CourseStatusBadge status={course.status} />
                       </td>
                       <td className='py-3 pr-4 text-right tabular-nums'>{course.studentCount}</td>
                       <td className='py-3 text-right tabular-nums'>{course.reviewCount}</td>

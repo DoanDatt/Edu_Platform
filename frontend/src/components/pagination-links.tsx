@@ -2,13 +2,18 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 
-type SearchParams = Record<string, string | string[] | undefined>
+export type SearchParams = Record<string, string | string[] | undefined>
 
-export default function CoursePagination({
+// Phân trang bằng LINK, dùng chung cho mọi danh sách có bộ lọc trên URL.
+// Ban đầu viết riêng cho /courses (cứng '/courses'). Bảng khóa học của giảng viên là chỗ dùng thứ 2
+// → tách ra đây, phần khác nhau (đường dẫn) đưa vào prop pathname
+export default function PaginationLinks({
+  pathname,
   page,
   totalPages,
   searchParams
 }: {
+  pathname: string // '/courses', '/instructor/courses'...
   page: number
   totalPages: number
   searchParams: SearchParams // tham số đang có trên URL, để giữ bộ lọc khi chuyển trang
@@ -29,9 +34,9 @@ export default function CoursePagination({
     // 2. Đặt page mới. Trang 1 thì không thêm → URL gọn (/courses thay vì /courses?page=1)
     if (n > 1) params.set('page', String(n))
 
-    // 3. Ghép thành link. Không còn tham số nào → '/courses' (không để dấu ? thừa)
+    // 3. Ghép thành link. Không còn tham số nào → chỉ pathname (không để dấu ? thừa)
     const query = params.toString()
-    return query ? `/courses?${query}` : '/courses'
+    return query ? `${pathname}?${query}` : pathname
   }
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
 
