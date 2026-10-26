@@ -13,6 +13,13 @@ export const RoleValues = {
 // 'ADMIN' | 'INSTRUCTOR' | 'STUDENT'
 export type RoleType = (typeof RoleValues)[keyof typeof RoleValues]
 
+// Tên vai trò tiếng Việt để hiển thị (trang hồ sơ, sau này bảng người dùng của admin)
+export const RoleLabels: Record<RoleType, string> = {
+  ADMIN: 'Quản trị viên',
+  INSTRUCTOR: 'Giảng viên',
+  STUDENT: 'Học viên'
+}
+
 // Các enum dưới đây khớp với enum trong backend/prisma/schema.prisma,
 // backend thêm giá trị mới thì nhớ thêm ở đây
 
