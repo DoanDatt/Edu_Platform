@@ -44,3 +44,17 @@ export const CourseLevelLabels: Record<keyof typeof CourseLevel, string> = {
   ADVANCED: 'Nâng cao',
   ALL_LEVELS: 'Mọi trình độ'
 }
+
+export const CourseStatus = {
+  DRAFT: 'DRAFT',
+  PENDING: 'PENDING',
+  PUBLISHED: 'PUBLISHED',
+  REJECTED: 'REJECTED'
+} as const
+
+export const CourseStatusLabels: Record<keyof typeof CourseStatus, string> = {
+  DRAFT: 'Nháp',
+  PENDING: 'Chờ duyệt',
+  PUBLISHED: 'Đã xuất bản',
+  REJECTED: 'Bị từ chối'
+}
