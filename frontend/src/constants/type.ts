@@ -58,3 +58,13 @@ export const CourseStatusLabels: Record<keyof typeof CourseStatus, string> = {
   PUBLISHED: 'Đã xuất bản',
   REJECTED: 'Bị từ chối'
 }
+
+// Loại thông báo (khớp enum NotificationType của backend)
+export const NotificationType = {
+  COURSE_SUBMITTED: 'COURSE_SUBMITTED',
+  COURSE_APPROVED: 'COURSE_APPROVED',
+  COURSE_REJECTED: 'COURSE_REJECTED',
+  COURSE_UNPUBLISHED: 'COURSE_UNPUBLISHED',
+  NEW_ENROLLMENT: 'NEW_ENROLLMENT',
+  NEW_REVIEW: 'NEW_REVIEW'
+} as const

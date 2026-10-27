@@ -33,6 +33,20 @@ export const formatClock = (seconds: number) => {
 // Ngày dạng Việt Nam: '2026-10-11T20:37:49.299Z' → '12/10/2026' (theo giờ máy người xem)
 export const formatDate = (iso: string) => new Date(iso).toLocaleDateString('vi-VN')
 
+const relativeFormatter = new Intl.RelativeTimeFormat('vi', { numeric: 'auto' })
+
+// Thời gian tương đối cho thông báo: 'vừa xong', '5 phút trước', '3 giờ trước', 'hôm qua', '4 ngày trước'.
+// Quá 30 ngày thì hiện ngày cụ thể (12/10/2026) cho dễ đọc
+export const formatRelativeTime = (iso: string) => {
+  const seconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000) // số âm = trong quá khứ
+  const abs = Math.abs(seconds)
+  if (abs < 60) return 'vừa xong'
+  if (abs < 3600) return relativeFormatter.format(Math.round(seconds / 60), 'minute')
+  if (abs < 86_400) return relativeFormatter.format(Math.round(seconds / 3600), 'hour')
+  if (abs < 30 * 86_400) return relativeFormatter.format(Math.round(seconds / 86_400), 'day')
+  return formatDate(iso)
+}
+
 // Bỏ dấu tiếng Việt: 'Lập trình Đà Nẵng' → 'Lap trinh Da Nang'
 export const removeAccents = (text: string) =>
   text
