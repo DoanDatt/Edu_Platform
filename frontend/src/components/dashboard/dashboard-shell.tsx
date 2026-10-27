@@ -1,6 +1,7 @@
 import AccountMenu from '@/components/account-menu'
 import DarkModeToggle from '@/components/dark-mode-toggle'
 import Logo from '@/components/logo'
+import NotificationBell from '@/components/notification-bell'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -53,6 +54,7 @@ export default function DashboardShell({
           <span className='font-semibold'>{title}</span>
           <div className='ml-auto flex items-center gap-2'>
             <DarkModeToggle />
+            <NotificationBell />
             <AccountMenu />
           </div>
         </header>

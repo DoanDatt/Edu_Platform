@@ -1,6 +1,7 @@
 import AccountMenu from '@/components/account-menu'
 import DarkModeToggle from '@/components/dark-mode-toggle'
 import Logo from '@/components/logo'
+import NotificationBell from '@/components/notification-bell'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import AuthButtons from './auth-buttons'
@@ -24,6 +25,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <HeaderSearch className='mx-auto hidden w-full max-w-md md:block' />
           <div className='ml-auto flex items-center gap-1 md:ml-0'>
             <DarkModeToggle />
+            {/* Đã đăng nhập: chuông thông báo (chưa đăng nhập thì không hiện gì) */}
+            <NotificationBell />
             {/* Chưa đăng nhập: Đăng ký + Đăng nhập. Đã đăng nhập: avatar + menu tài khoản */}
             <AuthButtons />
             <AccountMenu />
