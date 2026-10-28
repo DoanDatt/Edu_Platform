@@ -17,7 +17,9 @@ export default async function CategorySection() {
   return (
     <section className='flex flex-col gap-6'>
       <SectionHeading eyebrow='Danh mục' title='Khám phá theo chủ đề' />
-      <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5'>
+      {/* auto-fit: số cột tự theo số danh mục (mỗi ô rộng tối thiểu 9.5rem), cột thừa bị gộp lại
+          → 4 danh mục thì 4 ô chia đều cả hàng, không để trống ô cuối như khi cố định 5 cột */}
+      <div className='grid grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))] gap-4'>
         {categories.map((category) => {
           // Icon + màu gradient theo danh mục: trùng màu với ảnh bìa tự vẽ của khóa trong danh mục đó
           const { Icon, gradient } = getCategoryStyle(category)
@@ -50,7 +52,7 @@ export function CategorySectionSkeleton() {
   return (
     <div className='flex flex-col gap-6'>
       <Skeleton className='h-8 w-64' />
-      <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5'>
+      <div className='grid grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))] gap-4'>
         {Array.from({ length: 4 }, (_, index) => (
           <Skeleton key={index} className='h-18 rounded-xl' />
         ))}
