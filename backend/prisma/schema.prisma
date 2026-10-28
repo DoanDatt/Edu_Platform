@@ -49,6 +49,8 @@ model User {
   reviews           Review[]
   // Thông báo trong web (chuông ở header) gửi tới user này
   notifications     Notification[]
+  // Đơn mua khóa học có phí
+  orders            Order[]
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -172,6 +174,7 @@ model Course {
   sections    Section[]
   enrollments Enrollment[]
   reviews     Review[]
+  orders      Order[]
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -299,6 +302,66 @@ model Notification {
   @@index([userId, readAt])
 }
 
+// Đơn mua 1 khóa học có phí. Thanh toán thành công → tự ghi danh khóa đó
+model Order {
+  id       Int    @id @default(autoincrement())
+  // Mã đơn ngắn, duy nhất (EDU + 8 ký tự). Dùng làm: nội dung chuyển khoản SePay, orderId gửi MoMo,
+  // custom_id gửi PayPal → cổng báo về là biết đơn nào
+  code     String @unique @db.VarChar(30)
+  userId   Int
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  // Giá CHỐT lúc tạo đơn (VND). Sau này khóa đổi giá thì đơn cũ vẫn giữ đúng số tiền đã báo cho người mua
+  amount      Int
+  status      OrderStatus    @default(PENDING)
+  // Cổng thanh toán người mua chọn ở trang thanh toán (chưa chọn → null)
+  method      PaymentMethod?
+  // Mã giao dịch phía cổng: MoMo transId, PayPal order id, SePay transaction id (để đối soát)
+  providerRef String?        @db.VarChar(200)
+  paidAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Lịch sử mua hàng của 1 người, mới nhất trước
+  @@index([userId, createdAt])
+  // Thống kê doanh thu: các đơn đã thanh toán theo thời gian
+  @@index([status, paidAt])
+  @@index([courseId])
+}
+
+// Mỗi lần cổng thanh toán gọi về (MoMo IPN, SePay webhook, PayPal capture) ghi 1 dòng.
+// unique(method, externalId): cổng gửi lại cùng 1 giao dịch nhiều lần → chỉ xử lý lần đầu
+model PaymentLog {
+  id         Int           @id @default(autoincrement())
+  method     PaymentMethod
+  // Mã giao dịch phía cổng (MoMo transId, SePay id, PayPal capture id)
+  externalId String        @db.VarChar(200)
+  // Đơn khớp được (null: không tìm thấy đơn, ví dụ nội dung chuyển khoản sai mã)
+  orderId    Int?
+  // Dữ liệu gốc cổng gửi về, giữ lại để tra cứu khi có khiếu nại
+  payload    Json
+
+  createdAt DateTime @default(now())
+
+  @@unique([method, externalId])
+  @@index([orderId])
+}
+
+enum OrderStatus {
+  PENDING // chờ thanh toán
+  PAID // đã thanh toán (đã ghi danh)
+  CANCELLED // người mua hủy, hoặc quá hạn không thanh toán
+}
+
+enum PaymentMethod {
+  MOMO
+  PAYPAL
+  SEPAY
+}
+
 enum NotificationType {
   COURSE_SUBMITTED // giảng viên gửi duyệt → admin
   COURSE_APPROVED // admin duyệt → giảng viên
@@ -306,6 +369,7 @@ enum NotificationType {
   COURSE_UNPUBLISHED // admin gỡ khóa đang công khai → giảng viên
   NEW_ENROLLMENT // học viên ghi danh → giảng viên
   NEW_REVIEW // học viên đánh giá → giảng viên
+  NEW_ORDER // có người mua khóa (thanh toán thành công) → giảng viên
 }
 
 enum CourseLevel {

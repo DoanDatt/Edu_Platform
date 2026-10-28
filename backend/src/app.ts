@@ -19,6 +19,7 @@ import userRouter from './modules/user/user.route'
 import statsRouter from './modules/stats/stats.route'
 import profileRouter from './modules/profile/profile.route'
 import notificationRouter from './modules/notification/notification.route'
+import orderRouter from './modules/order/order.route'
 
 // Các router có route cần kiểm tra quyền theo bảng Permission.
 // Script sync-permissions đọc danh sách này để sinh permission → thêm module mới thì thêm vào đây
@@ -74,6 +75,8 @@ app.use('/auth', authRouter)
 app.use('/profile', profileRouter)
 // Thông báo của chính mình: cũng chỉ cần đăng nhập
 app.use('/notifications', notificationRouter)
+// Đơn mua khóa học của chính mình: cũng chỉ cần đăng nhập
+app.use('/orders', orderRouter)
 for (const { prefix, router } of protectedRouters) {
   app.use(prefix, router)
 }

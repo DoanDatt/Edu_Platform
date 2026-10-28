@@ -381,6 +381,26 @@ Gợi ý trang học: bên trái là mục lục (`completed` hiện dấu ✓),
 
 ---
 
+## 10c. Đơn hàng (mua khóa có phí)
+
+🔒 Chỉ cần đăng nhập, chỉ thấy đơn của chính mình. Khóa có phí **không** ghi danh bằng `POST /enrollments` (trả 402) mà mua qua đơn hàng; thanh toán thành công thì **tự ghi danh**.
+
+| Method | Path | Body / Query | Ghi chú |
+|---|---|---|---|
+| POST | `/orders` | `{ courseId }` | 201. Chốt giá hiện tại. Đã có đơn **đang chờ** cùng khóa, cùng giá → trả lại đơn đó (không tạo trùng). 409: khóa miễn phí / khóa của mình / đã sở hữu. 404: khóa không tồn tại hoặc chưa xuất bản |
+| GET | `/orders/mine` | `?status&page&limit` | Lịch sử mua hàng, mới nhất trước |
+| GET | `/orders/:orderId` | | Đơn của người khác → 404 |
+| POST | `/orders/:orderId/cancel` | | Chỉ hủy được đơn `PENDING` (409) |
+
+Một đơn: `{ id, code, amount, status, method, paidAt, createdAt, course: { id, title, thumbnail, category } }`
+- `code`: `EDU` + 8 ký tự (A–Z, 2–9), dùng làm nội dung chuyển khoản / mã gửi cổng thanh toán.
+- `status`: `PENDING` (chờ thanh toán) · `PAID` (đã thanh toán, đã ghi danh) · `CANCELLED` (đã hủy / quá 24 giờ chưa thanh toán).
+- `method`: `MOMO` · `PAYPAL` · `SEPAY` · `null` (chưa chọn).
+
+Thanh toán thành công → giảng viên nhận thông báo `NEW_ORDER`.
+
+---
+
 ## 10b. Thông báo (chuông ở header)
 
 🔒 Mọi role đều dùng được (chỉ cần đăng nhập), chỉ thấy thông báo của chính mình.
@@ -401,6 +421,7 @@ Gợi ý trang học: bên trái là mục lục (`completed` hiện dấu ✓),
 | `COURSE_REJECTED` | Admin từ chối (message có lý do) | Giảng viên của khóa | `/instructor/courses/:id` |
 | `COURSE_UNPUBLISHED` | Admin gỡ khóa đang công khai | Giảng viên của khóa | `/instructor/courses/:id` |
 | `NEW_ENROLLMENT` | Học viên ghi danh | Giảng viên của khóa | `/instructor/courses/:id/students` |
+| `NEW_ORDER` | Có người mua khóa (thanh toán thành công) | Giảng viên của khóa | `/instructor/courses/:id/students` |
 | `NEW_REVIEW` | Học viên đánh giá | Giảng viên của khóa | `/courses/:id` (trang chi tiết tự chuyển sang URL có tên khóa) |
 
 Tạo thông báo lỗi thì chỉ ghi log, thao tác chính (duyệt, ghi danh...) vẫn thành công.
@@ -430,9 +451,16 @@ Không đổi được trạng thái / role của **chính mình** (403).
   "users": { "total": 15, "blocked": 1, "newLast30Days": 6, "byRole": { "ADMIN": 1, "INSTRUCTOR": 4, "STUDENT": 10 } },
   "courses": { "total": 8, "byStatus": { "DRAFT": 2, "PENDING": 1, "PUBLISHED": 4, "REJECTED": 1 } },
   "enrollments": { "total": 5, "newLast30Days": 5 },
-  "reviews": { "total": 4, "averageRating": 4.8 }
+  "reviews": { "total": 4, "averageRating": 4.8 },
+  "revenue": {
+    "total": 1250000, "last30Days": 398000, "orders30Days": 2,
+    "daily": [ { "date": "2026-09-29", "revenue": 0, "orders": 0 }, "... đủ 30 ngày, ngày cuối là hôm nay (giờ VN)" ],
+    "topCourses": [ { "id": 3, "title": "...", "orders": 5, "revenue": 995000 } ]
+  }
 }
 ```
+
+`revenue` chỉ tính đơn **đã thanh toán**, ngày theo giờ Việt Nam.
 
 `GET /stats/instructor` (🔑 Giảng viên, số liệu các khóa **của mình**):
 ```json
@@ -440,9 +468,12 @@ Không đổi được trạng thái / role của **chính mình** (403).
   "courses": { "total": 4, "byStatus": { "DRAFT": 1, "PENDING": 1, "PUBLISHED": 2, "REJECTED": 0 } },
   "totalStudents": 12,
   "reviews": { "total": 5, "averageRating": 4.6 },
-  "topCourses": [ { "id": 1, "title": "...", "status": "PUBLISHED", "studentCount": 8, "reviewCount": 3 } ]
+  "topCourses": [ { "id": 1, "title": "...", "status": "PUBLISHED", "studentCount": 8, "reviewCount": 3 } ],
+  "revenue": { "total": 0, "last30Days": 0, "orders30Days": 0, "daily": [], "topCourses": [] }
 }
 ```
+
+`revenue` cùng dạng với admin nhưng chỉ tính các khóa của giảng viên đó.
 
 ### Phân quyền
 

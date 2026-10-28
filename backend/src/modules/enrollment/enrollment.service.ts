@@ -24,8 +24,8 @@ export const enroll = async ({ courseId }: CreateEnrollmentBodyType, userId: num
     throw new HttpError(409, 'Bạn là giảng viên của khóa học này')
   }
   if (course.price > 0) {
-    // 402 Payment Required: phần thanh toán chưa làm, tạm chỉ cho ghi danh khóa miễn phí
-    throw new HttpError(402, 'Khóa học có phí, chức năng thanh toán chưa được hỗ trợ')
+    // 402 Payment Required: khóa có phí phải mua qua đơn hàng (POST /orders), thanh toán xong tự ghi danh
+    throw new HttpError(402, 'Khóa học có phí, vui lòng mua khóa học')
   }
 
   let enrollment

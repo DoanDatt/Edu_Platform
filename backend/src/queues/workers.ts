@@ -5,15 +5,18 @@ import envConfig from '../config/env'
 import { redisConnection } from './connection'
 import { EMAIL_QUEUE, EmailJobData } from './email.queue'
 import { CLEANUP_JOB, MAINTENANCE_QUEUE, scheduleMaintenanceJobs } from './maintenance.queue'
+import { cancelExpiredOrders } from '../modules/order/order.service'
 
-// Xóa dữ liệu đã hết hạn: refresh token và mã OTP (bảng sẽ phình mãi nếu không dọn)
+// Dọn dữ liệu đã hết hạn: xóa refresh token và mã OTP (bảng sẽ phình mãi nếu không dọn),
+// hủy đơn hàng chờ thanh toán quá lâu
 export const cleanupExpired = async () => {
   const now = new Date()
-  const [tokens, codes] = await Promise.all([
+  const [tokens, codes, cancelledOrders] = await Promise.all([
     prisma.refreshToken.deleteMany({ where: { expiresAt: { lt: now } } }),
     prisma.verificationCode.deleteMany({ where: { expiresAt: { lt: now } } }),
+    cancelExpiredOrders(),
   ])
-  return { refreshTokens: tokens.count, verificationCodes: codes.count }
+  return { refreshTokens: tokens.count, verificationCodes: codes.count, cancelledOrders }
 }
 
 // Khởi động các worker. Trả về hàm đóng để tắt server êm (không bỏ dở job đang chạy)

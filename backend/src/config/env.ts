@@ -72,6 +72,13 @@ const configSchema = z.object({
       .optional(),
   ),
 
+  // Tiền tố mã đơn hàng (EDU + 8 ký tự). SePay dùng nó để nhận ra mã đơn trong nội dung chuyển khoản
+  // → phải trùng với "Cấu trúc mã thanh toán" cấu hình trên my.sepay.vn
+  PAYMENT_CODE_PREFIX: z
+    .string()
+    .regex(/^[A-Z]{2,5}$/, 'PAYMENT_CODE_PREFIX: 2–5 chữ cái in hoa')
+    .default('EDU'),
+
   // Số proxy đứng trước app khi deploy (Render: 1) để đọc đúng IP người dùng. Local: 0
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),
 
