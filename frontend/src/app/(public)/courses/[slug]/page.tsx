@@ -5,9 +5,12 @@ import RatingStars from '@/components/rating-stars'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import Waves from '@/components/waves'
+import { getCategoryStyle } from '@/constants/category'
 import { CourseLevelLabels } from '@/constants/type'
 import { formatDate, formatDuration, formatPrice, generateSlugUrl, getIdFromSlugUrl } from '@/lib/format'
 import { HttpError } from '@/lib/http'
+import { cn } from '@/lib/utils'
 import { BarChart3, Clock, Globe, House, Infinity as InfinityIcon, PlayCircle, Users } from 'lucide-react'
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
@@ -53,6 +56,10 @@ export async function generateMetadata({ params }: PageProps<'/courses/[slug]'>)
     return notFoundMetadata
   }
 }
+
+// Tiêu đề các phần (Giới thiệu, Nội dung, Đánh giá): vạch xanh nhỏ phía trước (vẽ bằng ::before)
+const sectionTitle =
+  'flex items-center gap-2.5 text-xl font-bold before:h-5 before:w-1.5 before:rounded-full before:bg-primary'
 
 export default function CourseDetailPage({ params }: PageProps<`/courses/[slug]`>) {
   return (
@@ -104,58 +111,77 @@ async function CourseDetail({ params }: { params: Promise<{ slug: string }> }) {
   const canonicalSlug = generateSlugUrl({ name: course.title, id: course.id })
   if (slug !== canonicalSlug) redirect(`/courses/${canonicalSlug}`)
 
+  // Icon danh mục (cùng icon với ô danh mục ở trang chủ và ảnh bìa)
+  const { Icon: CategoryIcon } = getCategoryStyle(course.category)
+
   return (
     // Máy tính: 2 cột (nội dung bên trái, khung giá 360px bên phải, dính khi cuộn).
     // Điện thoại: 1 cột theo đúng thứ tự trong code: đầu trang → khung giá → nội dung
     <div className='grid gap-x-10 gap-y-8 lg:grid-cols-[1fr_360px]'>
-      {/* ===== ① Đầu trang ===== */}
-      <section className='flex min-w-0 flex-col gap-4'>
+      {/* ===== ① Đầu trang: dải xanh có sóng (cùng phong cách banner trang chủ), chữ trắng ===== */}
+      <section className='relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-3xl bg-linear-to-br from-sky-400 via-sky-500 to-blue-600 px-6 pt-7 pb-16 text-white md:px-10 dark:from-sky-600 dark:via-sky-700 dark:to-blue-800'>
+        <div aria-hidden className='absolute -top-20 -right-16 size-72 rounded-full bg-white/20 blur-3xl' />
+        <Waves className='h-1/4' />
+
         {/* Đường dẫn: bấm danh mục → /courses đã lọc sẵn danh mục đó (bộ lọc nằm trên URL) */}
-        <nav className='flex flex-wrap items-center gap-2 text-sm text-muted-foreground' aria-label='Đường dẫn'>
-          <Link href='/' className='flex items-center gap-1 hover:text-foreground'>
-            <House className='size-3.5 text-primary' />
+        <nav className='relative flex flex-wrap items-center gap-2 text-sm text-white/80' aria-label='Đường dẫn'>
+          <Link href='/' className='flex items-center gap-1 hover:text-white'>
+            <House className='size-3.5' />
             Trang chủ
           </Link>
           <span>/</span>
-          <Link href='/courses' className='hover:text-foreground'>
+          <Link href='/courses' className='hover:text-white'>
             Khóa học
           </Link>
           <span>/</span>
-          <Link href={`/courses?categoryId=${course.category.id}`} className='hover:text-foreground'>
+          <Link href={`/courses?categoryId=${course.category.id}`} className='hover:text-white'>
             {course.category.name}
           </Link>
         </nav>
 
-        <h1 className='text-3xl font-bold tracking-tight md:text-4xl'>{course.title}</h1>
-        {course.subtitle && <p className='max-w-3xl text-lg text-muted-foreground'>{course.subtitle}</p>}
-
-        <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm'>
-          {course.rating.totalReviews > 0 ? (
-            <span className='flex items-center gap-1.5'>
-              <RatingStars value={course.rating.averageRating} />
-              <span className='font-semibold'>{course.rating.averageRating}</span>
-              <span className='text-muted-foreground'>({course.rating.totalReviews} đánh giá)</span>
-            </span>
-          ) : (
-            <span className='text-muted-foreground'>Chưa có đánh giá</span>
-          )}
-          <span className='flex items-center gap-1.5'>
-            <Users className='size-4 text-muted-foreground' />
-            <span className='font-semibold'>{course.studentCount}</span>
-            <span className='text-muted-foreground'>học viên</span>
+        {/* Nhãn danh mục + trình độ */}
+        <div className='relative flex flex-wrap gap-2'>
+          <span className='flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm'>
+            <CategoryIcon className='size-3.5' />
+            {course.category.name}
+          </span>
+          <span className='rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm'>
+            {CourseLevelLabels[course.level]}
           </span>
         </div>
 
-        <div className='flex flex-wrap items-center gap-3 text-sm'>
-          <Avatar className='size-9'>
+        <h1 className='relative text-3xl leading-tight font-bold text-balance md:text-4xl'>{course.title}</h1>
+        {course.subtitle && <p className='relative max-w-3xl text-lg text-white/90'>{course.subtitle}</p>}
+
+        <div className='relative flex flex-wrap items-center gap-x-5 gap-y-2 text-sm'>
+          {course.rating.totalReviews > 0 ? (
+            <span className='flex items-center gap-1.5'>
+              <RatingStars value={course.rating.averageRating} emptyClassName='text-white/40' />
+              <span className='font-semibold'>{course.rating.averageRating}</span>
+              <span className='text-white/80'>({course.rating.totalReviews} đánh giá)</span>
+            </span>
+          ) : (
+            <span className='text-white/80'>Chưa có đánh giá</span>
+          )}
+          <span className='flex items-center gap-1.5'>
+            <Users className='size-4 text-white/80' />
+            <span className='font-semibold'>{course.studentCount}</span>
+            <span className='text-white/80'>học viên</span>
+          </span>
+        </div>
+
+        <div className='relative flex flex-wrap items-center gap-3 text-sm'>
+          <Avatar className='size-9 ring-2 ring-white/40'>
             <AvatarImage src={course.instructor.avatar ?? undefined} alt={course.instructor.name} />
-            <AvatarFallback>{course.instructor.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback className='text-foreground'>{course.instructor.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className='flex flex-col'>
-            <span className='text-muted-foreground'>Giảng viên</span>
+            <span className='text-white/80'>Giảng viên</span>
             <span className='font-medium'>{course.instructor.name}</span>
           </div>
-          <span className='ml-2 border-l pl-4 text-muted-foreground'>Xuất bản {formatDate(course.publishedAt)}</span>
+          <span className='ml-2 border-l border-white/30 pl-4 text-white/80'>
+            Xuất bản {formatDate(course.publishedAt)}
+          </span>
         </div>
       </section>
 
@@ -174,7 +200,10 @@ async function CourseDetail({ params }: { params: Promise<{ slug: string }> }) {
           <div className='flex flex-col items-center gap-4 px-3 pt-5 pb-3'>
             <div className='flex flex-col items-center'>
               <span className='text-sm text-muted-foreground'>Học phí</span>
-              <span className='text-3xl font-bold text-primary'>{formatPrice(course.price)}</span>
+              {/* Có phí: màu san hô (giống giá trên thẻ khóa học). Miễn phí: xanh thương hiệu */}
+              <span className={cn('text-3xl font-bold', course.price > 0 ? 'text-highlight' : 'text-primary')}>
+                {formatPrice(course.price)}
+              </span>
             </div>
 
             {/* Client Component: trang vẫn là Server Component, chỉ riêng nút này chạy ở trình duyệt */}
@@ -216,13 +245,13 @@ async function CourseDetail({ params }: { params: Promise<{ slug: string }> }) {
         {/* ===== ③ Giới thiệu =====
             whitespace-pre-line: giữ xuống dòng (\n) trong mô tả, không thì cả đoạn dính thành 1 dòng */}
         <section className='flex flex-col gap-3'>
-          <h2 className='text-xl font-bold'>Giới thiệu khóa học</h2>
+          <h2 className={sectionTitle}>Giới thiệu khóa học</h2>
           <p className='whitespace-pre-line leading-relaxed text-muted-foreground'>{course.description}</p>
         </section>
 
         {/* ===== ④ Mục lục ===== */}
         <section className='flex flex-col gap-3'>
-          <h2 className='text-xl font-bold'>Nội dung khóa học</h2>
+          <h2 className={sectionTitle}>Nội dung khóa học</h2>
           <Curriculum
             sections={course.sections}
             totalLectures={course.totalLectures}
@@ -233,7 +262,7 @@ async function CourseDetail({ params }: { params: Promise<{ slug: string }> }) {
         {/* ===== ⑤ Đánh giá ===== */}
         <section className='flex flex-col gap-3'>
           <div className='flex items-center gap-2'>
-            <h2 className='text-xl font-bold'>Đánh giá của học viên</h2>
+            <h2 className={sectionTitle}>Đánh giá của học viên</h2>
             {course.rating.totalReviews > 0 && <Badge variant='secondary'>{course.rating.totalReviews}</Badge>}
           </div>
           {/* Chỉ người ĐÃ GHI DANH mới viết / sửa / xóa đánh giá (backend cũng chặn: 403).
@@ -250,12 +279,7 @@ async function CourseDetail({ params }: { params: Promise<{ slug: string }> }) {
 function CourseDetailSkeleton() {
   return (
     <div className='grid gap-x-10 gap-y-8 lg:grid-cols-[1fr_360px]'>
-      <div className='flex flex-col gap-4'>
-        <Skeleton className='h-4 w-56' />
-        <Skeleton className='h-10 w-3/4' />
-        <Skeleton className='h-6 w-1/2' />
-        <Skeleton className='h-4 w-2/3' />
-      </div>
+      <Skeleton className='h-72 rounded-3xl' />
       <Skeleton className='h-120 rounded-2xl lg:col-start-2 lg:row-span-2 lg:row-start-1' />
       <div className='flex flex-col gap-4'>
         <Skeleton className='h-6 w-48' />
