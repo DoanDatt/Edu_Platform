@@ -10,6 +10,7 @@ import {
   loginAdmin,
   registerStudent,
   uniqueName,
+  watchLecture,
 } from './helpers'
 
 let admin: Account
@@ -37,7 +38,11 @@ describe('Giảng viên soạn khóa học và luồng duyệt', () => {
     // Khóa rỗng không gửi duyệt được
     await api().post(`/courses/${courseId}/submit`).set(bearer(instructor.token)).expect(409)
 
-    const section = await api().post('/sections').set(bearer(instructor.token)).send({ courseId, title: 'A' }).expect(201)
+    const section = await api()
+      .post('/sections')
+      .set(bearer(instructor.token))
+      .send({ courseId, title: 'A' })
+      .expect(201)
     await api()
       .post('/lectures')
       .set(bearer(instructor.token))
@@ -72,8 +77,16 @@ describe('Giảng viên soạn khóa học và luồng duyệt', () => {
       .send({ title: uniqueName('Node'), price: 0, categoryId })
       .expect(201)
     const courseId = course.body.data.id
-    const section = await api().post('/sections').set(bearer(instructor.token)).send({ courseId, title: 'A' }).expect(201)
-    await api().post('/lectures').set(bearer(instructor.token)).send({ sectionId: section.body.data.id, title: 'L' }).expect(201)
+    const section = await api()
+      .post('/sections')
+      .set(bearer(instructor.token))
+      .send({ courseId, title: 'A' })
+      .expect(201)
+    await api()
+      .post('/lectures')
+      .set(bearer(instructor.token))
+      .send({ sectionId: section.body.data.id, title: 'L' })
+      .expect(201)
     await api().post(`/courses/${courseId}/submit`).set(bearer(instructor.token)).expect(200)
 
     await api().post(`/courses/${courseId}/reject`).set(bearer(admin.token)).send({ reason: 'Thiếu mô tả' }).expect(200)
@@ -95,8 +108,16 @@ describe('Giảng viên soạn khóa học và luồng duyệt', () => {
       .send({ title: uniqueName('Race'), price: 0, categoryId })
       .expect(201)
     const courseId = course.body.data.id
-    const section = await api().post('/sections').set(bearer(instructor.token)).send({ courseId, title: 'A' }).expect(201)
-    await api().post('/lectures').set(bearer(instructor.token)).send({ sectionId: section.body.data.id, title: 'L' }).expect(201)
+    const section = await api()
+      .post('/sections')
+      .set(bearer(instructor.token))
+      .send({ courseId, title: 'A' })
+      .expect(201)
+    await api()
+      .post('/lectures')
+      .set(bearer(instructor.token))
+      .send({ sectionId: section.body.data.id, title: 'L' })
+      .expect(201)
     await api().post(`/courses/${courseId}/submit`).set(bearer(instructor.token)).expect(200)
 
     const results = await Promise.all([
@@ -115,8 +136,8 @@ describe('Giảng viên soạn khóa học và luồng duyệt', () => {
     const courseId = course.body.data.id
     const a = (await api().post('/sections').set(bearer(instructor.token)).send({ courseId, title: 'A' })).body.data.id
     const b = (await api().post('/sections').set(bearer(instructor.token)).send({ courseId, title: 'B' })).body.data.id
-    const lecture = (await api().post('/lectures').set(bearer(instructor.token)).send({ sectionId: a, title: 'L' })).body
-      .data.id
+    const lecture = (await api().post('/lectures').set(bearer(instructor.token)).send({ sectionId: a, title: 'L' }))
+      .body.data.id
 
     const reordered = await api()
       .put('/sections/reorder')
@@ -125,7 +146,11 @@ describe('Giảng viên soạn khóa học và luồng duyệt', () => {
       .expect(200)
     expect(reordered.body.data.map((s: { id: number }) => s.id)).toEqual([b, a])
     // Thiếu id → 422
-    await api().put('/sections/reorder').set(bearer(instructor.token)).send({ courseId, sectionIds: [b] }).expect(422)
+    await api()
+      .put('/sections/reorder')
+      .set(bearer(instructor.token))
+      .send({ courseId, sectionIds: [b] })
+      .expect(422)
 
     const moved = await api()
       .put(`/lectures/${lecture}`)
@@ -138,7 +163,9 @@ describe('Giảng viên soạn khóa học và luồng duyệt', () => {
 
 describe('Học viên: tìm, ghi danh, học, đánh giá', () => {
   it('luồng đầy đủ trên khóa miễn phí', async () => {
-    const { courseId, previewLectureId, lockedLectureId } = await createPublishedCourse(instructor, admin, { categoryId })
+    const { courseId, previewLectureId, lockedLectureId } = await createPublishedCourse(instructor, admin, {
+      categoryId,
+    })
     const student = await registerStudent()
 
     // Trang chi tiết: ẩn link video bài không xem thử, khách thì isEnrolled = null
@@ -158,7 +185,9 @@ describe('Học viên: tìm, ghi danh, học, đánh giá', () => {
     const detail = await api().get(`/courses/${courseId}`).set(bearer(student.token)).expect(200)
     expect(detail.body.data.isEnrolled).toBe(true)
 
-    // Tiến độ: 1/2 bài = 50%
+    // Tiến độ: 1/2 bài = 50%. Bài có video phải xem đủ 90% mới đánh dấu được
+    await api().post(`/lectures/${previewLectureId}/complete`).set(bearer(student.token)).expect(409)
+    await watchLecture(student.token, previewLectureId, 120)
     await api().post(`/lectures/${previewLectureId}/complete`).set(bearer(student.token)).expect(200)
     await api().post(`/lectures/${previewLectureId}/complete`).set(bearer(student.token)).expect(200) // gọi lại không sao
     const learning = await api().get(`/enrollments/mine/${courseId}`).set(bearer(student.token)).expect(200)
@@ -200,7 +229,9 @@ describe('Học viên: tìm, ghi danh, học, đánh giá', () => {
   })
 
   it('khóa đã xuất bản: sửa được, không xóa được bài cuối; admin gỡ → mất khỏi trang công khai', async () => {
-    const { courseId, previewLectureId, lockedLectureId } = await createPublishedCourse(instructor, admin, { categoryId })
+    const { courseId, previewLectureId, lockedLectureId } = await createPublishedCourse(instructor, admin, {
+      categoryId,
+    })
 
     await api()
       .put(`/courses/${courseId}`)

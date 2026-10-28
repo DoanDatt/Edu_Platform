@@ -6,7 +6,7 @@ import { AccessTokenPayload } from '../../utils/jwt'
 import { hasExactlyIds } from '../../utils/ids'
 import { ensurePublishedCourseKeepsLectures, getEditableOwnCourse } from '../course/course.service'
 import { getEditableOwnSection } from '../section/section.service'
-import { isEnrolled } from '../enrollment/enrollment.service'
+import { isEnrolled, requiredWatchSec } from '../enrollment/enrollment.service'
 import { CreateLectureBodyType, ReorderLecturesBodyType, UpdateLectureBodyType } from './lecture.schema'
 
 // Vị trí cuối cùng trong chương (để thêm bài mới / chuyển bài sang vào cuối)
@@ -19,7 +19,7 @@ const nextPositionInSection = async (sectionId: number) => {
 }
 
 // Bài giảng còn tồn tại + khóa học là của mình và còn sửa được
-const getEditableOwnLecture = async (lectureId: number, instructorId: number) => {
+export const getEditableOwnLecture = async (lectureId: number, instructorId: number) => {
   const lecture = await prisma.lecture.findFirst({
     where: { id: lectureId, deletedAt: null, section: { deletedAt: null } },
     include: { section: { select: { courseId: true } } },
@@ -118,6 +118,7 @@ export const getLectureForLearner = async (lectureId: number, user: AccessTokenP
           course: { select: { id: true, title: true, status: true, instructorId: true } },
         },
       },
+      _count: { select: { quizQuestions: true } },
     },
   })
   if (!lecture) {
@@ -134,5 +135,18 @@ export const getLectureForLearner = async (lectureId: number, user: AccessTokenP
       throw new HttpError(403, 'Bạn cần ghi danh khóa học để xem bài giảng này')
     }
   }
-  return lecture
+
+  // Đã xem tới đâu (chưa xem lần nào → null): trình phát tua tới positionSec để xem tiếp
+  const watch = await prisma.lectureWatch.findUnique({
+    where: { userId_lectureId: { userId: user.userId, lectureId } },
+    select: { watchedSec: true, positionSec: true },
+  })
+  const { _count, ...rest } = lecture
+  return {
+    ...rest,
+    hasQuiz: _count.quizQuestions > 0,
+    watch,
+    // Số giây phải xem để tính là học xong (0 = bài không có video / chưa biết thời lượng → tự bấm "đã học")
+    requiredWatchSec: lecture.videoUrl && lecture.durationSec > 0 ? requiredWatchSec(lecture.durationSec) : 0,
+  }
 }

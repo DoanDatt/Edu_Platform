@@ -46,6 +46,8 @@ model User {
   // Học viên: khóa đã ghi danh + bài đã học xong
   enrollments       Enrollment[]
   lectureProgresses LectureProgress[]
+  lectureWatches    LectureWatch[]
+  quizAttempts      QuizAttempt[]
   reviews           Review[]
   // Thông báo trong web (chuông ở header) gửi tới user này
   notifications     Notification[]
@@ -220,7 +222,10 @@ model Lecture {
   sectionId Int
   section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  progresses LectureProgress[]
+  progresses    LectureProgress[]
+  watches       LectureWatch[]
+  quizQuestions QuizQuestion[]
+  quizAttempts  QuizAttempt[]
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -256,6 +261,65 @@ model LectureProgress {
 
   // Khóa chính gồm 2 cột: 1 người + 1 bài chỉ có 1 dòng
   @@id([userId, lectureId])
+  @@index([lectureId])
+}
+
+// Học viên đã xem video của 1 bài được bao lâu. Xem đủ 90% thời lượng → tự tính là học xong (LectureProgress)
+model LectureWatch {
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  lectureId Int
+  lecture   Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  // Tổng số giây video THỰC SỰ phát (tua qua không tính). Tối đa = thời lượng bài
+  watchedSec  Int      @default(0)
+  // Giây đang dừng → lần sau mở bài xem tiếp từ đây
+  positionSec Int      @default(0)
+  // Lần báo gần nhất: số giây được cộng thêm không vượt quá thời gian thực đã trôi qua (chống gửi số giả)
+  reportedAt  DateTime @default(now())
+
+  @@id([userId, lectureId])
+  @@index([lectureId])
+}
+
+// Câu hỏi trắc nghiệm cuối bài giảng (1 đáp án đúng). Bài có câu hỏi = bài có quiz
+model QuizQuestion {
+  id           Int      @id @default(autoincrement())
+  lectureId    Int
+  lecture      Lecture  @relation(fields: [lectureId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  question     String   @db.VarChar(1000)
+  // 2–6 lựa chọn, đáp án đúng là options[correctIndex]
+  options      String[]
+  correctIndex Int
+  // Giải thích hiện sau khi nộp bài
+  explanation  String   @default("")
+  position     Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([lectureId, position])
+}
+
+// Mỗi lần học viên nộp quiz của 1 bài. Làm lại không giới hạn, giữ lại lịch sử
+model QuizAttempt {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  lectureId Int
+  lecture   Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  // Điểm theo % (0–100), đạt khi >= QUIZ_PASS_PERCENT
+  score         Int
+  correctCount  Int
+  totalQuestion Int
+  passed        Boolean
+  // Đáp án đã chọn theo thứ tự câu hỏi lúc nộp: [{ questionId, selectedIndex }]
+  answers       Json
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, lectureId])
   @@index([lectureId])
 }
 

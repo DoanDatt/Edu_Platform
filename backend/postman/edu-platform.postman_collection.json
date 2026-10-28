@@ -1128,6 +1128,58 @@
               }
             }
           }
+        },
+        {
+          "name": "Lấy bộ câu hỏi để soạn (giảng viên)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/lectures/{{lectureId}}/quiz/edit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lectures",
+                "{{lectureId}}",
+                "quiz",
+                "edit"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Lưu bộ câu hỏi quiz",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questions\": [\n    {\n      \"question\": \"HTML là viết tắt của?\",\n      \"options\": [\"HyperText Markup Language\", \"High Tech Modern Language\"],\n      \"correctIndex\": 0,\n      \"explanation\": \"HTML = HyperText Markup Language\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/lectures/{{lectureId}}/quiz",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lectures",
+                "{{lectureId}}",
+                "quiz"
+              ]
+            },
+            "description": "Lưu cả bộ (thay bộ cũ). Mảng rỗng = bỏ quiz"
+          }
         }
       ]
     },
@@ -1421,6 +1473,90 @@
                 "lectures",
                 "{{lectureId}}",
                 "complete"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Báo tiến độ xem video",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playedSec\": 15,\n  \"positionSec\": 15\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/lectures/{{lectureId}}/watch",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lectures",
+                "{{lectureId}}",
+                "watch"
+              ]
+            },
+            "description": "Trình phát gọi ~15 giây / lần. Xem đủ 90% thời lượng thì tự hoàn thành bài"
+          }
+        },
+        {
+          "name": "Lấy quiz của bài (học viên)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/lectures/{{lectureId}}/quiz",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lectures",
+                "{{lectureId}}",
+                "quiz"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Nộp quiz",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [\n    { \"questionId\": 1, \"selectedIndex\": 0 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/lectures/{{lectureId}}/quiz/attempts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lectures",
+                "{{lectureId}}",
+                "quiz",
+                "attempts"
               ]
             }
           }

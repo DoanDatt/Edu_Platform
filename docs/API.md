@@ -335,9 +335,30 @@ Duyệt, từ chối, gỡ khóa đều **gửi email cho giảng viên** (kèm 
 | POST | `/enrollments` | `{ courseId }` | Ghi danh. 409 nếu đã ghi danh / là giảng viên của khóa; **402** nếu khóa có phí; 404 nếu chưa xuất bản |
 | GET | `/enrollments/mine` | `?page&limit` | Khóa đã ghi danh + tiến độ |
 | GET | `/enrollments/mine/:courseId` | | Trang học: mục lục + bài nào đã xong. 403 nếu chưa ghi danh |
-| GET | `/lectures/:lectureId` | | Nội dung bài (`videoUrl`, `content`). Xem được nếu: bài xem thử, **hoặc** đã ghi danh, **hoặc** là giảng viên của khóa / admin. Ngược lại **403** |
-| POST | `/lectures/:lectureId/complete` | | Đánh dấu đã học xong (gọi nhiều lần không sao) |
+| GET | `/lectures/:lectureId` | | Nội dung bài (`videoUrl`, `content`) kèm `hasQuiz`, `watch` (`{ watchedSec, positionSec }` hoặc `null`), `requiredWatchSec`. Xem được nếu: bài xem thử, **hoặc** đã ghi danh, **hoặc** là giảng viên của khóa / admin. Ngược lại **403** |
+| PUT | `/lectures/:lectureId/watch` | `{ playedSec, positionSec }` | Trình phát báo tiến độ xem, khoảng 15 giây một lần và khi dừng / hết video. Trả `{ watchedSec, positionSec, requiredSec, completed }` |
+| POST | `/lectures/:lectureId/complete` | | Đánh dấu đã học xong (gọi nhiều lần không sao). Bài có video: **409** nếu chưa xem đủ 90% |
 | DELETE | `/lectures/:lectureId/complete` | | Bỏ đánh dấu |
+
+**Xem đủ 90% video mới tính là học xong** (bài có `videoUrl` và `durationSec > 0`; bài chỉ có chữ thì vẫn tự bấm):
+
+- `playedSec` là số giây video **thực sự phát** kể từ lần báo trước. Frontend tự đếm, tua qua thì không tính.
+- Backend không cộng nhanh hơn thời gian thực: tối đa (số giây trôi qua × 2) + 5. Lần báo đầu tiên tối đa 65 giây.
+- Đạt `requiredWatchSec` (90% thời lượng) thì backend **tự đánh dấu hoàn thành**, response có `completed: true`.
+- `positionSec` được lưu lại. Lần sau mở bài thì tua tới `watch.positionSec` để xem tiếp.
+
+### Quiz cuối bài
+
+Trắc nghiệm, mỗi câu 1 đáp án đúng. Đúng từ **70%** trở lên là đạt, làm lại không giới hạn. Quiz **không** bắt buộc để tính học xong.
+
+| Method | Path | Body | Ai dùng | Ghi chú |
+|---|---|---|---|---|
+| GET | `/lectures/:lectureId/quiz` | | Học viên đã ghi danh | `{ passPercent, questions: [{ id, question, options }], lastAttempt, bestScore }`. **Không** có đáp án. `questions` rỗng = bài không có quiz |
+| POST | `/lectures/:lectureId/quiz/attempts` | `{ answers: [{ questionId, selectedIndex }] }` | Học viên đã ghi danh | 201: `{ score, correctCount, totalQuestion, passed, passPercent, results: [{ questionId, selectedIndex, correctIndex, isCorrect, explanation }] }`. 422: thiếu câu. 409: bộ câu hỏi vừa đổi, tải lại đề |
+| GET | `/lectures/:lectureId/quiz/edit` | | Giảng viên của khóa | Bộ câu hỏi đầy đủ, có `correctIndex`, `explanation` |
+| PUT | `/lectures/:lectureId/quiz` | `{ questions: [{ question, options, correctIndex, explanation? }] }` | Giảng viên của khóa | Lưu **cả bộ** (thay bộ cũ). 2–6 lựa chọn mỗi câu, tối đa 20 câu. Mảng rỗng = bỏ quiz |
+
+Các route xem video và quiz chỉ cần đăng nhập, không qua bảng phân quyền. Service tự kiểm tra ghi danh hoặc chủ khóa.
 
 `GET /enrollments/mine`, mỗi phần tử:
 ```json
@@ -356,14 +377,14 @@ Duyệt, từ chối, gỡ khóa đều **gửi email cho giảng viên** (kèm 
     "id": 1, "title": "...", "subtitle": "...", "thumbnail": "...", "instructor": { "id": 3, "name": "..." },
     "sections": [
       { "id": 1, "title": "Giới thiệu", "lectures": [
-        { "id": 1, "title": "React là gì?", "durationSec": 300, "isPreview": true, "completed": true }
+        { "id": 1, "title": "React là gì?", "durationSec": 300, "isPreview": true, "completed": true, "hasQuiz": true, "quizPassed": false }
       ] }
     ]
   },
   "progress": { "totalLectures": 8, "completedLectures": 4, "percent": 50 }
 }
 ```
-Gợi ý trang học: bên trái là mục lục (`completed` hiện dấu ✓), bên phải gọi `GET /lectures/:lectureId` để phát video. Sau khi xem xong, gọi `POST .../complete` rồi cập nhật `percent`.
+Gợi ý trang học: bên trái là mục lục (`completed` hiện dấu ✓, `hasQuiz` hiện icon bài tập). Bên phải gọi `GET /lectures/:lectureId` để phát video, tua tới `watch.positionSec`, và báo `PUT .../watch` trong lúc xem. Khi response trả `completed: true` thì làm mới mục lục và `percent`.
 
 ---
 

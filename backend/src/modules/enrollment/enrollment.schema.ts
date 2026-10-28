@@ -21,3 +21,19 @@ export const EnrollmentCourseParamsSchema = z
   .strict()
 
 export type EnrollmentCourseParamsType = z.infer<typeof EnrollmentCourseParamsSchema>
+
+// PUT /lectures/:lectureId/watch: trình phát video báo đã xem bao lâu
+export const ReportWatchBodySchema = z
+  .object({
+    // Số giây video thực sự phát kể từ lần báo trước (frontend báo ~15 giây / lần nên 600 là dư)
+    playedSec: z.number().min(0).max(600),
+    // Đang dừng ở giây thứ mấy (tối đa 24 giờ)
+    positionSec: z.number().min(0).max(86400),
+  })
+  .strict()
+  .transform(({ playedSec, positionSec }) => ({
+    playedSec: Math.floor(playedSec),
+    positionSec: Math.floor(positionSec),
+  }))
+
+export type ReportWatchBodyType = z.infer<typeof ReportWatchBodySchema>

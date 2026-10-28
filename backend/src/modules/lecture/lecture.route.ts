@@ -9,6 +9,9 @@ import {
   ReorderLecturesBodySchema,
   UpdateLectureBodySchema,
 } from './lecture.schema'
+import { ReportWatchBodySchema } from '../enrollment/enrollment.schema'
+import * as quizController from '../quiz/quiz.controller'
+import { SaveQuizBodySchema, SubmitQuizBodySchema } from '../quiz/quiz.schema'
 
 const lectureRouter = Router()
 
@@ -67,6 +70,47 @@ lectureRouter.delete(
   requirePermission,
   validateParams(LectureParamsSchema),
   enrollmentController.uncompleteLecture,
+)
+
+// ===== Xem video + quiz =====
+// Chỉ cần đăng nhập, KHÔNG gắn requirePermission (giống /orders): service tự kiểm tra ghi danh / chủ khóa,
+// và deploy không phải chạy lại sync-permissions cho các route mới này
+
+// Trình phát báo đã xem bao lâu (~15 giây / lần). Xem đủ 90% → tự tính là học xong
+lectureRouter.put(
+  '/:lectureId/watch',
+  requireAuth,
+  validateParams(LectureParamsSchema),
+  validateBody(ReportWatchBodySchema),
+  enrollmentController.reportWatch,
+)
+// Học viên: lấy đề (không kèm đáp án) + kết quả cũ, nộp bài
+lectureRouter.get(
+  '/:lectureId/quiz',
+  requireAuth,
+  validateParams(LectureParamsSchema),
+  quizController.getQuizForLearner,
+)
+lectureRouter.post(
+  '/:lectureId/quiz/attempts',
+  requireAuth,
+  validateParams(LectureParamsSchema),
+  validateBody(SubmitQuizBodySchema),
+  quizController.submitQuiz,
+)
+// Giảng viên: lấy bộ câu hỏi kèm đáp án để soạn, lưu cả bộ
+lectureRouter.get(
+  '/:lectureId/quiz/edit',
+  requireAuth,
+  validateParams(LectureParamsSchema),
+  quizController.getQuizForEditor,
+)
+lectureRouter.put(
+  '/:lectureId/quiz',
+  requireAuth,
+  validateParams(LectureParamsSchema),
+  validateBody(SaveQuizBodySchema),
+  quizController.saveQuiz,
 )
 
 export default lectureRouter

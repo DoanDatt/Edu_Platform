@@ -4,6 +4,7 @@ import {
   CreateEnrollmentBodyType,
   EnrollmentCourseParamsType,
   GetMyEnrollmentsQueryType,
+  ReportWatchBodyType,
 } from './enrollment.schema'
 import { LectureParamsType } from '../lecture/lecture.schema'
 
@@ -36,4 +37,11 @@ export const uncompleteLecture = async (req: Request, res: Response) => {
   const { lectureId } = req.params as unknown as LectureParamsType
   const result = await enrollmentService.uncompleteLecture(lectureId, req.user!.userId)
   res.json({ message: 'Đã bỏ đánh dấu hoàn thành', data: result })
+}
+
+// PUT /lectures/:lectureId/watch (nằm trong lectureRouter)
+export const reportWatch = async (req: Request, res: Response) => {
+  const { lectureId } = req.params as unknown as LectureParamsType
+  const result = await enrollmentService.reportWatch(lectureId, req.user!.userId, req.body as ReportWatchBodyType)
+  res.json({ message: 'Đã lưu tiến độ xem video', data: result })
 }

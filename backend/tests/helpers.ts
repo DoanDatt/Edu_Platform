@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import request from 'supertest'
 import app from '../src/app'
 
@@ -65,13 +66,23 @@ export const createPublishedCourse = async (
     .expect(201)
   const courseId = course.body.data.id as number
 
-  const section = await api().post('/sections').set(bearer(instructor.token)).send({ courseId, title: 'Chương 1' }).expect(201)
+  const section = await api()
+    .post('/sections')
+    .set(bearer(instructor.token))
+    .send({ courseId, title: 'Chương 1' })
+    .expect(201)
   const sectionId = section.body.data.id as number
 
   const preview = await api()
     .post('/lectures')
     .set(bearer(instructor.token))
-    .send({ sectionId, title: 'Bài xem thử', videoUrl: 'https://v.test/preview.mp4', durationSec: 120, isPreview: true })
+    .send({
+      sectionId,
+      title: 'Bài xem thử',
+      videoUrl: 'https://v.test/preview.mp4',
+      durationSec: 120,
+      isPreview: true,
+    })
     .expect(201)
   const locked = await api()
     .post('/lectures')
@@ -92,3 +103,23 @@ export const createPublishedCourse = async (
 
 // Email cuối cùng gửi tới 1 địa chỉ (từ hàng đợi email giả lập trong tests/setup.ts)
 export const lastEmailTo = (to: string) => globalThis.sentEmails.filter((e) => e.to === to).at(-1)
+
+// Giả lập học viên xem video `seconds` giây: báo 15 giây / lần như trình phát thật.
+// Backend không cho cộng nhanh hơn thời gian thực → giả lập đồng hồ (chỉ Date) trôi 15 giây trước mỗi lần báo
+export const watchLecture = async (token: string, lectureId: number, seconds: number) => {
+  vi.useFakeTimers({ toFake: ['Date'], now: Date.now() })
+  try {
+    for (let position = 0; position < seconds;) {
+      const step = Math.min(15, seconds - position)
+      vi.setSystemTime(Date.now() + step * 1000)
+      position += step
+      await api()
+        .put(`/lectures/${lectureId}/watch`)
+        .set(bearer(token))
+        .send({ playedSec: step, positionSec: position })
+        .expect(200)
+    }
+  } finally {
+    vi.useRealTimers()
+  }
+}
