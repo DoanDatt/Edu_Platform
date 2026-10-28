@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import AuthShell from '../auth-shell'
 import RegisterForm from './form-register'
 
 export const metadata: Metadata = {
@@ -7,8 +8,11 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <div className='flex flex-1 items-center justify-center py-8'>
+    <AuthShell
+      title='Bắt đầu hành trình học của bạn'
+      description='Tạo tài khoản miễn phí, ghi danh khóa học và theo dõi tiến độ ngay hôm nay.'
+    >
       <RegisterForm />
-    </div>
+    </AuthShell>
   )
 }

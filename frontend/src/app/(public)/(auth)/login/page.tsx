@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import AuthShell from '../auth-shell'
 import LoginForm from './form-login'
 
 export const metadata: Metadata = {
@@ -7,8 +8,8 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <div className='flex flex-1 items-center justify-center py-8'>
+    <AuthShell title='Chào mừng bạn quay lại!' description='Đăng nhập để tiếp tục các khóa học đang dang dở.'>
       <LoginForm />
-    </div>
+    </AuthShell>
   )
 }

@@ -3,6 +3,7 @@ import CourseList from './course-list'
 import { Suspense } from 'react'
 import CourseFilters from './course-filter'
 import categoryApiRequest from '@/apiRequests/category'
+import PageBanner from '@/components/page-banner'
 
 export const metadata: Metadata = {
   title: 'Khóa học',
@@ -23,10 +24,11 @@ async function CoursesPage({ searchParams }: PageProps<'/courses'>) {
   return (
     <div className='flex flex-col gap-6'>
       {/* ===== Tiêu đề ===== */}
-      <div className='flex flex-col gap-1'>
-        <h1 className='text-3xl font-bold tracking-tight'>Khóa học</h1>
-        <p className='text-muted-foreground'>Học theo tốc độ của bạn, từ cơ bản đến nâng cao.</p>
-      </div>
+      <PageBanner
+        eyebrow='Thư viện khóa học'
+        title='Khóa học'
+        description='Học theo tốc độ của bạn, từ cơ bản đến nâng cao.'
+      />
 
       {/* ===== Bộ lọc (chưa hoạt động) ===== */}
       <Suspense fallback={<div className='h-10' />}>

@@ -1,3 +1,4 @@
+import PageBanner from '@/components/page-banner'
 import type { Metadata } from 'next'
 import MyCourses from './my-courses'
 
@@ -14,10 +15,7 @@ export const metadata: Metadata = {
 export default function MyCoursesPage() {
   return (
     <div className='flex flex-col gap-6'>
-      <div className='flex flex-col gap-1'>
-        <h1 className='text-3xl font-bold tracking-tight'>Khóa học của tôi</h1>
-        <p className='text-muted-foreground'>Tiếp tục học từ chỗ bạn dừng lại.</p>
-      </div>
+      <PageBanner eyebrow='Góc học tập' title='Khóa học của tôi' description='Tiếp tục học từ chỗ bạn dừng lại.' />
       <MyCourses />
     </div>
   )
