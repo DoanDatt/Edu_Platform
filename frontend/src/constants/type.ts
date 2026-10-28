@@ -29,6 +29,13 @@ export const UserStatus = {
   BLOCKED: 'BLOCKED'
 } as const
 
+// Nhãn tiếng Việt cho trạng thái tài khoản (bảng người dùng của admin)
+export const UserStatusLabels: Record<keyof typeof UserStatus, string> = {
+  ACTIVE: 'Đang hoạt động',
+  INACTIVE: 'Chưa kích hoạt',
+  BLOCKED: 'Bị khóa'
+}
+
 export const CourseLevel = {
   BEGINNER: 'BEGINNER',
   ALL_LEVELS: 'ALL_LEVELS',
