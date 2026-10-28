@@ -16,10 +16,35 @@ export const LectureSchema = z.object({
       status: z.string(),
       instructorId: z.number()
     })
-  })
+  }),
+
+  hasQuiz: z.boolean(),
+  // Đã xem tới đâu (chưa xem lần nào → null): positionSec để xem tiếp từ chỗ dừng
+  watch: z.object({ watchedSec: z.number(), positionSec: z.number() }).nullable(),
+  // Số giây phải xem để tính là học xong (90% thời lượng). 0 = bài không có video → tự bấm "đã học"
+  requiredWatchSec: z.number()
 })
 
 export type LectureType = z.infer<typeof LectureSchema>
+
+// PUT /lectures/:id/watch: trình phát báo đã xem thêm bao nhiêu giây, đang dừng ở giây nào
+export const ReportWatchBody = z.object({
+  playedSec: z.number().min(0),
+  positionSec: z.number().min(0)
+})
+export type ReportWatchBodyType = z.infer<typeof ReportWatchBody>
+
+export const ReportWatchRes = z.object({
+  data: z.object({
+    lectureId: z.number(),
+    watchedSec: z.number(),
+    positionSec: z.number(),
+    requiredSec: z.number(),
+    completed: z.boolean() // true = đã xem đủ, backend đã tự đánh dấu học xong
+  }),
+  message: z.string()
+})
+export type ReportWatchResType = z.infer<typeof ReportWatchRes>
 
 export const LectureResSchema = z.object({
   data: LectureSchema,

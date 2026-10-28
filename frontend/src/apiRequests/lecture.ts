@@ -6,6 +6,8 @@ import {
   LectureCompleteResType,
   LectureResType,
   ReorderLecturesBodyType,
+  ReportWatchBodyType,
+  ReportWatchResType,
   UpdateLectureBodyType
 } from '@/schemaValidations/lecture.schema'
 
@@ -13,6 +15,7 @@ export const lectureApiRequest = {
   getDetail: (id: number) => http.get<LectureResType>(`/lectures/${id}`),
   complete: (id: number) => http.post<LectureCompleteResType>(`/lectures/${id}/complete`, null),
   uncomplete: (id: number) => http.delete<LectureCompleteResType>(`/lectures/${id}/complete`),
+  reportWatch: (id: number, body: ReportWatchBodyType) => http.put<ReportWatchResType>(`/lectures/${id}/watch`, body),
 
   // ===== Giảng viên soạn bài =====
   create: (body: CreateLectureBodyType) => http.post<InstructorLectureResType>('/lectures', body),

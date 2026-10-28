@@ -8,8 +8,11 @@ import { useMyLearningQuery } from '@/queries/useEnrollments'
 import { useLectureQuery, useToggleLectureCompleteMutation } from '@/queries/useLecture'
 import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Circle, Loader2, VideoOff } from 'lucide-react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import LearnCurriculum from './learn-curriculum'
+import LectureVideo from './lecture-video'
 
 // Trang học 1 khóa. Bài đang học nằm trên URL (?lecture=21): F5 không mất chỗ đang học, gửi link được
 export default function LearnCourse({ courseId }: { courseId: number }) {
@@ -32,6 +35,21 @@ export default function LearnCourse({ courseId }: { courseId: number }) {
 
   // Query phụ thuộc: chỉ gọi khi đã biết bài đang học (enabled trong hook)
   const lectureQuery = useLectureQuery(current?.id)
+  const lecture = lectureQuery.data?.payload.data
+
+  // Số giây đã xem MỚI NHẤT của từng bài (backend trả về sau mỗi lần trình phát báo).
+  // Lưu theo id bài nên đổi qua lại giữa các bài không lẫn số của nhau
+  const [watchedById, setWatchedById] = useState<Record<number, number>>({})
+
+  // URL chưa có ?lecture= (mới vào khóa) → ghi luôn bài đang chọn lên URL.
+  // Không ghi thì "bài đang học" = "bài đầu tiên chưa xong": học xong bài này là trang tự nhảy sang bài khác
+  const router = useRouter()
+  const currentId = current?.id
+  useEffect(() => {
+    if (!searchParams.get('lecture') && currentId) {
+      router.replace(`/learn/${courseId}?lecture=${currentId}`, { scroll: false })
+    }
+  }, [searchParams, currentId, courseId, router])
 
   // ===== Các trạng thái của mục lục =====
   if (learningQuery.isLoading) return <LearnCourseSkeleton />
@@ -61,6 +79,14 @@ export default function LearnCourse({ courseId }: { courseId: number }) {
   const prevLecture = currentIndex > 0 ? lectures[currentIndex - 1] : undefined
   const nextLecture = currentIndex >= 0 ? lectures[currentIndex + 1] : undefined
   const hrefFor = (lectureId: number) => `/learn/${courseId}?lecture=${lectureId}`
+  const completedIds = new Set(lectures.filter((l) => l.completed).map((l) => l.id))
+
+  // Bài có video phải xem đủ 90% mới xong (requiredWatchSec > 0). Chưa đủ thì thay nút bằng thanh "đã xem x%"
+  const requiredSec = lecture?.requiredWatchSec ?? 0
+  const watchedSec = current ? (watchedById[current.id] ?? lecture?.watch?.watchedSec ?? 0) : 0
+  const mustWatchMore = Boolean(current && !current.completed && requiredSec > 0 && watchedSec < requiredSec)
+  const watchedPercent =
+    lecture && lecture.durationSec > 0 ? Math.min(100, Math.floor((watchedSec * 100) / lecture.durationSec)) : 0
 
   const toggleComplete = async () => {
     if (!current || toggleMutation.isPending) return
@@ -105,13 +131,20 @@ export default function LearnCourse({ courseId }: { courseId: number }) {
                 <div className='flex size-full items-center justify-center'>
                   <Loader2 className='size-8 animate-spin text-white/60' />
                 </div>
-              ) : lectureQuery.data?.payload.data.videoUrl ? (
-                // key = id bài: đổi bài thì React tạo thẻ <video> MỚI, không phát tiếp video cũ
-                <video
+              ) : lecture?.videoUrl ? (
+                // key = id bài: đổi bài thì React tạo trình phát MỚI (bộ đếm giây xem về 0, không phát tiếp video cũ)
+                <LectureVideo
                   key={current.id}
-                  src={lectureQuery.data.payload.data.videoUrl}
-                  controls
-                  className='size-full'
+                  lectureId={current.id}
+                  src={lecture.videoUrl}
+                  startAtSec={lecture.watch?.positionSec ?? 0}
+                  onReported={(data) => {
+                    setWatchedById((prev) => ({ ...prev, [data.lectureId]: data.watchedSec }))
+                    // Vừa xem đủ 90% (trước đó chưa xong) → chúc mừng. Mục lục tự tải lại nhờ hook invalidate
+                    if (data.completed && !completedIds.has(data.lectureId)) {
+                      toast.success('Bạn đã hoàn thành bài học này')
+                    }
+                  }}
                 />
               ) : (
                 <div className='flex size-full flex-col items-center justify-center gap-2 text-white/60'>
@@ -127,29 +160,62 @@ export default function LearnCourse({ courseId }: { courseId: number }) {
             <div className='flex flex-col gap-4 border-b p-4 md:p-6'>
               <h2 className='text-xl font-semibold'>{current.title}</h2>
               <div className='flex flex-wrap items-center gap-2'>
-                <Button
-                  onClick={toggleComplete}
-                  disabled={toggleMutation.isPending}
-                  variant={current.completed ? 'outline' : 'default'}
-                >
-                  {toggleMutation.isPending ? (
-                    <Loader2 className='animate-spin' />
-                  ) : current.completed ? (
-                    <CheckCircle2 className='text-green-600' />
-                  ) : (
-                    <Circle />
-                  )}
-                  {current.completed ? 'Đã học' : 'Đánh dấu đã học'}
-                </Button>
+                {mustWatchMore ? (
+                  // Bài có video, chưa xem đủ: không có nút, chỉ hiện đã xem bao nhiêu (xem đủ là tự hoàn thành)
+                  <div className='flex min-w-56 flex-col gap-1.5'>
+                    <div className='flex items-center justify-between gap-3 text-sm'>
+                      <span className='text-muted-foreground'>Xem đủ 90% video để hoàn thành</span>
+                      <span className='font-semibold tabular-nums text-primary'>{watchedPercent}%</span>
+                    </div>
+                    <div
+                      className='h-2 overflow-hidden rounded-full bg-muted'
+                      role='progressbar'
+                      aria-valuenow={watchedPercent}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label='Đã xem video'
+                    >
+                      <div
+                        className='h-full rounded-full bg-linear-to-r from-sky-400 to-primary transition-all'
+                        style={{ width: `${watchedPercent}%` }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={toggleComplete}
+                    disabled={toggleMutation.isPending}
+                    variant={current.completed ? 'outline' : 'default'}
+                  >
+                    {toggleMutation.isPending ? (
+                      <Loader2 className='animate-spin' />
+                    ) : current.completed ? (
+                      <CheckCircle2 className='text-green-600' />
+                    ) : (
+                      <Circle />
+                    )}
+                    {current.completed ? 'Đã học' : 'Đánh dấu đã học'}
+                  </Button>
+                )}
 
                 <div className='ml-auto flex gap-2'>
-                  <Button asChild variant='outline' size='sm' className={prevLecture ? '' : 'pointer-events-none opacity-50'}>
+                  <Button
+                    asChild
+                    variant='outline'
+                    size='sm'
+                    className={prevLecture ? '' : 'pointer-events-none opacity-50'}
+                  >
                     <Link href={prevLecture ? hrefFor(prevLecture.id) : '#'} aria-disabled={!prevLecture}>
                       <ChevronLeft />
                       Bài trước
                     </Link>
                   </Button>
-                  <Button asChild variant='outline' size='sm' className={nextLecture ? '' : 'pointer-events-none opacity-50'}>
+                  <Button
+                    asChild
+                    variant='outline'
+                    size='sm'
+                    className={nextLecture ? '' : 'pointer-events-none opacity-50'}
+                  >
                     <Link href={nextLecture ? hrefFor(nextLecture.id) : '#'} aria-disabled={!nextLecture}>
                       Bài tiếp theo
                       <ChevronRight />
@@ -160,12 +226,10 @@ export default function LearnCourse({ courseId }: { courseId: number }) {
             </div>
 
             {/* ===== Ghi chú của bài ===== */}
-            {lectureQuery.data?.payload.data.content && (
+            {lecture?.content && (
               <section className='flex flex-col gap-2 p-4 md:p-6'>
                 <h3 className='font-semibold'>Ghi chú</h3>
-                <p className='whitespace-pre-line leading-relaxed text-muted-foreground'>
-                  {lectureQuery.data.payload.data.content}
-                </p>
+                <p className='whitespace-pre-line leading-relaxed text-muted-foreground'>{lecture.content}</p>
               </section>
             )}
           </main>

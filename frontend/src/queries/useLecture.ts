@@ -1,5 +1,5 @@
 import lectureApiRequest from '@/apiRequests/lecture'
-import { UpdateLectureBodyType } from '@/schemaValidations/lecture.schema'
+import { ReportWatchBodyType, UpdateLectureBodyType } from '@/schemaValidations/lecture.schema'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 // Nội dung 1 bài (video, ghi chú). lectureId có thể undefined lúc trang học mới mở
@@ -24,6 +24,19 @@ export const useToggleLectureCompleteMutation = () => {
       completed ? lectureApiRequest.complete(lectureId) : lectureApiRequest.uncomplete(lectureId),
     // Response chỉ có { lectureId, completed } → tải lại mục lục (dấu ✓, %) của trang học và /my-courses
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['enrollments'] })
+  })
+}
+
+// Trình phát báo tiến độ xem (~15 giây / lần). Gọi: mutate({ lectureId: 21, body: { playedSec, positionSec } })
+// Chỉ khi backend báo vừa xem đủ (completed) mới tải lại mục lục: không thì cứ 15 giây lại tải lại 1 lần, phí
+export const useReportWatchMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ lectureId, body }: { lectureId: number; body: ReportWatchBodyType }) =>
+      lectureApiRequest.reportWatch(lectureId, body),
+    onSuccess: (res) => {
+      if (res.payload.data.completed) queryClient.invalidateQueries({ queryKey: ['enrollments'] })
+    }
   })
 }
 
