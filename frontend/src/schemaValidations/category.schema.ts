@@ -15,3 +15,20 @@ export const CategoryListRes = PaginationRes.extend({
 })
 
 export type CategoryListResType = z.infer<typeof CategoryListRes>
+
+export const CreateCategoryBodySchema = z
+  .object({
+    name: z.string().trim().min(1, 'Vui lòng nhập tên danh mục').max(200),
+    description: z.string().trim().max(1000).optional()
+  })
+  .strict()
+export type CreateCategoryBodyType = z.infer<typeof CreateCategoryBodySchema>
+
+export const UpdateCategoryBodySchema = CreateCategoryBodySchema
+export type UpdateCategoryBodyType = z.infer<typeof UpdateCategoryBodySchema>
+
+export const CategoryRes = z.object({
+  message: z.string(),
+  data: CategorySchema
+})
+export type CategoryResType = z.infer<typeof CategoryRes>
