@@ -19,6 +19,9 @@ const CATEGORIES = ['Lập trình Web', 'Thiết kế', 'Marketing', 'Khoa học
 
 // Video mẫu công khai: video CC0 trong tài liệu MDN của Mozilla (hỗ trợ tua)
 const SAMPLE_VIDEO = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4'
+// Thời lượng THẬT của video mẫu (5,055 giây). Phải đúng: học viên xem đủ 90% thời lượng mới tính là học xong,
+// ghi dài hơn video thật (bản cũ ghi 5–9 phút cho đẹp) thì xem hết video cũng không bao giờ hoàn thành
+const SAMPLE_VIDEO_DURATION_SEC = 5
 // Link cũ (Google sample videos) đã bị khóa (403) → chạy lại seed:demo sẽ đổi sang SAMPLE_VIDEO
 const OLD_SAMPLE_VIDEO = 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
 // Khóa demo KHÔNG có ảnh bìa: frontend tự vẽ ảnh bìa gradient theo danh mục + tên khóa (CourseCover).
@@ -293,6 +296,14 @@ const main = async () => {
   })
   if (fixedVideos.count > 0) console.log(`Đã đổi link video mẫu cho ${fixedVideos.count} bài giảng`)
 
+  // Bản seed cũ ghi thời lượng giả → sửa về thời lượng thật của video mẫu
+  // (migration 20261029100000 cũng làm việc này cho database đã có sẵn khi deploy)
+  const fixedDurations = await prisma.lecture.updateMany({
+    where: { videoUrl: SAMPLE_VIDEO, durationSec: { not: SAMPLE_VIDEO_DURATION_SEC } },
+    data: { durationSec: SAMPLE_VIDEO_DURATION_SEC },
+  })
+  if (fixedDurations.count > 0) console.log(`Đã sửa thời lượng cho ${fixedDurations.count} bài giảng`)
+
   const clearedThumbnails = await prisma.course.updateMany({
     where: { thumbnail: { startsWith: OLD_THUMBNAIL_PREFIX } },
     data: { thumbnail: null },
@@ -325,7 +336,7 @@ const main = async () => {
                 position: lectureIndex,
                 videoUrl: SAMPLE_VIDEO,
                 content: `Ghi chú cho bài "${title}".`,
-                durationSec: 300 + lectureIndex * 120,
+                durationSec: SAMPLE_VIDEO_DURATION_SEC,
                 isPreview: sectionIndex === 0 && lectureIndex === 0,
               })),
             },

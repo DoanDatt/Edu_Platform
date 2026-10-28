@@ -237,7 +237,8 @@ const REPORT_SLACK_SEC = 5
 const requiresWatching = (lecture: { videoUrl: string | null; durationSec: number }) =>
   Boolean(lecture.videoUrl) && lecture.durationSec > 0
 
-export const requiredWatchSec = (durationSec: number) => Math.ceil(durationSec * WATCH_COMPLETE_RATIO)
+// Làm tròn XUỐNG (cho dư): video 5 giây cần xem 4 giây, video 120 giây cần 108 giây
+export const requiredWatchSec = (durationSec: number) => Math.floor(durationSec * WATCH_COMPLETE_RATIO)
 
 const markCompleted = (userId: number, lectureId: number) =>
   // upsert: gọi nhiều lần vẫn chỉ có 1 dòng
