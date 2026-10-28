@@ -29,6 +29,21 @@ export const buildTestEnv = () => {
     UPLOAD_DIR: path.join(os.tmpdir(), 'edu-platform-test-uploads'),
     // Test KHÔNG BAO GIỜ đẩy file lên Cloudinary thật (dù .env của máy có CLOUDINARY_URL): luôn lưu ổ đĩa
     CLOUDINARY_URL: '',
+    // Cổng thanh toán: bật cả 3 bằng thông tin chỉ dành cho test (ghi đè .env), test mock fetch nên không gọi cổng thật.
+    // MoMo dùng bộ khóa test công khai của MoMo (github.com/momo-wallet/payment)
+    MOMO_PARTNER_CODE: 'MOMO',
+    MOMO_ACCESS_KEY: 'F8BBA842ECF85',
+    MOMO_SECRET_KEY: 'K951B6PE1waDMi640xX08PD3vg6EkVlz',
+    MOMO_ENDPOINT: 'https://momo.test',
+    PAYPAL_CLIENT_ID: 'test-paypal-client',
+    PAYPAL_CLIENT_SECRET: 'test-paypal-secret',
+    PAYPAL_API: 'https://paypal.test',
+    PAYPAL_VND_PER_USD: '25000',
+    SEPAY_API_KEY: 'test-sepay-key',
+    SEPAY_BANK: 'MBBank',
+    SEPAY_ACCOUNT_NUMBER: '0123456789',
+    SEPAY_ACCOUNT_NAME: 'EDU PLATFORM',
+    PAYMENT_CODE_PREFIX: 'EDU',
     // Các biến bắt buộc: lấy từ .env nếu có, không thì dùng giá trị chỉ dành cho test (CI)
     ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET ?? 'test-access-secret',
     ACCESS_TOKEN_EXPIRES_IN: process.env.ACCESS_TOKEN_EXPIRES_IN ?? '15m',

@@ -74,6 +74,10 @@
     {
       "key": "orderId",
       "value": "1"
+    },
+    {
+      "key": "sepayApiKey",
+      "value": ""
     }
   ],
   "item": [
@@ -1653,6 +1657,123 @@
                 "cancel"
               ]
             }
+          }
+        },
+        {
+          "name": "Thanh toán đơn (chọn cổng)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"method\": \"SEPAY\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}/pay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}",
+                "pay"
+              ]
+            },
+            "description": "method: MOMO | PAYPAL | SEPAY. MoMo / PayPal trả payUrl (mở trên trình duyệt), SePay trả thông tin chuyển khoản + qrUrl"
+          }
+        },
+        {
+          "name": "Kiểm tra thanh toán (trang kết quả)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}",
+                "confirm"
+              ]
+            },
+            "description": "Hỏi MoMo / capture PayPal rồi trả lại đơn đã cập nhật"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cổng thanh toán",
+      "item": [
+        {
+          "name": "Các cổng đang bật",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payments/methods",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "methods"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SePay webhook (giả lập chuyển khoản)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Apikey {{sepayApiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 100001,\n  \"gateway\": \"MBBank\",\n  \"transactionDate\": \"2026-10-28 10:00:00\",\n  \"accountNumber\": \"0123456789\",\n  \"code\": null,\n  \"content\": \"CT tu NGUYEN VAN A EDUXXXXXXXX\",\n  \"transferType\": \"in\",\n  \"transferAmount\": 1000,\n  \"accumulated\": 0,\n  \"referenceCode\": \"FT100001\",\n  \"description\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments/sepay/webhook",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "sepay",
+                "webhook"
+              ]
+            },
+            "description": "Chỉ để thử trên máy local: thay EDUXXXXXXXX bằng code của đơn, transferAmount bằng amount, mỗi lần gửi đổi id. Biến sepayApiKey = SEPAY_API_KEY trong .env (đặt ở Current value, không lưu vào file)"
           }
         }
       ]

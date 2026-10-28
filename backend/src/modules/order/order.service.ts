@@ -100,8 +100,11 @@ export const getMyOrders = async (userId: number, { page, limit, status }: GetMy
 }
 
 // Đơn của người khác: báo 404 như không tồn tại (không cho biết id đó có tồn tại hay không)
-const getOwnOrder = async (orderId: number, userId: number) => {
-  const order = await prisma.order.findUnique({ where: { id: orderId } })
+export const getOwnOrder = async (orderId: number, userId: number) => {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { course: { select: { title: true } } },
+  })
   if (!order || order.userId !== userId) {
     throw new HttpError(404, 'Không tìm thấy đơn hàng')
   }

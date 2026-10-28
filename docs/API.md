@@ -399,6 +399,31 @@ Một đơn: `{ id, code, amount, status, method, paidAt, createdAt, course: { i
 
 Thanh toán thành công → giảng viên nhận thông báo `NEW_ORDER`.
 
+### Thanh toán
+
+| Method | Path | Body | Ghi chú |
+|---|---|---|---|
+| GET | `/payments/methods` | | Công khai. Các cổng đã cấu hình, vd `["MOMO","PAYPAL","SEPAY"]` → chỉ hiện các nút này |
+| POST | `/orders/:orderId/pay` | `{ method }` | Chọn cổng. MoMo / PayPal → `{ method, payUrl }`: chuyển trình duyệt sang `payUrl`. SePay → `{ method, transfer }`: hiện QR tại chỗ. 409: đơn đã trả / đã hủy. 400: cổng chưa bật, hoặc MoMo với đơn dưới 10.000 đ |
+| POST | `/orders/:orderId/confirm` | | Trang kết quả gọi khi cổng trả người mua về: server hỏi thẳng MoMo / **capture** PayPal rồi trả lại đơn (đã cập nhật). SePay: chỉ trả đơn hiện tại |
+
+`transfer` (SePay): `{ bank, accountNumber, accountName, amount, content, qrUrl }`. `content` = mã đơn, người mua phải ghi đúng nội dung này. Quét `qrUrl` (ảnh VietQR) thì app ngân hàng tự điền hết.
+
+Luồng theo từng cổng:
+
+- **MoMo** (môi trường test): `payUrl` → trả xong MoMo đưa về `<FRONTEND_URL>/checkout/:orderId/result?resultCode=...` và gọi IPN cho server. Chạy máy local thì MoMo không gọi IPN về được, nên trang kết quả **luôn gọi `/confirm`**.
+- **PayPal** (sandbox): giá đổi sang USD theo `PAYPAL_VND_PER_USD`. Duyệt xong PayPal đưa về `.../checkout/:orderId/result?token=...`. Lúc này **chưa thu tiền**, phải gọi `/confirm` để capture. Hủy thì về `.../checkout/:orderId`.
+- **SePay** (chuyển khoản thật): không có trang chuyển hướng. Trang thanh toán hỏi `GET /orders/:orderId` định kỳ (vd 5 giây) tới khi `status = PAID`.
+
+Cổng gọi về server (công khai, tự xác thực):
+
+| Method | Path | Xác thực | Trả lời |
+|---|---|---|---|
+| POST | `/payments/momo/ipn` | Chữ ký HMAC-SHA256 (`MOMO_SECRET_KEY`), sai → 400 | 204 |
+| POST | `/payments/sepay/webhook` | Header `Authorization: Apikey <SEPAY_API_KEY>`, sai → 401 | `{ "success": true }` |
+
+Mỗi lần cổng báo về được lưu vào bảng `PaymentLog` (cổng gửi lại cùng giao dịch → chỉ xử lý 1 lần). SePay chuyển **thiếu** tiền hoặc nội dung không có mã đơn → không xác nhận đơn, chỉ lưu log để đối soát tay.
+
 ---
 
 ## 10b. Thông báo (chuông ở header)
@@ -505,6 +530,7 @@ Không sửa được ADMIN; không đổi tên, tắt hay xóa được INSTRUC
 | Trang học | `GET /enrollments/mine/:courseId`, `GET /lectures/:id`, `POST/DELETE /lectures/:id/complete` |
 | Viết đánh giá | `GET /reviews/mine/:courseId`, `POST` / `PUT /reviews` |
 | Tài khoản của tôi | `GET` / `PUT /profile`, `PUT /profile/password` |
+| Mua khóa có phí | `POST /orders` → `/checkout/:orderId`: `GET /orders/:id`, `GET /payments/methods`, `POST /orders/:id/pay` · trang kết quả: `POST /orders/:id/confirm` · lịch sử: `GET /orders/mine` |
 | Chuông thông báo (header) | `GET /notifications/unread-count` (hỏi định kỳ), `GET /notifications` khi mở, `PATCH /notifications/:id/read`, `PATCH /notifications/read-all` |
 | Dashboard giảng viên | `GET /stats/instructor`, `GET /courses/mine`, tạo/sửa khóa, `GET /courses/mine/:id` + `/sections` + `/lectures` (+ `/reorder`), `POST /courses/:id/submit`, `GET /courses/mine/:id/students` |
 | Trang admin | `GET /stats/admin`, `GET /courses/admin`, `GET /courses/pending`, `GET /courses/admin/:id`, approve/reject/unpublish, `/users`, `/categories`, `/roles`, `/permissions` |
@@ -523,4 +549,4 @@ Chạy `npm run seed` rồi `npm run seed:demo` trong thư mục `backend/`. M�
 
 ## 14. Chưa có (làm sau)
 
-Thanh toán (khóa có phí trả 402), xác thực email khi đăng ký, hỏi đáp theo bài giảng. Thông báo hiện là bản ghi + frontend hỏi định kỳ, chưa đẩy realtime (dự kiến SSE).
+Webhook PayPal (hiện chốt đơn bằng capture ở trang kết quả), hoàn tiền, xác thực email khi đăng ký, hỏi đáp theo bài giảng. Thông báo hiện là bản ghi + frontend hỏi định kỳ, chưa đẩy realtime (dự kiến SSE).

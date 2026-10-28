@@ -10,6 +10,9 @@ if (fs.existsSync(path.resolve('.env'))) {
   config({ path: '.env', quiet: true })
 }
 
+// Biến tùy chọn: chuỗi rỗng = không có (test đặt '' để tắt hẳn, vì dotenv không ghi đè biến đã có)
+const optionalString = z.preprocess((value) => (value === '' ? undefined : value), z.string().optional())
+
 const configSchema = z.object({
   PORT: z.coerce.number().default(4000),
   // Các địa chỉ frontend được phép gọi API, cách nhau bằng dấu phẩy
@@ -78,6 +81,29 @@ const configSchema = z.object({
     .string()
     .regex(/^[A-Z]{2,5}$/, 'PAYMENT_CODE_PREFIX: 2–5 chữ cái in hoa')
     .default('EDU'),
+
+  // ===== Cổng thanh toán: điền đủ biến của cổng nào thì cổng đó được bật (GET /payments/methods) =====
+
+  // MoMo (môi trường test). Thông tin test công khai của MoMo: github.com/momo-wallet/payment
+  MOMO_PARTNER_CODE: optionalString,
+  MOMO_ACCESS_KEY: optionalString,
+  MOMO_SECRET_KEY: optionalString,
+  MOMO_ENDPOINT: z.url().default('https://test-payment.momo.vn'),
+  // payWithATM: trả bằng thẻ ATM nội địa (MoMo test có thẻ ATM test). captureWallet: quét QR bằng app MoMo
+  MOMO_REQUEST_TYPE: z.enum(['payWithATM', 'captureWallet']).default('payWithATM'),
+
+  // PayPal (sandbox). PayPal không nhận VND → đổi sang USD theo tỉ giá cố định bên dưới
+  PAYPAL_CLIENT_ID: optionalString,
+  PAYPAL_CLIENT_SECRET: optionalString,
+  PAYPAL_API: z.url().default('https://api-m.sandbox.paypal.com'),
+  PAYPAL_VND_PER_USD: z.coerce.number().positive().default(25_000),
+
+  // SePay: chuyển khoản ngân hàng THẬT. SePay đọc biến động số dư rồi gọi webhook kèm header "Apikey <key>"
+  SEPAY_API_KEY: optionalString,
+  // Ngân hàng nhận tiền (tên viết tắt hoặc mã BIN, vd: MBBank, VCB, 970422), số tài khoản, tên chủ tài khoản
+  SEPAY_BANK: optionalString,
+  SEPAY_ACCOUNT_NUMBER: optionalString,
+  SEPAY_ACCOUNT_NAME: optionalString,
 
   // Số proxy đứng trước app khi deploy (Render: 1) để đọc đúng IP người dùng. Local: 0
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),

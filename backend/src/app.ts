@@ -20,6 +20,7 @@ import statsRouter from './modules/stats/stats.route'
 import profileRouter from './modules/profile/profile.route'
 import notificationRouter from './modules/notification/notification.route'
 import orderRouter from './modules/order/order.route'
+import paymentRouter from './modules/payment/payment.route'
 
 // Các router có route cần kiểm tra quyền theo bảng Permission.
 // Script sync-permissions đọc danh sách này để sinh permission → thêm module mới thì thêm vào đây
@@ -77,6 +78,8 @@ app.use('/profile', profileRouter)
 app.use('/notifications', notificationRouter)
 // Đơn mua khóa học của chính mình: cũng chỉ cần đăng nhập
 app.use('/orders', orderRouter)
+// Cổng thanh toán gọi về (MoMo IPN, SePay webhook): công khai, tự xác thực bằng chữ ký / API key
+app.use('/payments', paymentRouter)
 for (const { prefix, router } of protectedRouters) {
   app.use(prefix, router)
 }
