@@ -1,10 +1,11 @@
 import { getCategoryStyle } from '@/constants/category'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import Waves from './waves'
 
 // Ảnh bìa khóa học, tỉ lệ 16:9.
 //   Có thumbnail (giảng viên đã upload) → hiện ảnh thật
-//   Chưa có → TỰ VẼ: nền gradient theo danh mục + tên khóa chữ to (học theo phong cách F8),
+//   Chưa có → TỰ VẼ: nền gradient theo danh mục + họa tiết sóng + tên khóa chữ to,
 //   nhìn vẫn đẹp và đồng bộ, không cần ảnh minh họa
 export default function CourseCover({
   course,
@@ -56,13 +57,9 @@ export default function CourseCover({
         className
       )}
     >
-      {/* Sọc chéo mờ phủ lên nền cho bớt phẳng */}
-      <div
-        aria-hidden
-        className='absolute inset-0 bg-[repeating-linear-gradient(135deg,rgb(255_255_255/0.07)_0_2px,transparent_2px_16px)]'
-      />
-      {/* Vòng tròn sáng mờ ở góc: tạo chiều sâu */}
-      <div aria-hidden className='absolute -top-1/3 -right-1/4 size-2/3 rounded-full bg-white/15 blur-2xl' />
+      {/* Vòng sáng mờ ở góc (như nắng trên mặt biển) + sóng dưới đáy: họa tiết riêng của EduPlatform */}
+      <div aria-hidden className='absolute -top-1/3 -right-1/4 size-2/3 rounded-full bg-white/20 blur-2xl' />
+      <Waves />
 
       <span
         className={cn(
@@ -75,7 +72,7 @@ export default function CourseCover({
       </span>
       <p
         className={cn(
-          'relative line-clamp-2 font-bold leading-tight tracking-tight drop-shadow-sm',
+          'relative line-clamp-2 font-heading font-semibold leading-tight drop-shadow-sm',
           size === 'lg' ? 'text-3xl md:text-4xl' : 'text-xl'
         )}
       >
@@ -84,8 +81,6 @@ export default function CourseCover({
       {course.subtitle && size === 'lg' && (
         <p className='relative line-clamp-1 text-white/85 md:text-lg'>{course.subtitle}</p>
       )}
-      {/* Gạch ngang nhỏ dưới tên (điểm nhấn) */}
-      <span aria-hidden className='relative h-1 w-10 rounded-full bg-white/70' />
     </div>
   )
 }

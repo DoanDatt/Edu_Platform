@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Be_Vietnam_Pro, Geist_Mono } from 'next/font/google'
+import { Be_Vietnam_Pro, Geist_Mono, Lexend } from 'next/font/google'
 import './globals.css'
 import AppProvider from '@/components/app-provider'
 import ThemeProvider from '@/components/theme-provider'
@@ -12,6 +12,13 @@ const beVietnamPro = Be_Vietnam_Pro({
   variable: '--font-sans',
   subsets: ['vietnamese', 'latin'],
   weight: ['400', '500', '600', '700']
+})
+
+// Lexend cho tiêu đề (h1–h3, class font-heading): chữ rộng, tròn, dễ đọc → tạo nét riêng cho thương hiệu
+const lexend = Lexend({
+  variable: '--font-heading',
+  subsets: ['vietnamese', 'latin'],
+  weight: ['500', '600', '700']
 })
 
 const geistMono = Geist_Mono({
@@ -34,7 +41,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     <html
       lang='vi'
       suppressHydrationWarning
-      className={`${beVietnamPro.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${beVietnamPro.variable} ${lexend.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className='flex min-h-full flex-col'>
         {/* Mặc định giao diện SÁNG (giống đa số web học), người dùng vẫn bật tối bằng nút ở header */}

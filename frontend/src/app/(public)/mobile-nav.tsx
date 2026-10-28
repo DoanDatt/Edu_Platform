@@ -10,7 +10,7 @@ import { Suspense, useState } from 'react'
 import HeaderSearch from './header-search'
 import NavItems from './nav-items'
 
-// Menu trượt từ phải, chỉ hiện trên màn hình nhỏ (md:hidden): ô tìm kiếm + menu + đăng nhập / đăng ký
+// Menu trượt từ phải, hiện khi màn hình nhỏ hơn lg (header chưa đủ chỗ cho tab menu): ô tìm kiếm + menu + đăng nhập / đăng ký
 export default function MobileNav() {
   const [open, setOpen] = useState(false)
   const { isAuth } = useAppContext()
@@ -18,7 +18,7 @@ export default function MobileNav() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant='ghost' size='icon' className='md:hidden' aria-label='Mở menu'>
+        <Button variant='ghost' size='icon' className='lg:hidden' aria-label='Mở menu'>
           <Menu className='size-5' />
         </Button>
       </SheetTrigger>

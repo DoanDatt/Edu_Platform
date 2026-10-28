@@ -1,152 +1,97 @@
-'use client'
-
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { ArrowRight, BookOpen, ChartLine, Code, LucideIcon, PlayCircle, Presentation, Sparkles, Users } from 'lucide-react'
+import Waves, { WavyUnderline } from '@/components/waves'
+import { ArrowRight, CheckCircle2, PlayCircle, Search, Star } from 'lucide-react'
+import Form from 'next/form'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
 
-type Slide = {
-  badge: string
-  title: string
-  highlight: string // phần tiêu đề tô màu vàng
-  description: string
-  cta: { label: string; href: string }
-  gradient: string
-  icons: LucideIcon[] // 3 icon trang trí bên phải
-}
-
-const slides: Slide[] = [
-  {
-    badge: 'Học trực tuyến',
-    title: 'Nâng cấp kỹ năng cùng',
-    highlight: 'EduPlatform',
-    description: 'Lập trình, thiết kế, marketing, khoa học dữ liệu. Học theo tốc độ của bạn, theo dõi tiến độ từng bài.',
-    cta: { label: 'Khám phá khóa học', href: '/courses' },
-    gradient: 'from-sky-500 via-blue-600 to-indigo-700',
-    icons: [Code, PlayCircle, BookOpen]
-  },
-  {
-    badge: 'Miễn phí',
-    title: 'Bắt đầu với',
-    highlight: 'khóa học miễn phí',
-    description: 'Nhiều khóa học miễn phí cho người mới bắt đầu. Đăng ký tài khoản là học được ngay.',
-    cta: { label: 'Xem khóa miễn phí', href: '/courses?price=free' },
-    gradient: 'from-orange-400 via-orange-500 to-rose-600',
-    icons: [Sparkles, PlayCircle, ChartLine]
-  },
-  {
-    badge: 'Giảng viên',
-    title: 'Chia sẻ kiến thức,',
-    highlight: 'mở lớp của riêng bạn',
-    description: 'Tạo khóa học, tải video bài giảng, theo dõi học viên và đánh giá ngay trên nền tảng.',
-    cta: { label: 'Xem các khóa nổi bật', href: '/courses?sort=popular' },
-    gradient: 'from-emerald-500 via-teal-600 to-cyan-700',
-    icons: [Presentation, Users, ChartLine]
-  }
+// Lối tắt dưới ô tìm kiếm: bộ lọc có sẵn của trang /courses
+const quickLinks = [
+  { label: 'Khóa miễn phí', href: '/courses?price=free' },
+  { label: 'Học nhiều nhất', href: '/courses?sort=popular' },
+  { label: 'Mới ra mắt', href: '/courses?sort=newest' }
 ]
 
-const INTERVAL_MS = 6000
-
-// Banner chuyển slide ở đầu trang chủ. Tất cả slide CHỒNG lên nhau trong 1 ô grid,
-// slide đang chọn opacity 100, còn lại opacity 0 → chuyển slide là hiệu ứng mờ dần (fade)
+// Banner đầu trang chủ: 1 khối tĩnh màu xanh biển (không chuyển slide) với họa tiết sóng ở đáy.
+// Server Component: không có state; ô tìm kiếm là <Form> GET của Next → /courses?search=...
 export default function HeroBanner() {
-  const [current, setCurrent] = useState(0)
-  // Rê chuột vào banner thì dừng tự chuyển (người dùng đang đọc)
-  const [paused, setPaused] = useState(false)
-
-  useEffect(() => {
-    if (paused) return
-    const timer = setInterval(() => setCurrent((index) => (index + 1) % slides.length), INTERVAL_MS)
-    // Dọn timer khi paused đổi / rời trang: không thì timer cũ vẫn chạy song song timer mới
-    return () => clearInterval(timer)
-  }, [paused])
-
   return (
-    <section
-      aria-roledescription='carousel'
-      aria-label='Giới thiệu'
-      className='relative overflow-hidden rounded-3xl'
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
-      <div className='grid'>
-        {slides.map((slide, index) => {
-          const isActive = index === current
-          return (
-            <div
-              key={slide.title}
-              aria-hidden={!isActive}
-              // inert: slide đang ẩn thì không bấm / Tab vào link bên trong được
-              inert={!isActive}
-              className={cn(
-                'relative col-start-1 row-start-1 flex items-center bg-linear-to-r text-white transition-opacity duration-700',
-                slide.gradient,
-                isActive ? 'opacity-100' : 'opacity-0'
-              )}
-            >
-              {/* Sọc chéo mờ giống ảnh bìa khóa học */}
-              <div
-                aria-hidden
-                className='absolute inset-0 bg-[repeating-linear-gradient(135deg,rgb(255_255_255/0.06)_0_2px,transparent_2px_18px)]'
-              />
-              <div className='relative flex w-full items-center justify-between gap-8 px-6 py-10 md:px-12 md:py-14'>
-                <div className='flex max-w-xl flex-col items-start gap-4'>
-                  <span className='rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm'>
-                    {slide.badge}
-                  </span>
-                  <h2 className='text-3xl font-bold leading-tight tracking-tight md:text-4xl'>
-                    {slide.title} <span className='text-yellow-300'>{slide.highlight}</span>
-                  </h2>
-                  <p className='text-white/90 md:text-lg'>{slide.description}</p>
-                  <Button
-                    asChild
-                    size='lg'
-                    variant='outline'
-                    className='mt-2 rounded-full border-white/70 bg-transparent px-5 text-white hover:bg-white hover:text-foreground'
-                  >
-                    <Link href={slide.cta.href}>
-                      {slide.cta.label} <ArrowRight />
-                    </Link>
-                  </Button>
-                </div>
-                {/* Trang trí bên phải (ẩn trên điện thoại): 3 ô kính mờ chứa icon, xếp lệch nhau */}
-                <div aria-hidden className='relative hidden size-56 shrink-0 lg:block'>
-                  {slide.icons.map((Icon, iconIndex) => (
-                    <span
-                      key={iconIndex}
-                      className={cn(
-                        'absolute flex items-center justify-center rounded-3xl bg-white/15 shadow-lg ring-1 ring-white/30 backdrop-blur-md',
-                        iconIndex === 0 && 'top-0 left-6 size-28',
-                        iconIndex === 1 && 'top-16 right-0 size-24',
-                        iconIndex === 2 && 'bottom-0 left-0 size-20'
-                      )}
-                    >
-                      <Icon className={iconIndex === 0 ? 'size-12' : 'size-9'} />
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+    <section className='relative overflow-hidden rounded-3xl bg-linear-to-br from-sky-400 via-sky-500 to-blue-600 text-white dark:from-sky-600 dark:via-sky-700 dark:to-blue-800'>
+      {/* Vầng sáng mờ góc phải (như nắng trên mặt biển) + sóng dưới đáy */}
+      <div aria-hidden className='absolute -top-24 -right-24 size-96 rounded-full bg-white/20 blur-3xl' />
+      <Waves className='h-1/4' />
 
-      {/* Chấm chọn slide */}
-      <div className='absolute bottom-4 left-6 flex gap-2 md:left-12'>
-        {slides.map((slide, index) => (
-          <button
-            key={slide.title}
-            type='button'
-            aria-label={`Slide ${index + 1}`}
-            aria-current={index === current}
-            onClick={() => setCurrent(index)}
-            className={cn(
-              'h-2 rounded-full bg-white transition-all',
-              index === current ? 'w-6 opacity-100' : 'w-2 opacity-50 hover:opacity-80'
-            )}
-          />
-        ))}
+      <div className='relative flex items-center justify-between gap-10 px-6 pt-10 pb-16 md:px-12 md:pt-14 md:pb-20'>
+        <div className='flex max-w-xl flex-col items-start gap-5'>
+          <span className='rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm'>
+            Nền tảng học trực tuyến
+          </span>
+          <h2 className='text-3xl leading-tight font-bold md:text-5xl'>
+            Học từng bước,{' '}
+            {/* Gạch sóng màu san hô dưới cụm chữ: điểm nhấn ấm trên nền xanh */}
+            <span className='relative inline-block whitespace-nowrap'>
+              tiến xa mỗi ngày
+              <WavyUnderline className='absolute -bottom-2 left-0 text-orange-300' />
+            </span>
+          </h2>
+          <p className='text-white/90 md:text-lg'>
+            Lập trình, thiết kế, marketing, khoa học dữ liệu. Học theo tốc độ của bạn, theo dõi tiến độ từng bài.
+          </p>
+
+          <Form action='/courses' role='search' className='flex w-full max-w-lg items-center gap-2 rounded-full bg-white p-1.5 shadow-lg shadow-blue-900/20'>
+            {/* Ô này và thẻ minh họa bên phải LUÔN nền trắng (cả khi bật giao diện tối) → chữ dùng màu cố định
+                slate-..., không dùng text-foreground (giao diện tối nó là màu sáng → chữ trắng trên nền trắng) */}
+            <Search className='ml-3 size-5 shrink-0 text-slate-500' />
+            <input
+              name='search'
+              type='search'
+              placeholder='Bạn muốn học gì hôm nay?'
+              aria-label='Tìm khóa học'
+              className='h-10 min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-500'
+            />
+            <button
+              type='submit'
+              className='h-10 shrink-0 rounded-full bg-highlight px-5 text-sm font-semibold text-highlight-foreground transition-opacity hover:opacity-90'
+            >
+              Tìm kiếm
+            </button>
+          </Form>
+
+          <div className='flex flex-wrap gap-2'>
+            {quickLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className='flex items-center gap-1 rounded-full border border-white/40 px-3 py-1 text-sm transition-colors hover:bg-white hover:text-sky-700'
+              >
+                {link.label} <ArrowRight className='size-3.5' />
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Minh họa bên phải (chỉ máy tính, chỉ để trang trí): thẻ "đang học" có thanh tiến độ
+            + 2 nhãn nổi xung quanh → nói lên điểm mạnh của nền tảng: học có lộ trình, theo dõi tiến độ */}
+        <div aria-hidden className='relative hidden w-80 shrink-0 lg:block'>
+          <div className='rotate-2 rounded-2xl bg-white p-4 text-slate-900 shadow-2xl shadow-blue-900/30'>
+            <div className='relative flex aspect-video items-end overflow-hidden rounded-xl bg-linear-to-br from-sky-400 to-blue-700 p-3'>
+              <Waves />
+              <PlayCircle className='absolute top-1/2 left-1/2 size-12 -translate-1/2 text-white/90' />
+            </div>
+            <p className='mt-3 text-xs text-slate-500'>Bài 12 / 18</p>
+            <p className='font-heading font-semibold'>Hooks nâng cao trong React</p>
+            <div className='mt-3 flex items-center gap-3'>
+              <div className='h-2 flex-1 overflow-hidden rounded-full bg-slate-200'>
+                <div className='h-full w-2/3 rounded-full bg-sky-500' />
+              </div>
+              <span className='text-xs font-semibold text-sky-600'>67%</span>
+            </div>
+          </div>
+          <span className='absolute -top-5 -left-8 flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-lg'>
+            <CheckCircle2 className='size-4 text-emerald-500' /> Hoàn thành bài 11
+          </span>
+          <span className='absolute -bottom-6 -left-4 flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-lg'>
+            <Star className='size-4 fill-amber-400 text-amber-400' /> 4.8 · 120 đánh giá
+          </span>
+        </div>
       </div>
     </section>
   )

@@ -3,12 +3,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CourseLevelLabels } from '@/constants/type'
 import { formatPrice, generateSlugUrl } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import { PublicCourseType } from '@/schemaValidations/course.schema'
 import { Star, Users } from 'lucide-react'
 import Link from 'next/link'
 
 // Thẻ 1 khóa học. Cả thẻ là 1 link tới trang chi tiết.
-// Phong cách: không viền, nền xám nhạt, bo góc lớn, rê chuột thì nổi lên (translate + shadow)
+// Phong cách: nền trắng, viền mảnh pha xanh, bo góc lớn. Rê chuột: nổi lên, viền + bóng đổ ngả màu xanh thương hiệu
 export default function CourseCard({ course }: { course: PublicCourseType }) {
   // Link dạng slug: /courses/react-tu-co-ban-den-nang-cao-i.15
   const href = `/courses/${generateSlugUrl({ name: course.title, id: course.id })}`
@@ -16,7 +17,7 @@ export default function CourseCard({ course }: { course: PublicCourseType }) {
   return (
     <Link
       href={href}
-      className='group flex flex-col overflow-hidden rounded-2xl bg-muted/70 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:bg-card'
+      className='group flex flex-col overflow-hidden rounded-2xl border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10'
     >
       <CourseCover
         course={course}
@@ -29,7 +30,10 @@ export default function CourseCard({ course }: { course: PublicCourseType }) {
         <h3 className='line-clamp-2 font-semibold leading-snug transition-colors group-hover:text-primary'>
           {course.title}
         </h3>
-        <p className='font-bold text-primary'>{formatPrice(course.price)}</p>
+        {/* Khóa có phí: giá màu san hô (màu nhấn ấm) cho nổi bật. Miễn phí: màu xanh thương hiệu */}
+        <p className={cn('font-bold', course.price > 0 ? 'text-highlight' : 'text-primary')}>
+          {formatPrice(course.price)}
+        </p>
 
         {/* mt-auto: đẩy hàng cuối xuống đáy thẻ → thẻ nào cũng thẳng hàng */}
         <div className='mt-auto flex items-center justify-between gap-3 pt-3 text-sm text-muted-foreground'>
@@ -61,7 +65,7 @@ export default function CourseCard({ course }: { course: PublicCourseType }) {
 // Thẻ giả lúc đang tải: cùng khung với CourseCard để trang không bị nhảy khi dữ liệu về
 export function CourseCardSkeleton() {
   return (
-    <div className='flex flex-col overflow-hidden rounded-2xl border'>
+    <div className='flex flex-col overflow-hidden rounded-2xl border bg-card'>
       <Skeleton className='aspect-video rounded-none' />
       <div className='flex flex-col gap-2 p-4'>
         <Skeleton className='h-3 w-1/4' />

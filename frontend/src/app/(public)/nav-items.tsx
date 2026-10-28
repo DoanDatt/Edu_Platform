@@ -33,15 +33,16 @@ const menuItems: {
 
 // Server: chỉ Trang chủ, Khóa học (server không biết trạng thái đăng nhập).
 // Client: ngay sau đó AppProvider đọc token → hiện thêm mục theo role
-//   variant 'rail': cột icon dọc bên trái (máy tính), icon ở trên, chữ nhỏ ở dưới
-//   variant 'list': danh sách dọc trong menu trượt (điện thoại), icon bên trái chữ
-export default function NavItems({ variant }: { variant: 'rail' | 'list' }) {
+//   variant 'tabs': hàng tab ngang trên header (máy tính), chỉ có chữ. Bỏ "Trang chủ" vì bấm logo là về trang chủ
+//   variant 'list': danh sách dọc trong menu trượt (điện thoại / tablet), icon bên trái chữ
+export default function NavItems({ variant }: { variant: 'tabs' | 'list' }) {
   const pathname = usePathname()
   const { role } = useAppContext()
 
   return menuItems.map(({ title, href, Icon, role: allowedRoles }) => {
     // Mục theo role: chưa đăng nhập, hoặc role không nằm trong danh sách → ẩn
     if (allowedRoles && (!role || !allowedRoles.includes(role))) return null
+    if (variant === 'tabs' && href === '/') return null
 
     // Đang ở đúng trang đó (hoặc trang con của nó) thì tô nổi.
     // '/' phải so sánh bằng, không thì trang nào cũng bắt đầu bằng '/'
@@ -54,13 +55,17 @@ export default function NavItems({ variant }: { variant: 'rail' | 'list' }) {
         aria-current={isActive ? 'page' : undefined}
         className={cn(
           'transition-colors',
-          variant === 'rail'
-            ? 'flex w-18 flex-col items-center gap-1 rounded-2xl px-1 py-3 text-center text-[11px] font-medium'
+          variant === 'tabs'
+            ? 'rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap'
             : 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-base',
-          isActive ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+          isActive
+            ? variant === 'tabs'
+              ? 'bg-primary/10 text-primary'
+              : 'bg-accent text-foreground'
+            : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
         )}
       >
-        <Icon className={cn(variant === 'rail' ? 'size-5' : 'size-4', isActive && 'text-primary')} />
+        {variant === 'list' && <Icon className={cn('size-4', isActive && 'text-primary')} />}
         {title}
       </Link>
     )

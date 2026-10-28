@@ -1,4 +1,5 @@
 import courseApiRequest from '@/apiRequests/course'
+import SectionHeading from '@/components/section-heading'
 import { Skeleton } from '@/components/ui/skeleton'
 import { GetCoursesQueryType } from '@/schemaValidations/course.schema'
 import { ArrowRight } from 'lucide-react'
@@ -9,11 +10,13 @@ import CourseCard, { CourseCardSkeleton } from './courses/course-card'
 // Dùng lại cho nhiều khối, chỉ khác query (nổi bật, miễn phí...).
 // Async Server Component gọi API → ở page.tsx phải bọc <Suspense>
 export default async function CourseSection({
+  eyebrow,
   title,
   description,
   query,
   href
 }: {
+  eyebrow: string // dòng chữ nhỏ màu san hô trên tiêu đề
   title: string
   description?: string
   query: Partial<GetCoursesQueryType>
@@ -31,10 +34,7 @@ export default async function CourseSection({
   return (
     <section className='flex flex-col gap-6'>
       <div className='flex items-end justify-between gap-4'>
-        <div className='flex flex-col gap-1'>
-          <h2 className='text-2xl font-bold tracking-tight'>{title}</h2>
-          {description && <p className='text-muted-foreground'>{description}</p>}
-        </div>
+        <SectionHeading eyebrow={eyebrow} title={title} description={description} />
         <Link href={href} className='flex shrink-0 items-center gap-1 text-sm font-medium text-primary hover:underline'>
           Xem tất cả <ArrowRight className='size-4' />
         </Link>

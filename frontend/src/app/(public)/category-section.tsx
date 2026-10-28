@@ -1,4 +1,5 @@
 import categoryApiRequest from '@/apiRequests/category'
+import SectionHeading from '@/components/section-heading'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getCategoryStyle } from '@/constants/category'
 import { cn } from '@/lib/utils'
@@ -15,8 +16,8 @@ export default async function CategorySection() {
 
   return (
     <section className='flex flex-col gap-6'>
-      <h2 className='text-2xl font-bold tracking-tight'>Khám phá theo danh mục</h2>
-      <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
+      <SectionHeading eyebrow='Danh mục' title='Khám phá theo chủ đề' />
+      <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5'>
         {categories.map((category) => {
           // Icon + màu gradient theo danh mục: trùng màu với ảnh bìa tự vẽ của khóa trong danh mục đó
           const { Icon, gradient } = getCategoryStyle(category)
@@ -24,7 +25,8 @@ export default async function CategorySection() {
             <Link
               key={category.id}
               href={`/courses?categoryId=${category.id}`}
-              className='group flex items-center gap-3 rounded-2xl bg-muted/70 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:bg-card'
+              // Điện thoại (ô hẹp): icon trên, tên dưới cho tên không bị gãy 3 dòng. Từ sm: icon bên trái tên
+              className='group flex flex-col items-start gap-3 rounded-2xl border bg-card p-4 sm:flex-row sm:items-center transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10'
             >
               {/* group-hover: rê chuột vào CẢ Ô thì icon phóng to nhẹ */}
               <span
@@ -48,7 +50,7 @@ export function CategorySectionSkeleton() {
   return (
     <div className='flex flex-col gap-6'>
       <Skeleton className='h-8 w-64' />
-      <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
+      <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5'>
         {Array.from({ length: 4 }, (_, index) => (
           <Skeleton key={index} className='h-18 rounded-xl' />
         ))}
