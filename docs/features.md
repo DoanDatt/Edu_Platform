@@ -3,7 +3,7 @@
 Tổng hợp mọi chức năng để Edu Platform thành một dự án hoàn chỉnh, chia theo người dùng.
 Dùng để theo dõi tiến độ và làm nguồn khi cập nhật CV / README.
 
-Trạng thái ngày 27/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm · 💡 ý tưởng thêm (làm hay không tùy chọn)
+Trạng thái ngày 28/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm · 💡 ý tưởng thêm (làm hay không tùy chọn)
 
 ## Tổng quan
 
@@ -13,8 +13,8 @@ Trạng thái ngày 27/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 | 2. Tài khoản | Đăng ký, đăng nhập, đăng xuất, giữ đăng nhập, hồ sơ, đổi mật khẩu | Quên mật khẩu, xử lý tài khoản bị khóa |
 | 3. Học viên | Ghi danh, khóa của tôi, trang học, đánh giá | Thanh toán |
 | 4. Giảng viên | Toàn bộ (dashboard → soạn bài → gửi duyệt → học viên) | |
-| 5. Admin | Duyệt khóa học | Dashboard, người dùng, danh mục, phân quyền |
-| 6. Thông báo | Backend | Chuông (đang thử), realtime SSE |
+| 5. Admin | Dashboard, duyệt khóa học, danh mục, người dùng | Phân quyền, doanh thu (cần thanh toán) |
+| 6. Thông báo | Backend + chuông ở header | Realtime SSE |
 | 7. Giao diện và chất lượng | Giao diện mới, sáng / tối, điện thoại | Trang lỗi / 404, SEO, cache, nâng cấp Next.js |
 | 8. Backend và hạ tầng | Gần như đủ | Email khi deploy |
 
@@ -70,16 +70,17 @@ Trạng thái ngày 27/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 ## 5. Admin
 
 - ✅ **Duyệt khóa học:** tab theo trạng thái, tìm theo tên; xem nội dung + phát video từng bài; Duyệt / Từ chối / Gỡ khóa (bắt buộc lý do, giảng viên nhận email + thông báo)
-- ⬜ **Dashboard `/admin`:** thẻ số liệu (người dùng, khóa học, ghi danh, chờ duyệt) + biểu đồ (`GET /stats/admin`)
-- ⬜ **Quản lý người dùng:** tìm kiếm, lọc role / trạng thái, khóa / mở tài khoản, đổi role
-- ⬜ **Quản lý danh mục:** thêm / sửa / xóa (không xóa được danh mục còn khóa học)
-- ⬜ Phân quyền (tùy chọn): xem role, tick chọn permission
+- ✅ **Dashboard `/admin`:** thẻ số liệu (người dùng, khóa học, ghi danh, đánh giá), khối "Cần xử lý" (khóa chờ duyệt), người dùng theo vai trò, khóa học theo trạng thái
+- 🚧 **Doanh thu trên dashboard:** đã có giao diện (biểu đồ 30 ngày, khóa bán chạy) bằng **dữ liệu mẫu**, chờ phần thanh toán
+- ✅ **Quản lý người dùng:** tìm kiếm, lọc vai trò / trạng thái trên URL, khóa / mở tài khoản, đổi vai trò (không tự khóa / tự đổi vai trò mình)
+- ✅ **Quản lý danh mục:** thêm / sửa trong hộp thoại, xóa (không xóa được danh mục còn khóa học)
+- ⬜ Phân quyền: xem vai trò, tick chọn permission (menu đang tạm ẩn); có thể thêm vai trò "admin xem thử" chỉ đọc cho nhà tuyển dụng
 - 💡 Xóa đánh giá vi phạm (backend đã cho admin xóa)
 
 ## 6. Thông báo
 
 - ✅ **Backend:** bảng Notification, API danh sách / số chưa đọc / đánh dấu đã đọc; tạo thông báo khi gửi duyệt (→ admin), duyệt / từ chối / gỡ (→ giảng viên), ghi danh và đánh giá (→ giảng viên)
-- 🚧 **Chuông ở header:** số chưa đọc cập nhật 30 giây / lần và khi quay lại tab, bấm thông báo thì mở đúng trang; có thông báo mới thì tự làm mới dữ liệu liên quan
+- ✅ **Chuông ở header:** số chưa đọc cập nhật 30 giây / lần và khi quay lại tab, bấm thông báo thì mở đúng trang; có thông báo mới thì tự làm mới dữ liệu liên quan
 - ⬜ **Realtime bằng SSE:** server đẩy thông báo ngay (giữ polling làm dự phòng khi mất kết nối)
 - 💡 Trang "Tất cả thông báo" có phân trang
 
