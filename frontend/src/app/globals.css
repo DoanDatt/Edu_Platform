@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -48,6 +48,36 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Animation riêng (class animate-wave, animate-wave-slow, animate-float).
+   Dùng kèm motion-safe: → người bật "giảm chuyển động" trong hệ điều hành sẽ không thấy chuyển động */
+@theme {
+  --animate-wave: wave-drift 14s linear infinite;
+  --animate-wave-slow: wave-drift 24s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+
+  /* Lớp sóng rộng gấp đôi khung, gồm 2 đoạn sóng giống hệt nhau: trượt sang trái đúng 1 nửa
+     thì đoạn 2 nằm đúng chỗ đoạn 1 lúc đầu → lặp lại liền mạch, không thấy chỗ nối */
+  @keyframes wave-drift {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Dùng thuộc tính translate (không phải transform) để không đè lên rotate-* của Tailwind */
+  @keyframes float {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: 0 -10px;
+    }
+  }
 }
 
 /* Bộ màu "biển": các màu xám đều pha CHÚT XANH (hue 230–250) → cả giao diện liền màu với primary.

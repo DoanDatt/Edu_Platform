@@ -17,7 +17,7 @@ export default function HeroBanner() {
     <section className='relative overflow-hidden rounded-3xl bg-linear-to-br from-sky-400 via-sky-500 to-blue-600 text-white dark:from-sky-600 dark:via-sky-700 dark:to-blue-800'>
       {/* Vầng sáng mờ góc phải (như nắng trên mặt biển) + sóng dưới đáy */}
       <div aria-hidden className='absolute -top-24 -right-24 size-96 rounded-full bg-white/20 blur-3xl' />
-      <Waves className='h-1/4' />
+      <Waves className='h-1/4' animated />
 
       <div className='relative flex items-center justify-between gap-10 px-6 pt-10 pb-16 md:px-12 md:pt-14 md:pb-20'>
         <div className='flex max-w-xl flex-col items-start gap-5'>
@@ -25,8 +25,7 @@ export default function HeroBanner() {
             Nền tảng học trực tuyến
           </span>
           <h2 className='text-3xl leading-tight font-bold md:text-5xl'>
-            Học từng bước,{' '}
-            {/* Gạch sóng màu san hô dưới cụm chữ: điểm nhấn ấm trên nền xanh */}
+            Học từng bước, {/* Gạch sóng màu san hô dưới cụm chữ: điểm nhấn ấm trên nền xanh */}
             <span className='relative inline-block whitespace-nowrap'>
               tiến xa mỗi ngày
               <WavyUnderline className='absolute -bottom-2 left-0 text-orange-300' />
@@ -36,7 +35,11 @@ export default function HeroBanner() {
             Lập trình, thiết kế, marketing, khoa học dữ liệu. Học theo tốc độ của bạn, theo dõi tiến độ từng bài.
           </p>
 
-          <Form action='/courses' role='search' className='flex w-full max-w-lg items-center gap-2 rounded-full bg-white p-1.5 shadow-lg shadow-blue-900/20'>
+          <Form
+            action='/courses'
+            role='search'
+            className='flex w-full max-w-lg items-center gap-2 rounded-full bg-white p-1.5 shadow-lg shadow-blue-900/20'
+          >
             {/* Ô này và thẻ minh họa bên phải LUÔN nền trắng (cả khi bật giao diện tối) → chữ dùng màu cố định
                 slate-..., không dùng text-foreground (giao diện tối nó là màu sáng → chữ trắng trên nền trắng) */}
             <Search className='ml-3 size-5 shrink-0 text-slate-500' />
@@ -69,9 +72,10 @@ export default function HeroBanner() {
         </div>
 
         {/* Minh họa bên phải (chỉ máy tính, chỉ để trang trí): thẻ "đang học" có thanh tiến độ
-            + 2 nhãn nổi xung quanh → nói lên điểm mạnh của nền tảng: học có lộ trình, theo dõi tiến độ */}
+            + 2 nhãn nổi xung quanh → nói lên điểm mạnh của nền tảng: học có lộ trình, theo dõi tiến độ.
+            animate-float lệch nhịp nhau (animation-delay âm = bắt đầu giữa chừng) → 3 khối bồng bềnh không đều */}
         <div aria-hidden className='relative hidden w-80 shrink-0 lg:block'>
-          <div className='rotate-2 rounded-2xl bg-white p-4 text-slate-900 shadow-2xl shadow-blue-900/30'>
+          <div className='rotate-2 rounded-2xl motion-safe:animate-float bg-white p-4 text-slate-900 shadow-2xl shadow-blue-900/30'>
             <div className='relative flex aspect-video items-end overflow-hidden rounded-xl bg-linear-to-br from-sky-400 to-blue-700 p-3'>
               <Waves />
               <PlayCircle className='absolute top-1/2 left-1/2 size-12 -translate-1/2 text-white/90' />
@@ -85,10 +89,10 @@ export default function HeroBanner() {
               <span className='text-xs font-semibold text-sky-600'>67%</span>
             </div>
           </div>
-          <span className='absolute -top-5 -left-8 flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-lg'>
+          <span className='absolute -top-5 -left-8 flex motion-safe:animate-float motion-safe:[animation-delay:-2s] items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-lg'>
             <CheckCircle2 className='size-4 text-emerald-500' /> Hoàn thành bài 11
           </span>
-          <span className='absolute -bottom-6 -left-4 flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-lg'>
+          <span className='absolute -bottom-6 -left-4 flex motion-safe:animate-float motion-safe:[animation-delay:-4s] items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-lg'>
             <Star className='size-4 fill-amber-400 text-amber-400' /> 4.8 · 120 đánh giá
           </span>
         </div>
