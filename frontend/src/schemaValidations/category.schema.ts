@@ -1,5 +1,5 @@
 import z from 'zod'
-import { PaginationRes } from './common.schema'
+import { PaginationQuery, PaginationRes } from './common.schema'
 
 export const CategorySchema = z.object({
   id: z.number(),
@@ -32,3 +32,5 @@ export const CategoryRes = z.object({
   data: CategorySchema
 })
 export type CategoryResType = z.infer<typeof CategoryRes>
+
+export const GetCategoriesQuery = PaginationQuery
