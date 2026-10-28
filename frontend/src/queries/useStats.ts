@@ -7,3 +7,10 @@ export const useInstructorStatsQuery = () => {
     queryFn: statsApiRequest.instructor
   })
 }
+
+export const useAdminStatsQuery = () => {
+  return useQuery({
+    queryKey: ['stats', 'admin'],
+    queryFn: statsApiRequest.admin
+  })
+}

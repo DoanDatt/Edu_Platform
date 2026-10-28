@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import AdminDashboard from './admin-dashboard'
 
 export const metadata: Metadata = {
   // title.template của admin/layout chỉ áp dụng cho trang CON (/admin/users...),
@@ -6,12 +7,16 @@ export const metadata: Metadata = {
   title: { absolute: 'Dashboard | Quản trị EduPlatform' }
 }
 
-// Trang tạm để thấy layout. Ngày 17 (docs/study-plan.md): thống kê từ GET /stats/admin
+// Tổng quan hệ thống: số liệu từ GET /stats/admin + khóa chờ duyệt (việc admin cần làm ngay)
 export default function AdminDashboardPage() {
   return (
-    <div className='space-y-1'>
-      <h1 className='text-2xl font-semibold tracking-tight'>Dashboard</h1>
-      <p className='text-muted-foreground'>Tổng quan hệ thống sẽ hiển thị ở đây.</p>
+    <div className='flex flex-col gap-6'>
+      <div className='flex flex-col gap-1'>
+        <h1 className='text-2xl font-semibold tracking-tight'>Dashboard</h1>
+        <p className='text-muted-foreground'>Tổng quan người dùng, khóa học và việc cần xử lý.</p>
+      </div>
+      {/* Client Component + useQuery: số liệu riêng của admin (cần token), không cần SEO */}
+      <AdminDashboard />
     </div>
   )
 }

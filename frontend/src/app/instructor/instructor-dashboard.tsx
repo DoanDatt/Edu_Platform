@@ -1,12 +1,13 @@
 'use client'
 
 import CourseStatusBadge from '@/components/course-status-badge'
+import StatCard from '@/components/stat-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CourseStatus } from '@/constants/type'
 import { useInstructorStatsQuery } from '@/queries/useStats'
-import { BookOpen, Clock, LucideIcon, Star, Users } from 'lucide-react'
+import { BookOpen, Clock, Star, Users } from 'lucide-react'
 import Link from 'next/link'
 
 // Client Component + useQuery: số liệu RIÊNG của giảng viên, không cần SEO,
@@ -110,33 +111,6 @@ export default function InstructorDashboard() {
         </CardContent>
       </Card>
     </div>
-  )
-}
-
-function StatCard({
-  title,
-  value,
-  note,
-  Icon
-}: {
-  title: string
-  value: number | string
-  note?: string
-  Icon: LucideIcon
-}) {
-  return (
-    <Card>
-      <CardContent className='flex items-start justify-between gap-4'>
-        <div className='flex flex-col gap-1'>
-          <span className='text-sm text-muted-foreground'>{title}</span>
-          <span className='text-3xl font-bold tabular-nums'>{value}</span>
-          {note && <span className='text-xs text-muted-foreground'>{note}</span>}
-        </div>
-        <span className='flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary'>
-          <Icon className='size-5' />
-        </span>
-      </CardContent>
-    </Card>
   )
 }
 
