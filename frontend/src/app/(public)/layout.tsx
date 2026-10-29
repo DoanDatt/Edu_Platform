@@ -51,8 +51,10 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         {/* ===== Tầng trên: logo · ô tìm kiếm · giỏ (đơn chờ) · chuông · tài khoản · Học miễn phí ===== */}
         <div className='mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 md:px-6'>
           <Logo />
-          {/* mx-auto: ô tìm kiếm nằm giữa khoảng trống giữa logo và cụm nút */}
-          <HeaderSearch className='mx-auto hidden w-full max-w-lg md:block' />
+          {/* Ô tìm kiếm kèm ô chọn danh mục (danh mục lấy ở server; đang tải thì hiện ô tìm kiếm không có ô chọn) */}
+          <Suspense fallback={<HeaderSearch className={headerSearchClass} />}>
+            <HeaderSearchWithCategories />
+          </Suspense>
           <div className='ml-auto flex items-center gap-1 md:ml-0'>
             <DarkModeToggle />
             {/* Đã đăng nhập: giỏ (đơn chờ thanh toán) + chuông thông báo. Chưa đăng nhập: không hiện */}
@@ -134,4 +136,15 @@ async function HeaderMenu() {
     .then((res) => res.payload.data)
     .catch(() => [])
   return <MainMenu categories={categories} />
+}
+
+// mx-auto: ô tìm kiếm nằm giữa khoảng trống giữa logo và cụm nút; điện thoại ẩn (có trong menu trượt)
+const headerSearchClass = 'mx-auto hidden w-full max-w-2xl md:flex'
+
+async function HeaderSearchWithCategories() {
+  const categories = await categoryApiRequest
+    .list({ limit: 100 })
+    .then((res) => res.payload.data)
+    .catch(() => [])
+  return <HeaderSearch className={headerSearchClass} categories={categories} />
 }
