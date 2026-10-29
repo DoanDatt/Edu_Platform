@@ -2,6 +2,7 @@
 
 import { useAppContext } from '@/components/app-provider'
 import Waves from '@/components/waves'
+import { BlogCategory, blogCategories, blogPosts, sortedBlogPosts } from '@/content/blog'
 import { RoleType, RoleValues } from '@/constants/type'
 import { cn } from '@/lib/utils'
 import { CategoryListItemType } from '@/schemaValidations/category.schema'
@@ -16,7 +17,7 @@ type MenuItem = {
   label: string
   href: string // bấm thẳng vào mục thì đi tới đây
   match: string[] // đang ở các đường dẫn này (hoặc trang con) thì tô màu mục
-  panel?: 'courses' | 'dashboard' // loại tấm menu xổ xuống
+  panel?: 'courses' | 'dashboard' | 'blog' // loại tấm menu xổ xuống
 }
 
 const menuItems: MenuItem[] = [
@@ -28,7 +29,8 @@ const menuItems: MenuItem[] = [
     href: '/my-courses',
     match: ['/my-courses', '/my-orders', '/profile', '/instructor', '/admin'],
     panel: 'dashboard'
-  }
+  },
+  { label: 'Blog', href: '/blog', match: ['/blog'], panel: 'blog' }
 ]
 
 // Menu "Dashboard": mỗi vai trò 1 mục, rê vào mục nào thì tấm thứ 2 bung sang phải với các trang của vai trò đó.
@@ -117,8 +119,11 @@ export default function MainMenu({ categories }: { categories: CategoryListItemT
     <ul className='flex items-center justify-center gap-2'>
       {menuItems.map((item) => {
         const active = isActive(item)
+        // Tấm lớn (Khóa học, Blog): li KHÔNG relative → tấm định vị theo khung menu (relative ở layout), canh giữa cả
+        // thanh menu, không tràn mép trên laptop nhỏ. Dashboard: li relative → tấm nằm ngay dưới mục
+        const wide = item.panel === 'courses' || item.panel === 'blog'
         return (
-          <li key={item.label} className='group relative'>
+          <li key={item.label} className={cn('group', !wide && 'relative')}>
             <Link
               href={item.href}
               aria-current={active ? 'page' : undefined}
@@ -140,13 +145,13 @@ export default function MainMenu({ categories }: { categories: CategoryListItemT
               <div
                 className={cn(
                   'invisible absolute top-full z-50 translate-y-2 pt-1 opacity-0 transition-all duration-200 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100',
-                  // Khóa học: canh giữa dưới mục. Dashboard: canh trái (tấm thứ 2 bung sang phải cần chỗ)
-                  item.panel === 'courses' ? 'left-1/2 -translate-x-1/2' : 'left-0'
+                  // Tấm lớn: canh giữa thanh menu. Dashboard: canh trái dưới mục (tấm thứ 2 bung sang phải cần chỗ)
+                  wide ? 'left-1/2 -translate-x-1/2' : 'left-0'
                 )}
               >
-                {item.panel === 'courses' ? (
+                {wide ? (
                   <div className='overflow-hidden rounded-2xl border bg-popover text-popover-foreground shadow-2xl shadow-sky-900/15'>
-                    <CoursesPanel categories={categories} />
+                    {item.panel === 'courses' ? <CoursesPanel categories={categories} /> : <BlogPanel />}
                   </div>
                 ) : (
                   <DashboardPanel sections={sections} isGuest={!role} />
@@ -211,6 +216,44 @@ function DashboardPanel({ sections, isGuest }: { sections: DashboardSection[]; i
         </li>
       ))}
     </ul>
+  )
+}
+
+// Tấm menu lớn của "Blog": 2 cột (Chuyên mục kèm số bài · Bài viết mới) + thẻ quảng bá bên phải
+function BlogPanel() {
+  const categoryLinks: MenuLink[] = (Object.keys(blogCategories) as BlogCategory[]).map((category) => ({
+    label: blogCategories[category],
+    href: `/blog?category=${category}`,
+    badge: `${blogPosts.filter((post) => post.category === category).length} bài`
+  }))
+  const latestLinks: MenuLink[] = sortedBlogPosts.slice(0, 5).map((post) => ({
+    label: post.title,
+    href: `/blog/${post.slug}`
+  }))
+
+  return (
+    <div className='grid w-240 grid-cols-[13rem_minmax(0,1fr)_13rem] gap-8 p-8'>
+      <MenuColumnList
+        column={{ title: 'Chuyên mục', links: [{ label: 'Tất cả bài viết', href: '/blog' }, ...categoryLinks] }}
+      />
+      <MenuColumnList column={{ title: 'Bài viết mới', links: latestLinks }} />
+      {/* Thẻ quảng bá: gradient thương hiệu + sóng, dẫn tới khóa miễn phí */}
+      <Link
+        href='/courses?price=free'
+        onClick={closeMenu}
+        className='group/promo relative flex flex-col justify-between overflow-hidden rounded-2xl bg-linear-to-br from-teal-400 via-cyan-500 to-blue-600 p-6 text-white'
+      >
+        <div aria-hidden className='absolute -top-10 -right-10 size-40 rounded-full bg-white/20 blur-2xl' />
+        <Waves className='h-1/3' animated />
+        <div className='relative flex flex-col gap-2'>
+          <p className='font-heading text-2xl leading-tight font-bold uppercase'>Nâng tầm kỹ năng</p>
+          <p className='text-sm text-white/90'>Bắt đầu với các khóa học miễn phí ngay hôm nay.</p>
+        </div>
+        <span className='relative mt-6 flex w-fit items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-sky-700 shadow-md'>
+          Bắt đầu học <ArrowRight className='size-4 transition-transform group-hover/promo:translate-x-0.5' />
+        </span>
+      </Link>
+    </div>
   )
 }
 

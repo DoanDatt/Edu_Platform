@@ -28,7 +28,8 @@ const footerLinks = [
     links: [
       { label: 'Tất cả khóa học', href: '/courses' },
       { label: 'Khóa miễn phí', href: '/courses?price=free' },
-      { label: 'Học nhiều nhất', href: '/courses?sort=popular' }
+      { label: 'Học nhiều nhất', href: '/courses?sort=popular' },
+      { label: 'Blog', href: '/blog' }
     ]
   },
   {
@@ -79,7 +80,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
         {/* ===== Tầng dưới (máy tính): menu chính có menu con xổ xuống ===== */}
         <nav className='hidden border-t lg:block' aria-label='Điều hướng chính'>
-          <div className='mx-auto w-full max-w-7xl px-4 md:px-6'>
+          {/* relative: tấm menu lớn (Khóa học, Blog) định vị theo khung này → canh giữa cả thanh menu */}
+          <div className='relative mx-auto w-full max-w-7xl px-4 md:px-6'>
             {/* MainMenu dùng usePathname(): ở route động pathname chỉ biết lúc chạy → bọc Suspense.
                 Danh mục cho menu "Khóa học" lấy ở server (HeaderMenu) */}
             <Suspense fallback={<div className='h-12' />}>
