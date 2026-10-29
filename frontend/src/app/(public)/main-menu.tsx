@@ -5,21 +5,12 @@ import Waves from '@/components/waves'
 import { RoleType, RoleValues } from '@/constants/type'
 import { cn } from '@/lib/utils'
 import { CategoryListItemType } from '@/schemaValidations/category.schema'
-import {
-  ArrowRight,
-  ChevronDown,
-  ChevronRight,
-  GraduationCap,
-  Lock,
-  LucideIcon,
-  Presentation,
-  ShieldCheck
-} from 'lucide-react'
+import { ArrowRight, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-type MenuLink = { label: string; href: string; badge?: string; locked?: boolean }
+type MenuLink = { label: string; href: string; badge?: string }
 type MenuColumn = { title: string; links: MenuLink[] }
 type MenuItem = {
   label: string
@@ -47,8 +38,6 @@ const menuItems: MenuItem[] = [
 //     mọi link dẫn tới trang đăng nhập + nút Đăng nhập / Đăng ký
 type DashboardSection = {
   label: string
-  description: string
-  Icon: LucideIcon
   roles: RoleType[]
   forGuest?: boolean
   guestNote?: string // dòng chú thích ở tấm con khi chưa đăng nhập
@@ -58,8 +47,6 @@ type DashboardSection = {
 const dashboardSections: DashboardSection[] = [
   {
     label: 'Học viên',
-    description: 'Khóa học, đơn hàng, tài khoản',
-    Icon: GraduationCap,
     roles: [RoleValues.Student, RoleValues.Instructor, RoleValues.Admin],
     forGuest: true,
     guestNote: 'Đăng ký miễn phí để học và theo dõi tiến độ.',
@@ -73,8 +60,6 @@ const dashboardSections: DashboardSection[] = [
   },
   {
     label: 'Giảng viên',
-    description: 'Soạn khóa học, học viên, doanh thu',
-    Icon: Presentation,
     roles: [RoleValues.Instructor],
     forGuest: true,
     // Không có trang "đăng ký làm giảng viên": tài khoản giảng viên do quản trị viên cấp quyền
@@ -87,8 +72,6 @@ const dashboardSections: DashboardSection[] = [
   },
   {
     label: 'Quản trị',
-    description: 'Duyệt khóa, danh mục, người dùng',
-    Icon: ShieldCheck,
     roles: [RoleValues.Admin],
     links: [
       { label: 'Dashboard', href: '/admin' },
@@ -179,25 +162,19 @@ export default function MainMenu({ categories }: { categories: CategoryListItemT
 
 // Tấm "Dashboard": cột trái là các vai trò. Mỗi vai trò là 1 group/sub: rê vào (hoặc Tab tới) → tấm con bên phải hiện.
 // Không dùng overflow-hidden ở tấm ngoài: tấm con nằm NGOÀI khung tấm ngoài, bị cắt mất nếu có.
-// isGuest (chưa đăng nhập): mọi link dẫn tới /login, các trang hiện ổ khóa, cuối tấm con có nút Đăng nhập / Đăng ký
+// isGuest (chưa đăng nhập): mọi link dẫn tới /login, cuối tấm con có nút Đăng nhập / Đăng ký
 function DashboardPanel({ sections, isGuest }: { sections: DashboardSection[]; isGuest: boolean }) {
   return (
-    <ul className='w-80 rounded-2xl border bg-popover p-2 text-popover-foreground shadow-2xl shadow-sky-900/15'>
-      {sections.map(({ label, description, Icon, links, guestNote }) => (
+    <ul className='w-64 rounded-2xl border bg-popover p-2 text-popover-foreground shadow-2xl shadow-sky-900/15'>
+      {sections.map(({ label, links, guestNote }) => (
         <li key={label} className='group/sub relative'>
+          {/* Chỉ có chữ (không icon), mục đang rê nền nhạt + chữ màu xanh */}
           <Link
             href={isGuest ? '/login' : links[0].href}
             onClick={closeMenu}
-            className='flex items-center gap-3 rounded-xl px-3 py-3 transition-colors group-focus-within/sub:bg-accent group-hover/sub:bg-accent'
+            className='block rounded-xl px-4 py-3 text-[15px] font-medium text-foreground/80 transition-colors group-focus-within/sub:bg-accent group-focus-within/sub:text-primary group-hover/sub:bg-accent group-hover/sub:text-primary'
           >
-            <span className='flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover/sub:bg-primary group-hover/sub:text-primary-foreground'>
-              <Icon className='size-5' />
-            </span>
-            <span className='flex min-w-0 flex-1 flex-col'>
-              <span className='font-medium transition-colors group-hover/sub:text-primary'>Dashboard {label}</span>
-              <span className='truncate text-xs text-muted-foreground'>{description}</span>
-            </span>
-            <ChevronRight className='size-4 text-muted-foreground transition-transform group-hover/sub:translate-x-0.5' />
+            Dashboard {label}
           </Link>
           {/* Tấm con bung sang phải, ngang hàng với mục đang rê. pl-3: cầu nối vô hình để rê chuột sang không bị đóng */}
           <div className='invisible absolute top-0 left-full z-10 -translate-x-1 pl-3 opacity-0 transition-all duration-200 group-focus-within/sub:visible group-focus-within/sub:translate-x-0 group-focus-within/sub:opacity-100 group-hover/sub:visible group-hover/sub:translate-x-0 group-hover/sub:opacity-100'>
@@ -205,7 +182,7 @@ function DashboardPanel({ sections, isGuest }: { sections: DashboardSection[]; i
               <MenuColumnList
                 column={{
                   title: label,
-                  links: isGuest ? links.map((link) => ({ ...link, href: '/login', locked: true })) : links
+                  links: isGuest ? links.map((link) => ({ ...link, href: '/login' })) : links
                 }}
               />
               {isGuest && (
@@ -305,7 +282,6 @@ function MenuColumnList({ column }: { column: MenuColumn }) {
               onClick={closeMenu}
               className='flex items-center gap-2 py-2 text-[15px] text-foreground/80 transition-all hover:translate-x-1 hover:text-primary'
             >
-              {link.locked && <Lock aria-hidden className='size-3.5 shrink-0 text-muted-foreground' />}
               <span className='truncate'>{link.label}</span>
               {link.badge && (
                 <span className='shrink-0 rounded-full bg-highlight/10 px-2 py-0.5 text-[11px] font-semibold text-highlight'>
