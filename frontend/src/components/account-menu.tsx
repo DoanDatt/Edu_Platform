@@ -63,8 +63,9 @@ export default function AccountMenu() {
           className='flex items-center gap-3 rounded-full p-0.5 outline-none focus-visible:ring-2 focus-visible:ring-ring sm:rounded-md sm:px-2 sm:py-1 sm:hover:bg-accent'
           aria-label='Mở menu tài khoản'
         >
-          <span className='hidden text-right leading-tight sm:block'>
-            <span className='block text-sm font-medium'>{account?.name ?? '...'}</span>
+          {/* whitespace-nowrap + max-w + truncate: header chật thì tên dài bị cắt "...", không gãy thành nhiều dòng */}
+          <span className='hidden max-w-40 text-right leading-tight whitespace-nowrap sm:block'>
+            <span className='block truncate text-sm font-medium'>{account?.name ?? '...'}</span>
             <span className='block text-xs text-muted-foreground'>{account ? roleLabels[account.role.name] : ''}</span>
           </span>
           <Avatar>

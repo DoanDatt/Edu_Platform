@@ -139,7 +139,7 @@ async function HeaderMenu() {
 }
 
 // mx-auto: ô tìm kiếm nằm giữa khoảng trống giữa logo và cụm nút; điện thoại ẩn (có trong menu trượt)
-const headerSearchClass = 'mx-auto hidden w-full max-w-2xl md:flex'
+const headerSearchClass = 'mx-auto hidden w-full max-w-xl md:flex'
 
 async function HeaderSearchWithCategories() {
   const categories = await categoryApiRequest

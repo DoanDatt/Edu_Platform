@@ -5,7 +5,15 @@ import Waves from '@/components/waves'
 import { RoleType, RoleValues } from '@/constants/type'
 import { cn } from '@/lib/utils'
 import { CategoryListItemType } from '@/schemaValidations/category.schema'
-import { ArrowRight, ChevronDown } from 'lucide-react'
+import {
+  ArrowRight,
+  ChevronDown,
+  ChevronRight,
+  GraduationCap,
+  LucideIcon,
+  Presentation,
+  ShieldCheck
+} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -16,69 +24,67 @@ type MenuItem = {
   label: string
   href: string // bấm thẳng vào mục thì đi tới đây
   match: string[] // đang ở các đường dẫn này (hoặc trang con) thì tô màu mục
-  roles?: RoleType[] // có thì chỉ hiện khi đăng nhập đúng vai trò
-  columns?: MenuColumn[] // menu con (các cột link)
+  panel?: 'courses' | 'dashboard' // loại tấm menu xổ xuống
+  needAuth?: boolean // chỉ hiện khi đã đăng nhập
 }
 
-// Menu "Khóa học" dựng riêng (cần danh sách danh mục từ server) → ở đây chỉ khai báo các menu còn lại
 const menuItems: MenuItem[] = [
   { label: 'Trang chủ', href: '/', match: [] },
-  { label: 'Khóa học', href: '/courses', match: ['/courses'] },
+  { label: 'Khóa học', href: '/courses', match: ['/courses'], panel: 'courses' },
   {
-    label: 'Học tập',
+    label: 'Dashboard',
     href: '/my-courses',
-    match: ['/my-courses', '/my-orders', '/profile'],
+    match: ['/my-courses', '/my-orders', '/profile', '/instructor', '/admin'],
+    panel: 'dashboard',
+    needAuth: true
+  }
+]
+
+// Menu "Dashboard": mỗi vai trò 1 mục, rê vào mục nào thì tấm thứ 2 bung sang phải với các trang của vai trò đó.
+// Chỉ hiện vai trò người dùng có: ai đăng nhập cũng là học viên (mua / học được khóa của người khác),
+// giảng viên có thêm "Giảng viên", admin có thêm "Quản trị"
+const dashboardSections: {
+  label: string
+  description: string
+  Icon: LucideIcon
+  roles: RoleType[]
+  links: MenuLink[]
+}[] = [
+  {
+    label: 'Học viên',
+    description: 'Khóa học, đơn hàng, tài khoản',
+    Icon: GraduationCap,
     roles: [RoleValues.Student, RoleValues.Instructor, RoleValues.Admin],
-    columns: [
-      {
-        title: 'Học tập',
-        links: [
-          { label: 'Khóa học của tôi', href: '/my-courses' },
-          { label: 'Lịch sử mua hàng', href: '/my-orders' },
-          { label: 'Đơn chờ thanh toán', href: '/my-orders?status=PENDING' }
-        ]
-      },
-      {
-        title: 'Tài khoản',
-        links: [
-          { label: 'Thông tin tài khoản', href: '/profile' },
-          { label: 'Đổi mật khẩu', href: '/profile/change-password' }
-        ]
-      }
+    links: [
+      { label: 'Khóa học của tôi', href: '/my-courses' },
+      { label: 'Lịch sử mua hàng', href: '/my-orders' },
+      { label: 'Đơn chờ thanh toán', href: '/my-orders?status=PENDING' },
+      { label: 'Thông tin tài khoản', href: '/profile' },
+      { label: 'Đổi mật khẩu', href: '/profile/change-password' }
     ]
   },
   {
-    label: 'Giảng dạy',
-    href: '/instructor',
-    match: ['/instructor'],
+    label: 'Giảng viên',
+    description: 'Soạn khóa học, học viên, doanh thu',
+    Icon: Presentation,
     roles: [RoleValues.Instructor],
-    columns: [
-      {
-        title: 'Giảng dạy',
-        links: [
-          { label: 'Tổng quan & doanh thu', href: '/instructor' },
-          { label: 'Khóa học của tôi', href: '/instructor/courses' },
-          { label: 'Tạo khóa học mới', href: '/instructor/courses/new', badge: 'Mới' }
-        ]
-      }
+    links: [
+      { label: 'Tổng quan & doanh thu', href: '/instructor' },
+      { label: 'Khóa học của tôi', href: '/instructor/courses' },
+      { label: 'Tạo khóa học mới', href: '/instructor/courses/new', badge: 'Mới' }
     ]
   },
   {
     label: 'Quản trị',
-    href: '/admin',
-    match: ['/admin'],
+    description: 'Duyệt khóa, danh mục, người dùng',
+    Icon: ShieldCheck,
     roles: [RoleValues.Admin],
-    columns: [
-      {
-        title: 'Quản trị',
-        links: [
-          { label: 'Dashboard', href: '/admin' },
-          { label: 'Duyệt khóa học', href: '/admin/courses?status=PENDING' },
-          { label: 'Tất cả khóa học', href: '/admin/courses' },
-          { label: 'Danh mục', href: '/admin/categories' },
-          { label: 'Người dùng', href: '/admin/users' }
-        ]
-      }
+    links: [
+      { label: 'Dashboard', href: '/admin' },
+      { label: 'Duyệt khóa học', href: '/admin/courses?status=PENDING' },
+      { label: 'Tất cả khóa học', href: '/admin/courses' },
+      { label: 'Danh mục', href: '/admin/categories' },
+      { label: 'Người dùng', href: '/admin/users' }
     ]
   }
 ]
@@ -100,7 +106,7 @@ const closeMenu = () => (document.activeElement as HTMLElement | null)?.blur()
 // Tầng dưới của header (máy tính), các mục canh giữa. Rê chuột vào mục có mũi tên → tấm menu xổ xuống.
 // Mở bằng CSS (group-hover + group-focus-within), không cần state: Tab bằng bàn phím cũng mở được, rời ra là đóng.
 //   "Khóa học": tấm lớn = dải banner (số liệu + ảnh bìa thật) + 2 cột (Khám phá · Theo chủ đề)
-//   Học tập / Giảng dạy / Quản trị: tấm nhỏ theo cột, chỉ hiện khi đăng nhập đúng vai trò
+//   "Dashboard" (đã đăng nhập): danh sách vai trò, rê vào vai trò → tấm thứ 2 bung sang phải
 export default function MainMenu({ categories }: { categories: CategoryListItemType[] }) {
   const pathname = usePathname()
   const { role } = useAppContext()
@@ -110,13 +116,13 @@ export default function MainMenu({ categories }: { categories: CategoryListItemT
       ? pathname === '/'
       : item.match.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 
+  const sections = dashboardSections.filter((section) => role && section.roles.includes(role))
+
   return (
     <ul className='flex items-center justify-center gap-2'>
       {menuItems.map((item) => {
-        if (item.roles && (!role || !item.roles.includes(role))) return null
+        if (item.needAuth && !role) return null
         const active = isActive(item)
-        const isCourses = item.href === '/courses'
-        const hasPanel = isCourses || Boolean(item.columns)
         return (
           <li key={item.label} className='group relative'>
             <Link
@@ -129,31 +135,66 @@ export default function MainMenu({ categories }: { categories: CategoryListItemT
               )}
             >
               {item.label}
-              {hasPanel && (
+              {item.panel && (
                 <ChevronDown className='size-4 transition-transform group-focus-within:rotate-180 group-hover:rotate-180' />
               )}
             </Link>
 
-            {hasPanel && (
-              // Tấm menu canh giữa dưới mục. invisible (không phải hidden): giữ chỗ để hiệu ứng mờ dần + trượt
-              // xuống chạy được, nhưng khi đóng thì không bấm / Tab vào được
-              <div className='invisible absolute top-full left-1/2 z-50 -translate-x-1/2 translate-y-2 pt-1 opacity-0 transition-all duration-200 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100'>
-                <div className='overflow-hidden rounded-2xl border bg-popover text-popover-foreground shadow-2xl shadow-sky-900/15'>
-                  {isCourses ? (
+            {item.panel && (
+              // Tấm menu dưới mục. invisible (không phải hidden): giữ chỗ để hiệu ứng mờ dần + trượt xuống chạy được,
+              // nhưng khi đóng thì không bấm / Tab vào được
+              <div
+                className={cn(
+                  'invisible absolute top-full z-50 translate-y-2 pt-1 opacity-0 transition-all duration-200 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100',
+                  // Khóa học: canh giữa dưới mục. Dashboard: canh trái (tấm thứ 2 bung sang phải cần chỗ)
+                  item.panel === 'courses' ? 'left-1/2 -translate-x-1/2' : 'left-0'
+                )}
+              >
+                {item.panel === 'courses' ? (
+                  <div className='overflow-hidden rounded-2xl border bg-popover text-popover-foreground shadow-2xl shadow-sky-900/15'>
                     <CoursesPanel categories={categories} />
-                  ) : (
-                    <div className={cn('grid gap-8 p-7', item.columns!.length > 1 ? 'w-[34rem] grid-cols-2' : 'w-72')}>
-                      {item.columns!.map((column) => (
-                        <MenuColumnList key={column.title} column={column} />
-                      ))}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <DashboardPanel sections={sections} />
+                )}
               </div>
             )}
           </li>
         )
       })}
+    </ul>
+  )
+}
+
+// Tấm "Dashboard": cột trái là các vai trò. Mỗi vai trò là 1 group/sub: rê vào (hoặc Tab tới) → tấm con bên phải hiện.
+// Không dùng overflow-hidden ở tấm ngoài: tấm con nằm NGOÀI khung tấm ngoài, bị cắt mất nếu có
+function DashboardPanel({ sections }: { sections: typeof dashboardSections }) {
+  return (
+    <ul className='w-80 rounded-2xl border bg-popover p-2 text-popover-foreground shadow-2xl shadow-sky-900/15'>
+      {sections.map(({ label, description, Icon, links }) => (
+        <li key={label} className='group/sub relative'>
+          <Link
+            href={links[0].href}
+            onClick={closeMenu}
+            className='flex items-center gap-3 rounded-xl px-3 py-3 transition-colors group-focus-within/sub:bg-accent group-hover/sub:bg-accent'
+          >
+            <span className='flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover/sub:bg-primary group-hover/sub:text-primary-foreground'>
+              <Icon className='size-5' />
+            </span>
+            <span className='flex min-w-0 flex-1 flex-col'>
+              <span className='font-medium transition-colors group-hover/sub:text-primary'>Dashboard {label}</span>
+              <span className='truncate text-xs text-muted-foreground'>{description}</span>
+            </span>
+            <ChevronRight className='size-4 text-muted-foreground transition-transform group-hover/sub:translate-x-0.5' />
+          </Link>
+          {/* Tấm con bung sang phải, ngang hàng với mục đang rê. pl-3: cầu nối vô hình để rê chuột sang không bị đóng */}
+          <div className='invisible absolute top-0 left-full z-10 -translate-x-1 pl-3 opacity-0 transition-all duration-200 group-focus-within/sub:visible group-focus-within/sub:translate-x-0 group-focus-within/sub:opacity-100 group-hover/sub:visible group-hover/sub:translate-x-0 group-hover/sub:opacity-100'>
+            <div className='w-64 rounded-2xl border bg-popover p-5 shadow-2xl shadow-sky-900/15'>
+              <MenuColumnList column={{ title: label, links }} />
+            </div>
+          </div>
+        </li>
+      ))}
     </ul>
   )
 }
@@ -166,7 +207,7 @@ function CoursesPanel({ categories }: { categories: CategoryListItemType[] }) {
   const featuredImage = categories.find((category) => category.coverImage)?.coverImage
 
   return (
-    <div className='w-[52rem]'>
+    <div className='w-208'>
       {/* Dải banner: gradient thương hiệu + sóng, chữ trái, ảnh bìa phải */}
       <Link
         href='/courses'
