@@ -12,14 +12,20 @@ const quickLinks = [
 
 // Banner đầu trang chủ: 1 khối tĩnh màu xanh biển (không chuyển slide) với họa tiết sóng ở đáy.
 // Server Component: không có state; ô tìm kiếm là <Form> GET của Next → /courses?search=...
+// TRÀN HẾT chiều ngang màn hình dù nằm trong <main> rộng tối đa 7xl:
+//   w-screen + left-1/2 + -translate-x-1/2: rộng bằng màn hình, đặt giữa → chìa ra 2 bên khỏi khung <main>
+//   -mt-6 / md:-mt-8: bù đúng padding trên của <main> → banner dính sát header
+// (layout có overflow-x-clip: w-screen tính cả thanh cuộn nên dư vài px, không cắt thì trang cuộn ngang)
+// Nội dung bên trong vẫn gói trong khung 7xl → thẳng hàng với các khối bên dưới
 export default function HeroBanner() {
   return (
-    <section className='relative overflow-hidden rounded-3xl bg-linear-to-br from-sky-400 via-sky-500 to-blue-600 text-white dark:from-sky-600 dark:via-sky-700 dark:to-blue-800'>
+    <section className='relative left-1/2 -mt-6 w-screen -translate-x-1/2 overflow-hidden bg-linear-to-br from-sky-400 via-sky-500 to-blue-600 text-white md:-mt-8 dark:from-sky-600 dark:via-sky-700 dark:to-blue-800'>
       {/* Vầng sáng mờ góc phải (như nắng trên mặt biển) + sóng dưới đáy */}
-      <div aria-hidden className='absolute -top-24 -right-24 size-96 rounded-full bg-white/20 blur-3xl' />
+      <div aria-hidden className='absolute -top-24 right-[10%] size-96 rounded-full bg-white/20 blur-3xl' />
       <Waves className='h-1/4' animated />
 
-      <div className='relative flex items-center justify-between gap-10 px-6 pt-10 pb-16 md:px-12 md:pt-14 md:pb-20'>
+      {/* pb lớn: chừa chỗ cho dải số liệu chồng lên mép dưới banner (xem page.tsx) */}
+      <div className='relative mx-auto flex max-w-7xl items-center justify-between gap-10 px-4 pt-12 pb-28 md:px-6 md:pt-16 md:pb-32'>
         <div className='flex max-w-xl flex-col items-start gap-5'>
           <span className='rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm'>
             Nền tảng học trực tuyến

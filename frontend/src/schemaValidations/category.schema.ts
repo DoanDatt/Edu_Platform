@@ -12,7 +12,9 @@ export type CategoryType = z.infer<typeof CategorySchema>
 // Danh sách (GET /categories) có thêm số khóa ĐÃ XUẤT BẢN trong mỗi danh mục.
 // Tách riêng vì API chi tiết / tạo / sửa danh mục không trả courseCount
 export const CategoryListItemSchema = CategorySchema.extend({
-  courseCount: z.number()
+  courseCount: z.number(),
+  // Ảnh bìa của khóa đông học viên nhất trong danh mục (làm ảnh nền ô danh mục). Chưa có khóa nào có ảnh → null
+  coverImage: z.string().nullable()
 })
 export type CategoryListItemType = z.infer<typeof CategoryListItemSchema>
 

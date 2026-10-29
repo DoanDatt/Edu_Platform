@@ -16,11 +16,14 @@ export default function HomePage() {
     <div className='flex flex-col gap-14'>
       {/* h1 cho SEO / trình đọc màn hình: tiêu đề banner là h2, trang vẫn cần đúng 1 h1 */}
       <h1 className='sr-only'>EduPlatform: học lập trình, thiết kế, marketing trực tuyến</h1>
-      <div className='flex flex-col gap-4'>
+      <div className='flex flex-col'>
         <HeroBanner />
-        <Suspense fallback={<StatsStripSkeleton />}>
-          <StatsStrip />
-        </Suspense>
+        {/* Dải số liệu chồng lên mép dưới banner (margin âm + z-10): 2 khối liền một mạch, không tách rời */}
+        <div className='relative z-10 -mt-16 md:-mt-20'>
+          <Suspense fallback={<StatsStripSkeleton />}>
+            <StatsStrip />
+          </Suspense>
+        </div>
       </div>
 
       <Suspense fallback={<CategorySectionSkeleton />}>

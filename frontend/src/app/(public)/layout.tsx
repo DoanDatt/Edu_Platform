@@ -38,7 +38,9 @@ const footerLinks = [
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className='flex min-h-screen w-full flex-col'>
+    // overflow-x-clip: khối tràn ngang (banner trang chủ dùng w-screen) không làm trang bị cuộn ngang.
+    // Dùng clip chứ không dùng hidden: hidden tạo khung cuộn mới → header sticky bên trong hết dính
+    <div className='flex min-h-screen w-full flex-col overflow-x-clip'>
       {/* sticky: cuộn trang thì header vẫn dính trên cùng; backdrop-blur: nền mờ trong suốt */}
       <header className='sticky top-0 z-40 w-full border-b bg-background/85 backdrop-blur supports-backdrop-filter:bg-background/70'>
         <div className='mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 md:px-6'>

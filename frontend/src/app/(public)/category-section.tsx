@@ -3,9 +3,13 @@ import SectionHeading from '@/components/section-heading'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getCategoryStyle } from '@/constants/category'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 import Link from 'next/link'
 
-// Bấm 1 ô → /courses?categoryId=... Bộ lọc nằm trên URL nên trang /courses tự lọc sẵn, không cần viết thêm gì
+// Ô danh mục dạng ảnh: ảnh nền + lớp phủ tối + tên và số khóa ở giữa.
+// Danh mục không có ảnh riêng → backend lấy ảnh bìa khóa đông học viên nhất (coverImage).
+// Chưa có khóa nào có ảnh → nền gradient theo danh mục + icon lớn mờ làm "ảnh".
+// Bấm 1 ô → /courses?categoryId=... Bộ lọc nằm trên URL nên trang /courses tự lọc sẵn
 export default async function CategorySection() {
   const categories = await categoryApiRequest
     .list({ limit: 100 })
@@ -17,9 +21,9 @@ export default async function CategorySection() {
   return (
     <section className='flex flex-col gap-6'>
       <SectionHeading eyebrow='Danh mục' title='Khám phá theo chủ đề' />
-      {/* auto-fit: số cột tự theo số danh mục (mỗi ô rộng tối thiểu 9.5rem), cột thừa bị gộp lại
-          → 4 danh mục thì 4 ô chia đều cả hàng, không để trống ô cuối như khi cố định 5 cột */}
-      <div className='grid grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))] gap-4'>
+      {/* auto-fit: số cột tự theo số danh mục (mỗi ô rộng tối thiểu 13rem), cột thừa bị gộp lại
+          → 4 danh mục thì 4 ô chia đều cả hàng, không để trống ô cuối */}
+      <div className='grid grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-4'>
         {categories.map((category) => {
           // Icon + màu gradient theo danh mục: trùng màu với ảnh bìa tự vẽ của khóa trong danh mục đó
           const { Icon, gradient } = getCategoryStyle(category)
@@ -27,21 +31,41 @@ export default async function CategorySection() {
             <Link
               key={category.id}
               href={`/courses?categoryId=${category.id}`}
-              // Điện thoại (ô hẹp): icon trên, tên dưới cho tên không bị gãy 3 dòng. Từ sm: icon bên trái tên
-              className='group flex flex-col items-start gap-3 rounded-2xl border bg-card p-4 sm:flex-row sm:items-center transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10'
+              className={cn(
+                'group relative flex aspect-5/2 items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br text-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20',
+                gradient
+              )}
             >
-              {/* group-hover: rê chuột vào CẢ Ô thì icon phóng to nhẹ */}
+              {category.coverImage ? (
+                <Image
+                  src={category.coverImage}
+                  alt=''
+                  fill
+                  sizes='(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'
+                  className='scale-105 object-cover blur-[2px] transition-all duration-500 group-hover:scale-110 group-hover:blur-none'
+                />
+              ) : (
+                <Icon
+                  aria-hidden
+                  className='absolute -right-3 -bottom-4 size-28 -rotate-12 text-white/20 transition-transform duration-500 group-hover:scale-110'
+                />
+              )}
+              {/* Ảnh bìa khóa học thường có sẵn chữ → làm mờ nhẹ (blur) + phủ tối để tên danh mục không bị chữ trong ảnh đè.
+                  Rê chuột: ảnh nét lại, phủ ngả xanh thương hiệu */}
               <span
+                aria-hidden
                 className={cn(
-                  'flex size-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br text-white shadow-sm transition-transform group-hover:scale-105',
-                  gradient
+                  'absolute inset-0 transition-colors duration-300',
+                  category.coverImage
+                    ? 'bg-slate-950/65 group-hover:bg-sky-950/55'
+                    : 'bg-slate-950/10 group-hover:bg-slate-950/0'
                 )}
-              >
-                <Icon className='size-5' />
-              </span>
-              <span className='flex min-w-0 flex-col'>
-                <span className='font-medium transition-colors group-hover:text-primary'>{category.name}</span>
-                <span className='text-xs text-muted-foreground'>{category.courseCount} khóa học</span>
+              />
+              <span className='relative flex flex-col items-center gap-1.5 px-4 text-center'>
+                <span className='font-heading text-lg leading-tight font-semibold drop-shadow-sm'>{category.name}</span>
+                <span className='rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium backdrop-blur-sm'>
+                  {category.courseCount} khóa học
+                </span>
               </span>
             </Link>
           )
@@ -54,10 +78,10 @@ export default async function CategorySection() {
 export function CategorySectionSkeleton() {
   return (
     <div className='flex flex-col gap-6'>
-      <Skeleton className='h-8 w-64' />
-      <div className='grid grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))] gap-4'>
+      <Skeleton className='h-16 w-64' />
+      <div className='grid grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-4'>
         {Array.from({ length: 4 }, (_, index) => (
-          <Skeleton key={index} className='h-18 rounded-xl' />
+          <Skeleton key={index} className='aspect-5/2 rounded-2xl' />
         ))}
       </div>
     </div>

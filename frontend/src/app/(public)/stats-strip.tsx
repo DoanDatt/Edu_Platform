@@ -27,7 +27,10 @@ export default async function StatsStrip() {
   ]
 
   return (
-    <section aria-label='Số liệu nền tảng' className='grid grid-cols-2 gap-4 rounded-3xl border bg-card p-5 md:grid-cols-4 md:p-6'>
+    <section
+      aria-label='Số liệu nền tảng'
+      className='grid grid-cols-2 gap-4 rounded-3xl border bg-card p-5 shadow-xl shadow-blue-900/10 md:grid-cols-4 md:p-6'
+    >
       {stats.map(({ Icon, value, label }) => (
         <div key={label} className='flex items-center gap-3'>
           <span className='flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary'>
@@ -44,5 +47,5 @@ export default async function StatsStrip() {
 }
 
 export function StatsStripSkeleton() {
-  return <Skeleton className='h-24 rounded-3xl md:h-[5.5rem]' />
+  return <Skeleton className='h-24 rounded-3xl bg-card shadow-xl md:h-[5.5rem]' />
 }
