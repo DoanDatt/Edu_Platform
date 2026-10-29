@@ -7,16 +7,19 @@ import { Suspense } from 'react'
 import AuthButtons from './auth-buttons'
 import HeaderSearch from './header-search'
 import MobileNav from './mobile-nav'
-import NavItems from './nav-items'
+import MainMenu from './main-menu'
+import OrdersButton from './orders-button'
 import categoryApiRequest from '@/apiRequests/category'
-import CategoryMenu from './category-menu'
+import { Button } from '@/components/ui/button'
+import { Gift } from 'lucide-react'
 
 // Layout chung cho các trang công khai: (public) là route group, KHÔNG có trong URL.
 // Bố cục:
-//   ┌── header: logo · tab menu (lg+) ········· ô tìm kiếm (md+) · nút ──┐
-//   │  nội dung trang (giữa màn hình, rộng tối đa 7xl)                    │
-//   │  footer                                                             │
-// Màn hình nhỏ hơn lg: tab menu chuyển vào menu trượt (MobileNav)
+//   ┌── header tầng trên: logo · ô tìm kiếm (md+) · giỏ · chuông · tài khoản · Học miễn phí ──┐
+//   │   header tầng dưới (lg+): Trang chủ · Khóa học ▾ · Học tập ▾ · Giảng dạy ▾ / Quản trị ▾  │
+//   │  nội dung trang (giữa màn hình, rộng tối đa 7xl)                                         │
+//   │  footer                                                                                  │
+// Màn hình nhỏ hơn lg: menu tầng dưới chuyển vào menu trượt (MobileNav)
 
 // Các cột link ở footer (dùng lại bộ lọc có sẵn của trang /courses)
 const footerLinks = [
@@ -43,36 +46,45 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     // overflow-x-clip: khối tràn ngang (banner trang chủ dùng w-screen) không làm trang bị cuộn ngang.
     // Dùng clip chứ không dùng hidden: hidden tạo khung cuộn mới → header sticky bên trong hết dính
     <div className='flex min-h-screen w-full flex-col overflow-x-clip'>
-      {/* sticky: cuộn trang thì header vẫn dính trên cùng; backdrop-blur: nền mờ trong suốt */}
+      {/* Header 2 tầng, sticky: cuộn trang thì vẫn dính trên cùng; backdrop-blur: nền mờ trong suốt */}
       <header className='sticky top-0 z-40 w-full border-b bg-background/85 backdrop-blur supports-backdrop-filter:bg-background/70'>
+        {/* ===== Tầng trên: logo · ô tìm kiếm · giỏ (đơn chờ) · chuông · tài khoản · Học miễn phí ===== */}
         <div className='mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 md:px-6'>
           <Logo />
-          {/* Nút Danh mục (máy tính): danh sách chủ đề lấy ở server, tải xong mới hiện (Suspense, không chặn header) */}
-          <div className='hidden lg:block'>
-            <Suspense fallback={null}>
-              <HeaderCategories />
-            </Suspense>
-          </div>
-          <nav className='hidden items-center gap-1 lg:flex' aria-label='Điều hướng chính'>
-            {/* NavItems dùng usePathname(): ở route động (/courses/[slug]) pathname chỉ biết lúc chạy
-                → phải bọc Suspense, không thì Next báo lỗi blocking-prerender */}
-            <Suspense>
-              <NavItems variant='tabs' />
-            </Suspense>
-          </nav>
-          {/* ml-auto: đẩy ô tìm kiếm + cụm nút sang phải */}
-          <HeaderSearch className='ml-auto hidden w-full max-w-xs md:block' />
+          {/* mx-auto: ô tìm kiếm nằm giữa khoảng trống giữa logo và cụm nút */}
+          <HeaderSearch className='mx-auto hidden w-full max-w-lg md:block' />
           <div className='ml-auto flex items-center gap-1 md:ml-0'>
             <DarkModeToggle />
-            {/* Đã đăng nhập: chuông thông báo (chưa đăng nhập thì không hiện gì) */}
+            {/* Đã đăng nhập: giỏ (đơn chờ thanh toán) + chuông thông báo. Chưa đăng nhập: không hiện */}
+            <OrdersButton />
             <NotificationBell />
-            {/* Chưa đăng nhập: Đăng ký + Đăng nhập. Đã đăng nhập: avatar + menu tài khoản */}
+            {/* Chưa đăng nhập: nút Đăng nhập. Đã đăng nhập: avatar + menu tài khoản */}
             <AuthButtons />
             <AccountMenu />
+            <Button
+              asChild
+              className='ml-2 hidden rounded-full bg-linear-to-r from-sky-500 to-blue-600 px-5 font-semibold shadow-md shadow-sky-500/25 hover:opacity-95 sm:inline-flex'
+            >
+              <Link href='/courses?price=free'>
+                <Gift />
+                Học miễn phí
+              </Link>
+            </Button>
             {/* Dưới lg: nút mở menu trượt (có ô tìm kiếm + menu) */}
             <MobileNav />
           </div>
         </div>
+
+        {/* ===== Tầng dưới (máy tính): menu chính có menu con xổ xuống ===== */}
+        <nav className='hidden border-t lg:block' aria-label='Điều hướng chính'>
+          <div className='mx-auto w-full max-w-7xl px-4 md:px-6'>
+            {/* MainMenu dùng usePathname(): ở route động pathname chỉ biết lúc chạy → bọc Suspense.
+                Danh mục cho menu "Khóa học" lấy ở server (HeaderMenu) */}
+            <Suspense fallback={<div className='h-12' />}>
+              <HeaderMenu />
+            </Suspense>
+          </div>
+        </nav>
       </header>
 
       {/* min-w-0: cho phép nội dung co lại, không bị bảng / chữ dài đẩy tràn ngang */}
@@ -115,11 +127,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   )
 }
 
-// Lấy danh mục cho nút "Danh mục" trên header. Lỗi API → không hiện nút (header không được sập vì 1 nút)
-async function HeaderCategories() {
+// Menu tầng dưới của header + danh mục cho menu lớn "Khóa học". Lỗi API → menu vẫn hiện, chỉ thiếu phần danh mục
+async function HeaderMenu() {
   const categories = await categoryApiRequest
     .list({ limit: 100 })
     .then((res) => res.payload.data)
     .catch(() => [])
-  return <CategoryMenu categories={categories} />
+  return <MainMenu categories={categories} />
 }

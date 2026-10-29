@@ -5,12 +5,12 @@ import CourseSection, { CourseSectionSkeleton } from './course-section'
 import CtaSection from './cta-section'
 import HeroBanner from './hero-banner'
 import StatsStrip, { StatsStripSkeleton } from './stats-strip'
-import TestimonialSection, { TestimonialSectionSkeleton } from './testimonial-section'
+import TestimonialMarquee, { TestimonialMarqueeSkeleton } from './testimonial-marquee'
 
 // Trang chủ. Khối tĩnh (banner, giới thiệu, kêu gọi) hiện ngay; mỗi khối gọi API nằm trong <Suspense> RIÊNG:
 // khối nào tải xong hiện khối đó, không khối nào phải chờ khối khác.
-// Nhịp nền khi cuộn: banner sáng → danh mục (trắng) → khóa nổi bật (nền xanh nhạt tràn ngang) → giới thiệu (trắng)
-// → khóa miễn phí (nền xanh nhạt) → cảm nhận (trắng) → kêu gọi (dải xanh đậm nối liền footer)
+// Nhịp nền khi cuộn: banner sáng → cảm nhận chạy ngang → danh mục (trắng) → khóa nổi bật (nền xanh nhạt tràn ngang)
+// → giới thiệu (trắng) → khóa miễn phí (nền xanh nhạt) → kêu gọi (dải xanh đậm nối liền footer)
 export default function HomePage() {
   return (
     <div className='flex flex-col gap-20'>
@@ -25,6 +25,11 @@ export default function HomePage() {
           </Suspense>
         </div>
       </div>
+
+      {/* Lời nhận xét của học viên chạy ngang ngay dưới banner: người mới vào thấy "web có người học thật" trước tiên */}
+      <Suspense fallback={<TestimonialMarqueeSkeleton />}>
+        <TestimonialMarquee />
+      </Suspense>
 
       <Suspense fallback={<CategorySectionSkeleton />}>
         <CategorySection />
@@ -59,10 +64,6 @@ export default function HomePage() {
           />
         </Suspense>
       </div>
-
-      <Suspense fallback={<TestimonialSectionSkeleton />}>
-        <TestimonialSection />
-      </Suspense>
 
       <CtaSection />
     </div>

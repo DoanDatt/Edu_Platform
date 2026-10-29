@@ -41,7 +41,7 @@ export default function MobileNav() {
           <HeaderSearch />
           <nav className='flex flex-col gap-1'>
             <Suspense>
-              <NavItems variant='list' />
+              <NavItems />
             </Suspense>
           </nav>
           {!isAuth && (

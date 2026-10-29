@@ -31,18 +31,17 @@ const menuItems: {
   { title: 'Quản trị', href: '/admin', Icon: ShieldCheck, role: [RoleValues.Admin] }
 ]
 
+// Danh sách dọc trong menu trượt (điện thoại / tablet, dưới lg), icon bên trái chữ.
+// Máy tính dùng menu tầng dưới của header (MainMenu) thay cho danh sách này.
 // Server: chỉ Trang chủ, Khóa học (server không biết trạng thái đăng nhập).
 // Client: ngay sau đó AppProvider đọc token → hiện thêm mục theo role
-//   variant 'tabs': hàng tab ngang trên header (máy tính), chỉ có chữ. Bỏ "Trang chủ" vì bấm logo là về trang chủ
-//   variant 'list': danh sách dọc trong menu trượt (điện thoại / tablet), icon bên trái chữ
-export default function NavItems({ variant }: { variant: 'tabs' | 'list' }) {
+export default function NavItems() {
   const pathname = usePathname()
   const { role } = useAppContext()
 
   return menuItems.map(({ title, href, Icon, role: allowedRoles }) => {
     // Mục theo role: chưa đăng nhập, hoặc role không nằm trong danh sách → ẩn
     if (allowedRoles && (!role || !allowedRoles.includes(role))) return null
-    if (variant === 'tabs' && href === '/') return null
 
     // Đang ở đúng trang đó (hoặc trang con của nó) thì tô nổi.
     // '/' phải so sánh bằng, không thì trang nào cũng bắt đầu bằng '/'
@@ -54,18 +53,11 @@ export default function NavItems({ variant }: { variant: 'tabs' | 'list' }) {
         href={href}
         aria-current={isActive ? 'page' : undefined}
         className={cn(
-          'transition-colors',
-          variant === 'tabs'
-            ? 'rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap'
-            : 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-base',
-          isActive
-            ? variant === 'tabs'
-              ? 'bg-primary/10 text-primary'
-              : 'bg-accent text-foreground'
-            : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+          'flex items-center gap-3 rounded-lg px-3 py-2.5 text-base transition-colors',
+          isActive ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
         )}
       >
-        {variant === 'list' && <Icon className={cn('size-4', isActive && 'text-primary')} />}
+        <Icon className={cn('size-4', isActive && 'text-primary')} />
         {title}
       </Link>
     )
