@@ -29,7 +29,8 @@ const footerLinks = [
       { label: 'Tất cả khóa học', href: '/courses' },
       { label: 'Khóa miễn phí', href: '/courses?price=free' },
       { label: 'Học nhiều nhất', href: '/courses?sort=popular' },
-      { label: 'Blog', href: '/blog' }
+      { label: 'Blog', href: '/blog' },
+      { label: 'Giới thiệu', href: '/about' }
     ]
   },
   {

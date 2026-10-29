@@ -14,8 +14,8 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 
-// Điểm mạnh của nền tảng: chỉ ghi những gì web LÀM ĐƯỢC THẬT (không hứa tính năng chưa có)
-const features: { Icon: LucideIcon; title: string; description: string }[] = [
+// Điểm mạnh của nền tảng: chỉ ghi những gì web LÀM ĐƯỢC THẬT (không hứa tính năng chưa có). Dùng lại ở trang /about
+export const features: { Icon: LucideIcon; title: string; description: string }[] = [
   {
     Icon: PlayCircle,
     title: 'Bài giảng video',

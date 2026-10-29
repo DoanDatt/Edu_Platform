@@ -1,6 +1,7 @@
 'use client'
 
 import { useAppContext } from '@/components/app-provider'
+import { LogoMark } from '@/components/logo'
 import Waves from '@/components/waves'
 import { BlogCategory, blogCategories, blogPosts, sortedBlogPosts } from '@/content/blog'
 import { RoleType, RoleValues } from '@/constants/type'
@@ -17,7 +18,7 @@ type MenuItem = {
   label: string
   href: string // bấm thẳng vào mục thì đi tới đây
   match: string[] // đang ở các đường dẫn này (hoặc trang con) thì tô màu mục
-  panel?: 'courses' | 'dashboard' | 'blog' // loại tấm menu xổ xuống
+  panel?: 'courses' | 'dashboard' | 'blog' | 'about' // loại tấm menu xổ xuống
 }
 
 const menuItems: MenuItem[] = [
@@ -30,7 +31,30 @@ const menuItems: MenuItem[] = [
     match: ['/my-courses', '/my-orders', '/profile', '/instructor', '/admin'],
     panel: 'dashboard'
   },
-  { label: 'Blog', href: '/blog', match: ['/blog'], panel: 'blog' }
+  { label: 'Blog', href: '/blog', match: ['/blog'], panel: 'blog' },
+  { label: 'Giới thiệu', href: '/about', match: ['/about'], panel: 'about' }
+]
+
+// Menu "Giới thiệu": link nhảy thẳng tới từng khối của trang /about (id của khối)
+const aboutColumns: MenuColumn[] = [
+  {
+    title: 'Về chúng tôi',
+    links: [
+      { label: 'Câu chuyện EduPlatform', href: '/about#cau-chuyen' },
+      { label: 'Điểm nổi bật', href: '/about#diem-noi-bat' },
+      { label: 'Cách học trên nền tảng', href: '/about#cach-hoc' },
+      { label: 'Dành cho giảng viên', href: '/about#giang-vien' }
+    ]
+  },
+  {
+    title: 'Hỗ trợ',
+    links: [
+      { label: 'Câu hỏi thường gặp', href: '/about#hoi-dap', badge: 'FAQ' },
+      { label: 'Hướng dẫn mua khóa học', href: '/blog/huong-dan-mua-khoa-hoc' },
+      { label: 'Cách tính tiến độ học', href: '/blog/tien-do-hoc-xem-du-90-phan-tram' },
+      { label: 'Đăng ký tài khoản', href: '/register', badge: 'Free' }
+    ]
+  }
 ]
 
 // Menu "Dashboard": mỗi vai trò 1 mục, rê vào mục nào thì tấm thứ 2 bung sang phải với các trang của vai trò đó.
@@ -103,6 +127,7 @@ const closeMenu = () => (document.activeElement as HTMLElement | null)?.blur()
 // Mở bằng CSS (group-hover + group-focus-within), không cần state: Tab bằng bàn phím cũng mở được, rời ra là đóng.
 //   "Khóa học": tấm lớn = dải banner (số liệu + ảnh bìa thật) + 2 cột (Khám phá · Theo chủ đề)
 //   "Dashboard": danh sách vai trò, rê vào vai trò → tấm thứ 2 bung sang phải (chưa đăng nhập: dẫn tới đăng nhập)
+//   "Blog", "Giới thiệu": tấm lớn gồm thẻ màu thương hiệu + 2 cột link
 export default function MainMenu({ categories }: { categories: CategoryListItemType[] }) {
   const pathname = usePathname()
   const { role } = useAppContext()
@@ -119,9 +144,9 @@ export default function MainMenu({ categories }: { categories: CategoryListItemT
     <ul className='flex items-center justify-center gap-2'>
       {menuItems.map((item) => {
         const active = isActive(item)
-        // Tấm lớn (Khóa học, Blog): li KHÔNG relative → tấm định vị theo khung menu (relative ở layout), canh giữa cả
+        // Tấm lớn (Khóa học, Blog, Giới thiệu): li KHÔNG relative → tấm định vị theo khung menu (relative ở layout), canh giữa cả
         // thanh menu, không tràn mép trên laptop nhỏ. Dashboard: li relative → tấm nằm ngay dưới mục
-        const wide = item.panel === 'courses' || item.panel === 'blog'
+        const wide = item.panel !== 'dashboard'
         return (
           <li key={item.label} className={cn('group', !wide && 'relative')}>
             <Link
@@ -151,7 +176,9 @@ export default function MainMenu({ categories }: { categories: CategoryListItemT
               >
                 {wide ? (
                   <div className='overflow-hidden rounded-2xl border bg-popover text-popover-foreground shadow-2xl shadow-sky-900/15'>
-                    {item.panel === 'courses' ? <CoursesPanel categories={categories} /> : <BlogPanel />}
+                    {item.panel === 'courses' && <CoursesPanel categories={categories} />}
+                    {item.panel === 'blog' && <BlogPanel />}
+                    {item.panel === 'about' && <AboutPanel categories={categories} />}
                   </div>
                 ) : (
                   <DashboardPanel sections={sections} isGuest={!role} />
@@ -216,6 +243,40 @@ function DashboardPanel({ sections, isGuest }: { sections: DashboardSection[]; i
         </li>
       ))}
     </ul>
+  )
+}
+
+// Tấm menu lớn của "Giới thiệu": thẻ thương hiệu bên trái (logo + số liệu thật) + 2 cột link tới các khối trang /about
+function AboutPanel({ categories }: { categories: CategoryListItemType[] }) {
+  const totalCourses = categories.reduce((sum, category) => sum + category.courseCount, 0)
+
+  return (
+    <div className='grid w-240 grid-cols-[17rem_1fr_1fr] gap-8 p-8'>
+      <Link
+        href='/about'
+        onClick={closeMenu}
+        className='group/brand relative flex flex-col gap-4 overflow-hidden rounded-2xl bg-linear-to-br from-sky-500 via-sky-600 to-blue-800 p-6 text-white'
+      >
+        <div aria-hidden className='absolute -top-12 -right-12 size-40 rounded-full bg-white/20 blur-2xl' />
+        <Waves className='h-1/3' animated />
+        <LogoMark className='relative size-12 rounded-2xl bg-none bg-white/20 shadow-none [&_svg]:size-7' />
+        <div className='relative flex flex-col gap-1.5'>
+          <p className='font-heading text-xl font-bold'>EduPlatform</p>
+          <p className='text-sm text-white/85'>Học online đều đặn và thấy rõ mình tiến bộ mỗi ngày.</p>
+          {totalCourses > 0 && (
+            <p className='text-sm font-semibold'>
+              {totalCourses} khóa học · {categories.length} chủ đề
+            </p>
+          )}
+        </div>
+        <span className='relative mt-auto flex items-center gap-1 text-sm font-semibold'>
+          Tìm hiểu thêm <ArrowRight className='size-4 transition-transform group-hover/brand:translate-x-1' />
+        </span>
+      </Link>
+      {aboutColumns.map((column) => (
+        <MenuColumnList key={column.title} column={column} />
+      ))}
+    </div>
   )
 }
 

@@ -3,7 +3,7 @@
 import { useAppContext } from '@/components/app-provider'
 import { RoleType, RoleValues } from '@/constants/type'
 import { cn } from '@/lib/utils'
-import { BookOpen, GraduationCap, House, LucideIcon, Presentation, ShieldCheck } from 'lucide-react'
+import { BookOpen, GraduationCap, House, Info, LucideIcon, Newspaper, Presentation, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -28,12 +28,14 @@ const menuItems: {
     role: [RoleValues.Student, RoleValues.Instructor, RoleValues.Admin]
   },
   { title: 'Giảng dạy', href: '/instructor', Icon: Presentation, role: [RoleValues.Instructor] },
-  { title: 'Quản trị', href: '/admin', Icon: ShieldCheck, role: [RoleValues.Admin] }
+  { title: 'Quản trị', href: '/admin', Icon: ShieldCheck, role: [RoleValues.Admin] },
+  { title: 'Blog', href: '/blog', Icon: Newspaper },
+  { title: 'Giới thiệu', href: '/about', Icon: Info }
 ]
 
 // Danh sách dọc trong menu trượt (điện thoại / tablet, dưới lg), icon bên trái chữ.
 // Máy tính dùng menu tầng dưới của header (MainMenu) thay cho danh sách này.
-// Server: chỉ Trang chủ, Khóa học (server không biết trạng thái đăng nhập).
+// Server: chỉ các mục không cần role (server không biết trạng thái đăng nhập).
 // Client: ngay sau đó AppProvider đọc token → hiện thêm mục theo role
 export default function NavItems() {
   const pathname = usePathname()
