@@ -66,6 +66,30 @@ export const CourseStatusLabels: Record<keyof typeof CourseStatus, string> = {
   REJECTED: 'Bị từ chối'
 }
 
+export const OrderStatus = {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export const OrderStatusLabels: Record<keyof typeof OrderStatus, string> = {
+  PENDING: 'Chờ thanh toán',
+  PAID: 'Đã thanh toán',
+  CANCELLED: 'Đã hủy'
+}
+
+export const PaymentMethod = {
+  MOMO: 'MOMO',
+  PAYPAL: 'PAYPAL',
+  SEPAY: 'SEPAY'
+} as const
+
+export const PaymentMethodLabels: Record<keyof typeof PaymentMethod, string> = {
+  MOMO: 'Ví MoMo',
+  PAYPAL: 'PayPal',
+  SEPAY: 'Chuyển khoản ngân hàng'
+}
+
 // Loại thông báo (khớp enum NotificationType của backend)
 export const NotificationType = {
   COURSE_SUBMITTED: 'COURSE_SUBMITTED',
@@ -73,5 +97,6 @@ export const NotificationType = {
   COURSE_REJECTED: 'COURSE_REJECTED',
   COURSE_UNPUBLISHED: 'COURSE_UNPUBLISHED',
   NEW_ENROLLMENT: 'NEW_ENROLLMENT',
-  NEW_REVIEW: 'NEW_REVIEW'
+  NEW_REVIEW: 'NEW_REVIEW',
+  NEW_ORDER: 'NEW_ORDER'
 } as const

@@ -2,12 +2,7 @@
 
 import { useAppContext } from '@/components/app-provider'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { NotificationType } from '@/constants/type'
 import { formatRelativeTime } from '@/lib/format'
@@ -20,7 +15,18 @@ import {
 } from '@/queries/useNotification'
 import { NotificationItemType } from '@/schemaValidations/notification.schema'
 import { useQueryClient } from '@tanstack/react-query'
-import { Bell, CheckCheck, CheckCircle2, EyeOff, LucideIcon, Send, Star, UserPlus, XCircle } from 'lucide-react'
+import {
+  Bell,
+  CheckCheck,
+  CheckCircle2,
+  EyeOff,
+  LucideIcon,
+  Send,
+  ShoppingBag,
+  Star,
+  UserPlus,
+  XCircle
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
@@ -37,7 +43,12 @@ const typeStyles: Record<keyof typeof NotificationType, { Icon: LucideIcon; clas
     className: 'bg-orange-100 text-orange-600 dark:bg-orange-500/15 dark:text-orange-400'
   },
   NEW_ENROLLMENT: { Icon: UserPlus, className: 'bg-primary/10 text-primary' },
-  NEW_REVIEW: { Icon: Star, className: 'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400' }
+  NEW_REVIEW: { Icon: Star, className: 'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400' },
+  // Có người mua khóa: tin vui về tiền → xanh lá
+  NEW_ORDER: {
+    Icon: ShoppingBag,
+    className: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400'
+  }
 }
 
 // Chuông thông báo ở header (trang công khai + khu giảng viên / admin). Chưa đăng nhập thì không hiện.
@@ -169,7 +180,9 @@ export default function NotificationBell() {
                     </span>
                   </div>
                   {/* Chấm xanh: chưa đọc */}
-                  {isUnread && <span className='mt-1.5 size-2 shrink-0 rounded-full bg-primary' aria-label='Chưa đọc' />}
+                  {isUnread && (
+                    <span className='mt-1.5 size-2 shrink-0 rounded-full bg-primary' aria-label='Chưa đọc' />
+                  )}
                 </DropdownMenuItem>
               )
             })

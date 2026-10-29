@@ -6,7 +6,7 @@ import type { NextRequest } from 'next/server'
 // Chạy TRƯỚC khi trang render → chặn / chuyển hướng mà người dùng không kịp thấy trang sai
 
 // Phải đăng nhập mới vào được
-const privatePaths = ['/my-courses', '/learn', '/profile', '/instructor', '/admin']
+const privatePaths = ['/my-courses', '/my-orders', '/checkout', '/learn', '/profile', '/instructor', '/admin']
 // Chỉ vào được khi CHƯA đăng nhập
 const unAuthPaths = ['/login', '/register', '/forgot-password', '/reset-password']
 // Theo role

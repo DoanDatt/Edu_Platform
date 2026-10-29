@@ -1,18 +1,21 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { HttpError } from '@/lib/http'
+import { formatPrice } from '@/lib/format'
 import { handleErrorApi } from '@/lib/utils'
 import { useEnrollMutation } from '@/queries/useEnrollments'
-import { Loader2 } from 'lucide-react'
+import { useCreateOrderMutation } from '@/queries/useOrder'
+import { Loader2, ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
 // Nút chính của trang chi tiết, theo isEnrolled backend trả về:
-//   null  → khách chưa đăng nhập   → "Đăng nhập để ghi danh" (link sang /login)
-//   true  → đã ghi danh            → "Vào học" (link sang /learn/:id, trang này làm ở Mốc 3)
-//   false → đã đăng nhập, chưa ghi danh → nút "Ghi danh" (gọi API)
+//   null  → khách chưa đăng nhập   → "Đăng nhập để ghi danh / mua" (link sang /login)
+//   true  → đã ghi danh / đã mua   → "Vào học" (link sang /learn/:id)
+//   false → đã đăng nhập, chưa có khóa:
+//             miễn phí → nút "Ghi danh miễn phí" (gọi API ghi danh)
+//             có phí   → nút "Mua khóa học" (tạo đơn hàng → sang trang thanh toán)
 // Client Component vì có onClick + hook (useMutation, useRouter)
 export default function EnrollButton({
   courseId,
@@ -24,12 +27,14 @@ export default function EnrollButton({
   price: number
 }) {
   const enrollMutation = useEnrollMutation()
+  const createOrderMutation = useCreateOrderMutation()
   const router = useRouter()
+  const isPaid = price > 0
 
   if (isEnrolled === null) {
     return (
       <Button asChild size='lg' className='h-11 w-full rounded-full text-base'>
-        <Link href='/login'>Đăng nhập để ghi danh</Link>
+        <Link href='/login'>{isPaid ? 'Đăng nhập để mua khóa học' : 'Đăng nhập để ghi danh'}</Link>
       </Button>
     )
   }
@@ -52,20 +57,46 @@ export default function EnrollButton({
       // → getDetail trả isEnrolled: true → nút đổi thành "Vào học", số học viên +1
       router.refresh()
     } catch (error) {
-      // 402: khóa có phí, backend chưa làm thanh toán → báo THÔNG TIN (không phải lỗi đỏ)
-      if (error instanceof HttpError && error.status === 402) {
-        toast.info(error.payload.message)
-        return
-      }
-      // Lỗi khác (409 đã ghi danh / là giảng viên của khóa, mất mạng...) → toast lỗi
+      // Lỗi (409 đã ghi danh / là giảng viên của khóa, mất mạng...) → toast lỗi
       handleErrorApi({ error })
     }
   }
 
+  // Khóa có phí: tạo đơn hàng (backend chốt giá; bấm nhiều lần thì dùng lại đơn đang chờ) → sang trang thanh toán
+  const buy = async () => {
+    if (createOrderMutation.isPending) return
+    try {
+      const result = await createOrderMutation.mutateAsync({ courseId })
+      router.push(`/checkout/${result.payload.data.id}`)
+    } catch (error) {
+      // 409: khóa của chính mình / đã sở hữu khóa → toast lỗi
+      handleErrorApi({ error })
+    }
+  }
+
+  if (isPaid) {
+    return (
+      <Button
+        size='lg'
+        className='h-11 w-full rounded-full text-base'
+        onClick={buy}
+        disabled={createOrderMutation.isPending}
+      >
+        {createOrderMutation.isPending ? <Loader2 className='animate-spin' /> : <ShoppingCart />}
+        Mua khóa học · {formatPrice(price)}
+      </Button>
+    )
+  }
+
   return (
-    <Button size='lg' className='h-11 w-full rounded-full text-base' onClick={enroll} disabled={enrollMutation.isPending}>
+    <Button
+      size='lg'
+      className='h-11 w-full rounded-full text-base'
+      onClick={enroll}
+      disabled={enrollMutation.isPending}
+    >
       {enrollMutation.isPending && <Loader2 className='animate-spin' />}
-      {price === 0 ? 'Ghi danh miễn phí' : 'Ghi danh'}
+      Ghi danh miễn phí
     </Button>
   )
 }

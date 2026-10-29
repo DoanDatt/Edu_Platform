@@ -13,7 +13,7 @@ import {
 import { handleErrorApi } from '@/lib/utils'
 import { useLogoutMutation, useMeQuery } from '@/queries/useAuth'
 import { useQueryClient } from '@tanstack/react-query'
-import { KeyRound, LogOut, UserRound } from 'lucide-react'
+import { KeyRound, LogOut, ReceiptText, UserRound } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -87,6 +87,12 @@ export default function AccountMenu() {
           <Link href='/profile'>
             <UserRound />
             Thông tin tài khoản
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href='/my-orders'>
+            <ReceiptText />
+            Lịch sử mua hàng
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
