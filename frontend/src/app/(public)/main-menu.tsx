@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronRight,
   GraduationCap,
+  Lock,
   LucideIcon,
   Presentation,
   ShieldCheck
@@ -18,14 +19,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-type MenuLink = { label: string; href: string; badge?: string }
+type MenuLink = { label: string; href: string; badge?: string; locked?: boolean }
 type MenuColumn = { title: string; links: MenuLink[] }
 type MenuItem = {
   label: string
   href: string // bấm thẳng vào mục thì đi tới đây
   match: string[] // đang ở các đường dẫn này (hoặc trang con) thì tô màu mục
   panel?: 'courses' | 'dashboard' // loại tấm menu xổ xuống
-  needAuth?: boolean // chỉ hiện khi đã đăng nhập
 }
 
 const menuItems: MenuItem[] = [
@@ -33,28 +33,36 @@ const menuItems: MenuItem[] = [
   { label: 'Khóa học', href: '/courses', match: ['/courses'], panel: 'courses' },
   {
     label: 'Dashboard',
+    // Chưa đăng nhập: proxy tự chuyển /my-courses về /login
     href: '/my-courses',
     match: ['/my-courses', '/my-orders', '/profile', '/instructor', '/admin'],
-    panel: 'dashboard',
-    needAuth: true
+    panel: 'dashboard'
   }
 ]
 
 // Menu "Dashboard": mỗi vai trò 1 mục, rê vào mục nào thì tấm thứ 2 bung sang phải với các trang của vai trò đó.
-// Chỉ hiện vai trò người dùng có: ai đăng nhập cũng là học viên (mua / học được khóa của người khác),
-// giảng viên có thêm "Giảng viên", admin có thêm "Quản trị"
-const dashboardSections: {
+//   Đã đăng nhập: chỉ hiện vai trò người dùng có — ai cũng là học viên (mua / học được khóa của người khác),
+//     giảng viên có thêm "Giảng viên", admin có thêm "Quản trị"
+//   Chưa đăng nhập: hiện các vai trò có forGuest (Học viên, Giảng viên) để người mới biết bên trong có gì,
+//     mọi link dẫn tới trang đăng nhập + nút Đăng nhập / Đăng ký
+type DashboardSection = {
   label: string
   description: string
   Icon: LucideIcon
   roles: RoleType[]
+  forGuest?: boolean
+  guestNote?: string // dòng chú thích ở tấm con khi chưa đăng nhập
   links: MenuLink[]
-}[] = [
+}
+
+const dashboardSections: DashboardSection[] = [
   {
     label: 'Học viên',
     description: 'Khóa học, đơn hàng, tài khoản',
     Icon: GraduationCap,
     roles: [RoleValues.Student, RoleValues.Instructor, RoleValues.Admin],
+    forGuest: true,
+    guestNote: 'Đăng ký miễn phí để học và theo dõi tiến độ.',
     links: [
       { label: 'Khóa học của tôi', href: '/my-courses' },
       { label: 'Lịch sử mua hàng', href: '/my-orders' },
@@ -68,6 +76,9 @@ const dashboardSections: {
     description: 'Soạn khóa học, học viên, doanh thu',
     Icon: Presentation,
     roles: [RoleValues.Instructor],
+    forGuest: true,
+    // Không có trang "đăng ký làm giảng viên": tài khoản giảng viên do quản trị viên cấp quyền
+    guestNote: 'Dành cho tài khoản giảng viên (do quản trị viên cấp quyền).',
     links: [
       { label: 'Tổng quan & doanh thu', href: '/instructor' },
       { label: 'Khóa học của tôi', href: '/instructor/courses' },
@@ -106,7 +117,7 @@ const closeMenu = () => (document.activeElement as HTMLElement | null)?.blur()
 // Tầng dưới của header (máy tính), các mục canh giữa. Rê chuột vào mục có mũi tên → tấm menu xổ xuống.
 // Mở bằng CSS (group-hover + group-focus-within), không cần state: Tab bằng bàn phím cũng mở được, rời ra là đóng.
 //   "Khóa học": tấm lớn = dải banner (số liệu + ảnh bìa thật) + 2 cột (Khám phá · Theo chủ đề)
-//   "Dashboard" (đã đăng nhập): danh sách vai trò, rê vào vai trò → tấm thứ 2 bung sang phải
+//   "Dashboard": danh sách vai trò, rê vào vai trò → tấm thứ 2 bung sang phải (chưa đăng nhập: dẫn tới đăng nhập)
 export default function MainMenu({ categories }: { categories: CategoryListItemType[] }) {
   const pathname = usePathname()
   const { role } = useAppContext()
@@ -116,12 +127,12 @@ export default function MainMenu({ categories }: { categories: CategoryListItemT
       ? pathname === '/'
       : item.match.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 
-  const sections = dashboardSections.filter((section) => role && section.roles.includes(role))
+  // Đã đăng nhập: vai trò người dùng có. Chưa đăng nhập: các vai trò giới thiệu cho khách (forGuest)
+  const sections = dashboardSections.filter((section) => (role ? section.roles.includes(role) : section.forGuest))
 
   return (
     <ul className='flex items-center justify-center gap-2'>
       {menuItems.map((item) => {
-        if (item.needAuth && !role) return null
         const active = isActive(item)
         return (
           <li key={item.label} className='group relative'>
@@ -155,7 +166,7 @@ export default function MainMenu({ categories }: { categories: CategoryListItemT
                     <CoursesPanel categories={categories} />
                   </div>
                 ) : (
-                  <DashboardPanel sections={sections} />
+                  <DashboardPanel sections={sections} isGuest={!role} />
                 )}
               </div>
             )}
@@ -167,14 +178,15 @@ export default function MainMenu({ categories }: { categories: CategoryListItemT
 }
 
 // Tấm "Dashboard": cột trái là các vai trò. Mỗi vai trò là 1 group/sub: rê vào (hoặc Tab tới) → tấm con bên phải hiện.
-// Không dùng overflow-hidden ở tấm ngoài: tấm con nằm NGOÀI khung tấm ngoài, bị cắt mất nếu có
-function DashboardPanel({ sections }: { sections: typeof dashboardSections }) {
+// Không dùng overflow-hidden ở tấm ngoài: tấm con nằm NGOÀI khung tấm ngoài, bị cắt mất nếu có.
+// isGuest (chưa đăng nhập): mọi link dẫn tới /login, các trang hiện ổ khóa, cuối tấm con có nút Đăng nhập / Đăng ký
+function DashboardPanel({ sections, isGuest }: { sections: DashboardSection[]; isGuest: boolean }) {
   return (
     <ul className='w-80 rounded-2xl border bg-popover p-2 text-popover-foreground shadow-2xl shadow-sky-900/15'>
-      {sections.map(({ label, description, Icon, links }) => (
+      {sections.map(({ label, description, Icon, links, guestNote }) => (
         <li key={label} className='group/sub relative'>
           <Link
-            href={links[0].href}
+            href={isGuest ? '/login' : links[0].href}
             onClick={closeMenu}
             className='flex items-center gap-3 rounded-xl px-3 py-3 transition-colors group-focus-within/sub:bg-accent group-hover/sub:bg-accent'
           >
@@ -189,8 +201,34 @@ function DashboardPanel({ sections }: { sections: typeof dashboardSections }) {
           </Link>
           {/* Tấm con bung sang phải, ngang hàng với mục đang rê. pl-3: cầu nối vô hình để rê chuột sang không bị đóng */}
           <div className='invisible absolute top-0 left-full z-10 -translate-x-1 pl-3 opacity-0 transition-all duration-200 group-focus-within/sub:visible group-focus-within/sub:translate-x-0 group-focus-within/sub:opacity-100 group-hover/sub:visible group-hover/sub:translate-x-0 group-hover/sub:opacity-100'>
-            <div className='w-64 rounded-2xl border bg-popover p-5 shadow-2xl shadow-sky-900/15'>
-              <MenuColumnList column={{ title: label, links }} />
+            <div className='w-72 rounded-2xl border bg-popover p-5 shadow-2xl shadow-sky-900/15'>
+              <MenuColumnList
+                column={{
+                  title: label,
+                  links: isGuest ? links.map((link) => ({ ...link, href: '/login', locked: true })) : links
+                }}
+              />
+              {isGuest && (
+                <div className='mt-3 flex flex-col gap-3 border-t pt-4'>
+                  {guestNote && <p className='text-xs text-muted-foreground'>{guestNote}</p>}
+                  <div className='flex gap-2'>
+                    <Link
+                      href='/login'
+                      onClick={closeMenu}
+                      className='flex-1 rounded-full bg-linear-to-r from-sky-500 to-blue-600 py-2 text-center text-sm font-semibold text-white shadow-md shadow-sky-500/25 transition-opacity hover:opacity-90'
+                    >
+                      Đăng nhập
+                    </Link>
+                    <Link
+                      href='/register'
+                      onClick={closeMenu}
+                      className='flex-1 rounded-full border py-2 text-center text-sm font-semibold transition-colors hover:border-primary/40 hover:text-primary'
+                    >
+                      Đăng ký
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </li>
@@ -259,13 +297,15 @@ function MenuColumnList({ column }: { column: MenuColumn }) {
         {column.title}
       </p>
       <ul className='mt-2 flex flex-col'>
+        {/* key = label: khi chưa đăng nhập mọi link đều trỏ /login → href bị trùng, không dùng làm key được */}
         {column.links.map((link) => (
-          <li key={link.href}>
+          <li key={link.label}>
             <Link
               href={link.href}
               onClick={closeMenu}
               className='flex items-center gap-2 py-2 text-[15px] text-foreground/80 transition-all hover:translate-x-1 hover:text-primary'
             >
+              {link.locked && <Lock aria-hidden className='size-3.5 shrink-0 text-muted-foreground' />}
               <span className='truncate'>{link.label}</span>
               {link.badge && (
                 <span className='shrink-0 rounded-full bg-highlight/10 px-2 py-0.5 text-[11px] font-semibold text-highlight'>
