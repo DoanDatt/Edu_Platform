@@ -4,5 +4,452 @@
   },
   "LocaleSwitcher": {
     "label": "Đổi ngôn ngữ"
+  },
+  "Menu": {
+    "home": "Trang chủ",
+    "courses": "Khóa học",
+    "dashboard": "Dashboard",
+    "blog": "Blog",
+    "about": "Giới thiệu",
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "badgeFree": "Free",
+    "badgeHot": "Hot",
+    "badgeNew": "Mới",
+    "badgeFaq": "FAQ",
+    "aboutUs": "Về chúng tôi",
+    "support": "Hỗ trợ",
+    "ourStory": "Câu chuyện EduPlatform",
+    "highlights": "Điểm nổi bật",
+    "howItWorks": "Cách học trên nền tảng",
+    "forInstructors": "Dành cho giảng viên",
+    "faq": "Câu hỏi thường gặp",
+    "buyGuide": "Hướng dẫn mua khóa học",
+    "progressGuide": "Cách tính tiến độ học",
+    "signUp": "Đăng ký tài khoản",
+    "aboutTagline": "Học online đều đặn và thấy rõ mình tiến bộ mỗi ngày.",
+    "aboutTotals": "{courses} khóa học · {topics} chủ đề",
+    "learnMore": "Tìm hiểu thêm",
+    "dashboardOf": "Dashboard {role}",
+    "roleStudent": "Học viên",
+    "roleInstructor": "Giảng viên",
+    "roleAdmin": "Quản trị",
+    "studentGuestNote": "Đăng ký miễn phí để học và theo dõi tiến độ.",
+    "instructorGuestNote": "Dành cho tài khoản giảng viên (do quản trị viên cấp quyền).",
+    "myCourses": "Khóa học của tôi",
+    "purchaseHistory": "Lịch sử mua hàng",
+    "pendingOrders": "Đơn chờ thanh toán",
+    "accountInfo": "Thông tin tài khoản",
+    "changePassword": "Đổi mật khẩu",
+    "instructorOverview": "Tổng quan & doanh thu",
+    "instructorCourses": "Khóa học của tôi",
+    "createCourse": "Tạo khóa học mới",
+    "adminDashboard": "Dashboard",
+    "reviewCourses": "Duyệt khóa học",
+    "allCourses": "Tất cả khóa học",
+    "categories": "Danh mục",
+    "users": "Người dùng",
+    "freeCourses": "Khóa miễn phí",
+    "popularCourses": "Học nhiều nhất",
+    "newestCourses": "Mới ra mắt",
+    "paidCourses": "Khóa có phí",
+    "priceLowToHigh": "Giá từ thấp đến cao",
+    "blogCategories": "Chuyên mục",
+    "allPosts": "Tất cả bài viết",
+    "postCount": "{count} bài",
+    "latestPosts": "Bài viết mới",
+    "promoTitle": "Nâng tầm kỹ năng",
+    "promoText": "Bắt đầu với các khóa học miễn phí ngay hôm nay.",
+    "promoCta": "Bắt đầu học",
+    "libraryTitle": "Thư viện khóa học",
+    "libraryText": "{courses} khóa học thuộc {topics} chủ đề, từ cơ bản đến nâng cao.",
+    "libraryFallback": "Khóa học từ cơ bản đến nâng cao, học theo tốc độ của bạn.",
+    "exploreNow": "Khám phá ngay",
+    "explore": "Khám phá",
+    "byTopic": "Theo chủ đề",
+    "courseCount": "{count} khóa"
+  },
+  "Blog": {
+    "metaTitle": "Blog",
+    "metaDescription": "Lộ trình học, kinh nghiệm học online và hướng dẫn sử dụng EduPlatform",
+    "eyebrow": "Blog EduPlatform",
+    "title": "Chia sẻ kiến thức & kinh nghiệm học tập",
+    "description": "Lộ trình học, mẹo học online hiệu quả và hướng dẫn sử dụng nền tảng.",
+    "all": "Tất cả",
+    "categories": "Chuyên mục",
+    "read": "Đọc",
+    "minRead": "{minutes} phút đọc",
+    "allPosts": "Tất cả bài viết",
+    "related": "Bài viết liên quan",
+    "notFound": "Không tìm thấy bài viết"
+  },
+  "Header": {
+    "learnFree": "Học miễn phí",
+    "mainNav": "Điều hướng chính",
+    "openMenu": "Mở menu",
+    "navigationMenu": "Menu điều hướng",
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "filterByCategory": "Lọc theo danh mục",
+    "allCategories": "Tất cả danh mục",
+    "searchPlaceholder": "Tìm khóa học...",
+    "searchLabel": "Tìm khóa học",
+    "search": "Tìm kiếm",
+    "pendingOrdersCount": "{count} đơn chờ thanh toán",
+    "orders": "Đơn hàng",
+    "pendingOrders": "Đơn chờ thanh toán",
+    "toggleTheme": "Đổi giao diện sáng / tối"
+  },
+  "Footer": {
+    "tagline": "Học lập trình, thiết kế, marketing, khoa học dữ liệu theo tốc độ của riêng bạn. Mọi lúc, mọi nơi.",
+    "explore": "Khám phá",
+    "account": "Tài khoản",
+    "allCourses": "Tất cả khóa học",
+    "freeCourses": "Khóa miễn phí",
+    "popularCourses": "Học nhiều nhất",
+    "blog": "Blog",
+    "about": "Giới thiệu",
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "myCourses": "Khóa của tôi",
+    "copyright": "© 2026 EduPlatform · Dự án cá nhân, thiết kế và phát triển bởi Đoàn Công Đạt"
+  },
+  "Nav": {
+    "home": "Trang chủ",
+    "courses": "Khóa học",
+    "myCourses": "Khóa của tôi",
+    "teaching": "Giảng dạy",
+    "admin": "Quản trị",
+    "blog": "Blog",
+    "about": "Giới thiệu"
+  },
+  "Account": {
+    "roles": {
+      "ADMIN": "Quản trị viên",
+      "INSTRUCTOR": "Giảng viên",
+      "STUDENT": "Học viên"
+    },
+    "logoutSuccess": "Đăng xuất thành công",
+    "openMenu": "Mở menu tài khoản",
+    "avatar": "Ảnh đại diện",
+    "profile": "Thông tin tài khoản",
+    "purchaseHistory": "Lịch sử mua hàng",
+    "changePassword": "Đổi mật khẩu",
+    "logout": "Đăng xuất"
+  },
+  "Notifications": {
+    "title": "Thông báo",
+    "labelUnread": "Thông báo, {count} chưa đọc",
+    "markAllRead": "Đánh dấu đã đọc tất cả",
+    "loadError": "Không tải được thông báo.",
+    "empty": "Chưa có thông báo nào",
+    "unread": "Chưa đọc"
+  },
+  "Home": {
+    "h1": "EduPlatform: học lập trình, thiết kế, marketing trực tuyến",
+    "popularEyebrow": "Nổi bật",
+    "popularTitle": "Khóa học được yêu thích nhất",
+    "popularDescription": "Những khóa có nhiều học viên đăng ký nhất trên EduPlatform",
+    "freeEyebrow": "Miễn phí",
+    "freeTitle": "Bắt đầu mà không tốn đồng nào",
+    "freeDescription": "Đăng ký tài khoản là học được ngay",
+    "viewAllCourses": "Xem tất cả khóa học"
+  },
+  "Hero": {
+    "badge": "Nền tảng học trực tuyến cho người Việt",
+    "titleStart": "Học từng bước,",
+    "titleHighlight": "tiến xa",
+    "titleEnd": "mỗi ngày",
+    "description": "Lập trình, thiết kế, marketing, khoa học dữ liệu. Học theo tốc độ của bạn, theo dõi tiến độ từng bài, nhận đánh giá thật từ học viên đã học.",
+    "searchPlaceholder": "Bạn muốn học gì hôm nay?",
+    "searchLabel": "Tìm khóa học",
+    "search": "Tìm kiếm",
+    "suggestions": "Gợi ý:",
+    "quickFree": "Khóa miễn phí",
+    "quickPopular": "Học nhiều nhất",
+    "quickNewest": "Mới ra mắt",
+    "reviews": "{count} đánh giá",
+    "students": "{count} học viên",
+    "enrolled": "đang theo học"
+  },
+  "Stats": {
+    "label": "Số liệu nền tảng",
+    "courses": "Khóa học",
+    "enrollments": "Lượt ghi danh",
+    "instructors": "Giảng viên",
+    "averageRating": "Đánh giá trung bình"
+  },
+  "Testimonials": {
+    "eyebrow": "Cảm nhận",
+    "title": "Học viên nói gì về EduPlatform",
+    "description": "Đánh giá thật từ học viên đã học khóa đó",
+    "studentOf": "Học viên khóa {course}"
+  },
+  "Categories": {
+    "eyebrow": "Danh mục",
+    "title": "Khám phá theo chủ đề",
+    "courseCount": "{count} khóa học"
+  },
+  "Cta": {
+    "title": "Sẵn sàng bắt đầu hành trình học?",
+    "description": "Nhiều khóa học miễn phí và có phí đang chờ bạn. Học theo tốc độ của mình, theo dõi tiến độ từng bài.",
+    "myCourses": "Khóa học của tôi",
+    "register": "Đăng ký miễn phí",
+    "explore": "Khám phá khóa học"
+  },
+  "Features": {
+    "video": {
+      "title": "Bài giảng video",
+      "description": "Chia theo chương, từng bài ngắn gọn, mở lại là xem tiếp từ chỗ đang dừng."
+    },
+    "progress": {
+      "title": "Tiến độ minh bạch",
+      "description": "Xem đủ 90% video mới tính là học xong, phần trăm hoàn thành luôn đúng thực tế."
+    },
+    "payment": {
+      "title": "Thanh toán linh hoạt",
+      "description": "Chuyển khoản quét mã QR (xác nhận tự động) hoặc PayPal cho người học quốc tế."
+    },
+    "anywhere": {
+      "title": "Học mọi lúc, mọi nơi",
+      "description": "Giao diện chạy tốt trên điện thoại lẫn máy tính, có chế độ tối cho buổi học đêm."
+    }
+  },
+  "AboutSection": {
+    "learningChapter": "Đang học · Chương 3",
+    "watched": "Đã xem 72% · cần 90% để hoàn thành",
+    "autoComplete": "Tự hoàn thành bài học",
+    "paymentReceived": "Đã nhận thanh toán",
+    "paymentDetail": "Chuyển khoản QR · tự động mở khóa",
+    "eyebrow": "Về EduPlatform",
+    "title": "Nền tảng giúp bạn học đều đặn và thấy rõ mình tiến bộ",
+    "description": "Mọi thứ cần cho việc tự học online, gói gọn trong một nơi: từ chọn khóa, thanh toán, học bài đến theo dõi tiến độ.",
+    "explore": "Khám phá khóa học"
+  },
+  "About": {
+    "metaTitle": "Giới thiệu",
+    "metaDescription": "EduPlatform là nền tảng học trực tuyến giúp bạn học đều đặn, thanh toán dễ dàng và thấy rõ tiến độ.",
+    "eyebrow": "Về chúng tôi",
+    "title": "Học online đều đặn và thấy rõ mình tiến bộ",
+    "description": "EduPlatform gói gọn mọi thứ cần cho việc tự học: chọn khóa, thanh toán, học bài và theo dõi tiến độ.",
+    "storyEyebrow": "Câu chuyện",
+    "storyTitle": "Bắt đầu từ một câu hỏi: vì sao học online hay bỏ dở?",
+    "storyParagraph1": "Mua khóa học thì dễ, học hết mới khó. Video dài, không biết mình đã học tới đâu, tích \"đã học\" cho có mà thật ra chưa xem. EduPlatform được làm ra để giải quyết đúng những chuyện đó.",
+    "storyParagraph2": "Bài giảng chia nhỏ theo chương, tiến độ tính theo thời gian xem thật, thanh toán xong là vào học ngay. Học viên thấy rõ mình đang ở đâu, giảng viên biết khóa học của mình được đón nhận ra sao.",
+    "valueItems": {
+      "mission": {
+        "title": "Sứ mệnh",
+        "description": "Giúp người tự học online đi hết khóa học, không bỏ dở giữa chừng."
+      },
+      "vision": {
+        "title": "Tầm nhìn",
+        "description": "Một nơi người Việt chọn khóa, học và theo dõi tiến bộ của mình thật đơn giản."
+      },
+      "values": {
+        "title": "Giá trị",
+        "description": "Minh bạch: tiến độ đúng thực tế, đánh giá từ học viên thật, giá hiển thị rõ ràng."
+      }
+    },
+    "highlightsEyebrow": "Điểm nổi bật",
+    "highlightsTitle": "Mọi thứ bạn cần để tự học hiệu quả",
+    "highlightsDescription": "Chỉ những tính năng đang chạy thật trên nền tảng",
+    "stepsEyebrow": "Cách hoạt động",
+    "stepsTitle": "Bắt đầu học chỉ với 4 bước",
+    "stepItems": {
+      "signUp": {
+        "title": "Tạo tài khoản",
+        "description": "Đăng ký miễn phí bằng email, vào học được ngay."
+      },
+      "buy": {
+        "title": "Chọn khóa & thanh toán",
+        "description": "Khóa miễn phí ghi danh 1 chạm. Khóa có phí trả bằng chuyển khoản QR hoặc PayPal."
+      },
+      "learn": {
+        "title": "Học & theo dõi tiến độ",
+        "description": "Xem đủ 90% video là bài tự hoàn thành, phần trăm khóa học cập nhật theo."
+      },
+      "review": {
+        "title": "Đánh giá khóa học",
+        "description": "Chấm sao và viết cảm nhận để giúp người học sau chọn đúng khóa."
+      }
+    },
+    "instructorEyebrow": "Dành cho giảng viên",
+    "instructorTitle": "Chia sẻ kiến thức của bạn",
+    "instructorPoints": {
+      "createCourse": "Tạo khóa học, chia chương và bài",
+      "uploadVideo": "Tải video bài giảng lên trực tiếp",
+      "submitReview": "Gửi duyệt trước khi xuất bản",
+      "trackRevenue": "Theo dõi học viên và doanh thu"
+    },
+    "instructorNote": "Tài khoản giảng viên do quản trị viên cấp quyền.",
+    "instructorCta": "Vào Dashboard giảng viên",
+    "faqEyebrow": "Hỏi đáp",
+    "faqTitle": "Câu hỏi thường gặp",
+    "faqDescription": "Chưa thấy câu trả lời? Xem thêm các bài hướng dẫn trên Blog.",
+    "faqGuides": "Hướng dẫn sử dụng",
+    "faqItems": {
+      "access": {
+        "question": "Mua khóa học rồi thì học được trong bao lâu?",
+        "answer": "Không giới hạn thời gian. Khóa đã ghi danh luôn nằm trong \"Khóa học của tôi\", bạn học lại lúc nào cũng được."
+      },
+      "payment": {
+        "question": "Có những cách thanh toán nào?",
+        "answer": "Chuyển khoản ngân hàng bằng mã QR (hệ thống tự nhận tiền và mở khóa trong ít phút) hoặc PayPal cho người học ở nước ngoài."
+      },
+      "transferPending": {
+        "question": "Tôi đã chuyển khoản nhưng khóa học chưa mở?",
+        "answer": "Hãy giữ nguyên nội dung chuyển khoản có mã đơn. Trang thanh toán tự kiểm tra lại mỗi vài giây; đơn đang chờ luôn xem được ở biểu tượng giỏ hàng trên đầu trang."
+      },
+      "completion": {
+        "question": "Khi nào một bài học được tính là đã học xong?",
+        "answer": "Khi bạn xem được ít nhất 90% thời lượng video. Tua nhanh không được tính, nên phần trăm hoàn thành luôn phản ánh đúng việc học thật."
+      },
+      "becomeInstructor": {
+        "question": "Làm sao để trở thành giảng viên?",
+        "answer": "Tài khoản giảng viên do quản trị viên cấp quyền. Sau đó bạn tạo khóa học, thêm chương, bài và video, rồi gửi duyệt trước khi khóa được xuất bản."
+      }
+    }
+  },
+  "Common": {
+    "pagination": "Phân trang",
+    "previousPage": "Trang trước",
+    "nextPage": "Trang sau",
+    "stars": "{value} trên 5 sao"
+  },
+  "Validation": {
+    "invalidEmail": "Email không hợp lệ",
+    "passwordMin": "Mật khẩu tối thiểu 8 kí tự",
+    "nameRequired": "Vui lòng nhập tên",
+    "invalidPhone": "Số điện thoại không hợp lệ",
+    "passwordMismatch": "Mật khẩu xác nhận không khớp",
+    "passwordRequired": "Vui lòng nhập mật khẩu",
+    "ratingRange": "Số sao từ 1 đến 5"
+  },
+  "Courses": {
+    "metaTitle": "Khóa học",
+    "metaDescription": "Khám phá các khóa học lập trình, thiết kế, marketing, khoa học dữ liệu trên EduPlatform",
+    "eyebrow": "Thư viện khóa học",
+    "title": "Khóa học",
+    "description": "Học theo tốc độ của bạn, từ cơ bản đến nâng cao.",
+    "loading": "Đang tải khóa học...",
+    "searchPlaceholder": "Tìm khóa học",
+    "category": "Danh mục",
+    "allCategories": "Tất cả danh mục",
+    "level": "Trình độ",
+    "allLevels": "Mọi trình độ",
+    "levels": {
+      "BEGINNER": "Cơ bản",
+      "INTERMEDIATE": "Trung cấp",
+      "ADVANCED": "Nâng cao",
+      "ALL_LEVELS": "Mọi trình độ"
+    },
+    "price": "Giá",
+    "allPrices": "Mọi mức giá",
+    "free": "Miễn phí",
+    "paid": "Có phí",
+    "sort": "Sắp xếp",
+    "sortNewest": "Mới nhất",
+    "sortPopular": "Nhiều học viên",
+    "sortPriceAsc": "Giá tăng dần",
+    "sortPriceDesc": "Giá giảm dần",
+    "clearFilters": "Xóa bộ lọc",
+    "loadError": "Không tải được danh sách khóa học. Vui lòng thử lại sau",
+    "emptyTitle": "Không tìm thấy khóa học phù hợp",
+    "emptyDescription": "Thử đổi từ khóa, bỏ bớt bộ lọc hoặc xem tất cả khóa học.",
+    "viewAll": "Xem tất cả khóa học",
+    "found": "Tìm thấy {count} khóa học",
+    "reviews": "{count} đánh giá",
+    "noReviews": "Chưa có đánh giá",
+    "lessons": "{count} bài học",
+    "students": "{count} học viên",
+    "viewDetail": "Xem chi tiết"
+  },
+  "CourseDetail": {
+    "notFound": "Không tìm thấy khóa học",
+    "metaDescription": "Khóa học {title} của {instructor} trên EduPlatform",
+    "loadError": "Không tải được khóa học. Vui lòng thử lại sau.",
+    "breadcrumb": "Đường dẫn",
+    "home": "Trang chủ",
+    "courses": "Khóa học",
+    "studentsLabel": "học viên",
+    "instructor": "Giảng viên",
+    "published": "Xuất bản {date}",
+    "price": "Học phí",
+    "levelInfo": "Trình độ <b>{level}</b>",
+    "lecturesInfo": "Tổng số <b>{count}</b> bài giảng",
+    "durationInfo": "Thời lượng <b>{duration}</b>",
+    "vietnamese": "Tiếng Việt",
+    "anytime": "Học mọi lúc, mọi nơi",
+    "about": "Giới thiệu khóa học",
+    "content": "Nội dung khóa học",
+    "reviews": "Đánh giá của học viên",
+    "noContent": "Khóa học chưa có nội dung.",
+    "curriculumSummary": "<b>{sections}</b> chương · <b>{lectures}</b> bài giảng · <b>{duration}</b>",
+    "collapseAll": "Thu gọn tất cả",
+    "expandAll": "Mở rộng tất cả",
+    "lessonCount": "{count} bài",
+    "preview": "Xem thử",
+    "noReviewsTitle": "Chưa có đánh giá nào",
+    "noReviewsDescription": "Hãy là người đầu tiên đánh giá sau khi học.",
+    "loginToBuy": "Đăng nhập để mua khóa học",
+    "loginToEnroll": "Đăng nhập để ghi danh",
+    "goToCourse": "Vào học",
+    "enrollSuccess": "Ghi danh thành công",
+    "buy": "Mua khóa học · {price}",
+    "enrollFree": "Ghi danh miễn phí"
+  },
+  "Review": {
+    "confirmDelete": "Xóa đánh giá của bạn cho khóa học này?",
+    "deleted": "Đã xóa đánh giá",
+    "writeTitle": "Đánh giá khóa học",
+    "editTitle": "Sửa đánh giá của bạn",
+    "yourReview": "Đánh giá của bạn",
+    "edit": "Sửa",
+    "delete": "Xóa",
+    "updated": "Đã cập nhật đánh giá",
+    "thanks": "Cảm ơn bạn đã đánh giá",
+    "ratingLabel": "Bạn đánh giá khóa học này bao nhiêu sao?",
+    "commentLabel": "Nhận xét (không bắt buộc)",
+    "commentPlaceholder": "Khóa học có dễ hiểu không? Bạn học được gì?",
+    "cancel": "Hủy",
+    "save": "Lưu thay đổi",
+    "submit": "Gửi đánh giá"
+  },
+  "Auth": {
+    "benefits": {
+      "ownPace": "Học theo tốc độ của bạn, xem lại bài bao nhiêu lần cũng được",
+      "trackProgress": "Theo dõi tiến độ từng bài, quay lại đúng chỗ đang học dở",
+      "realReviews": "Đánh giá thật từ học viên đã học khóa đó"
+    },
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "loginShellTitle": "Chào mừng bạn quay lại!",
+    "loginShellDescription": "Đăng nhập để tiếp tục các khóa học đang dang dở.",
+    "registerShellTitle": "Bắt đầu hành trình học của bạn",
+    "registerShellDescription": "Tạo tài khoản miễn phí, ghi danh khóa học và theo dõi tiến độ ngay hôm nay.",
+    "loginDescription": "Chào mừng bạn quay lại EduPlatform",
+    "registerDescription": "Tạo tài khoản để bắt đầu học trên EduPlatform",
+    "emailPlaceholder": "ban@email.com",
+    "password": "Mật khẩu",
+    "passwordPlaceholder": "Tối thiểu 8 ký tự",
+    "confirmPassword": "Nhập lại mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
+    "showPassword": "Hiện mật khẩu",
+    "name": "Họ tên",
+    "namePlaceholder": "Nguyễn Văn A",
+    "phone": "Số điện thoại",
+    "noAccount": "Chưa có tài khoản?",
+    "haveAccount": "Đã có tài khoản?",
+    "loggingOut": "Đang đăng xuất...",
+    "refreshing": "Đang làm mới phiên đăng nhập..."
+  },
+  "StarInput": {
+    "label": "Số sao",
+    "stars": "{count} sao",
+    "terrible": "Rất tệ",
+    "poor": "Tệ",
+    "average": "Bình thường",
+    "good": "Tốt",
+    "excellent": "Rất tốt"
   }
 }

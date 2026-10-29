@@ -1,8 +1,9 @@
 import Waves from '@/components/waves'
-import { BlogPost, blogCategories, formatBlogDate } from '@/content/blog'
+import { BlogPost, formatBlogDate, getBlogCategoryName } from '@/content/blog'
+import { Link } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
 import { ArrowRight, CalendarDays, Clock } from 'lucide-react'
-import { Link } from '@/i18n/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 
 // Ảnh bìa bài viết tự vẽ: gradient theo bài + sóng + icon lớn mờ (bài viết chưa có ảnh riêng)
 export function BlogCover({ post, size = 'md' }: { post: BlogPost; size?: 'md' | 'lg' }) {
@@ -27,6 +28,9 @@ export function BlogCover({ post, size = 'md' }: { post: BlogPost; size?: 'md' |
 
 // Thẻ 1 bài viết (trang /blog): ảnh bìa lọt lòng, chuyên mục, tiêu đề, tóm tắt, ngày + thời gian đọc
 export default function BlogCard({ post }: { post: BlogPost }) {
+  const t = useTranslations('Blog')
+  const locale = useLocale()
+
   return (
     <Link
       href={`/blog/${post.slug}`}
@@ -39,7 +43,7 @@ export default function BlogCard({ post }: { post: BlogPost }) {
       </div>
       <div className='flex flex-1 flex-col gap-2.5 px-1.5 pt-4 pb-1'>
         <span className='w-fit rounded-full bg-highlight/10 px-2.5 py-0.5 text-xs font-semibold text-highlight'>
-          {blogCategories[post.category]}
+          {getBlogCategoryName(post.category, locale)}
         </span>
         <h3 className='line-clamp-2 font-heading text-lg leading-snug font-semibold transition-colors group-hover:text-primary'>
           {post.title}
@@ -49,15 +53,15 @@ export default function BlogCard({ post }: { post: BlogPost }) {
           <span className='flex items-center gap-3'>
             <span className='flex items-center gap-1'>
               <CalendarDays className='size-3.5' />
-              {formatBlogDate(post.publishedAt)}
+              {formatBlogDate(post.publishedAt, locale)}
             </span>
             <span className='flex items-center gap-1'>
               <Clock className='size-3.5' />
-              {post.readingMinutes} phút đọc
+              {t('minRead', { minutes: post.readingMinutes })}
             </span>
           </span>
           <span className='flex items-center gap-1 text-sm font-medium text-primary'>
-            Đọc <ArrowRight className='size-4 transition-transform group-hover:translate-x-0.5' />
+            {t('read')} <ArrowRight className='size-4 transition-transform group-hover:translate-x-0.5' />
           </span>
         </div>
       </div>

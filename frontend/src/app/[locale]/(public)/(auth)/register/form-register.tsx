@@ -15,8 +15,12 @@ import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { Link, useRouter } from '@/i18n/navigation'
+import { useZodErrorTranslator } from '@/i18n/zod-errors'
+import { useTranslations } from 'next-intl'
 
 export default function RegisterForm() {
+  const t = useTranslations('Auth')
+  const translateError = useZodErrorTranslator()
   const registerMutation = useRegisterMutation()
   const { setRole } = useAppContext()
   const router = useRouter()
@@ -51,8 +55,8 @@ export default function RegisterForm() {
     // Hiện dần + trượt từ dưới lên khi mở trang
     <Card className='w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-300 motion-reduce:animate-none'>
       <CardHeader className='text-center'>
-        <CardTitle className='text-2xl'>Đăng ký</CardTitle>
-        <CardDescription>Tạo tài khoản để bắt đầu học trên EduPlatform</CardDescription>
+        <CardTitle className='text-2xl'>{t('register')}</CardTitle>
+        <CardDescription>{t('registerDescription')}</CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -65,15 +69,15 @@ export default function RegisterForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor='register-name'>Họ tên</FieldLabel>
+                  <FieldLabel htmlFor='register-name'>{t('name')}</FieldLabel>
                   <Input
                     {...field}
                     id='register-name'
-                    placeholder='Nguyễn Văn A'
+                    placeholder={t('namePlaceholder')}
                     autoComplete='name'
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && <FieldError errors={[translateError(fieldState.error)]} />}
                 </Field>
               )}
             />
@@ -88,11 +92,11 @@ export default function RegisterForm() {
                     {...field}
                     id='register-email'
                     type='email'
-                    placeholder='ban@email.com'
+                    placeholder={t('emailPlaceholder')}
                     autoComplete='email'
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && <FieldError errors={[translateError(fieldState.error)]} />}
                 </Field>
               )}
             />
@@ -102,7 +106,7 @@ export default function RegisterForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor='register-phone'>Số điện thoại</FieldLabel>
+                  <FieldLabel htmlFor='register-phone'>{t('phone')}</FieldLabel>
                   {/* type='tel' chứ không phải 'number': số điện thoại là chuỗi (giữ số 0 đầu),
                       không có mũi tên tăng/giảm. inputMode: điện thoại hiện bàn phím số */}
                   <Input
@@ -114,7 +118,7 @@ export default function RegisterForm() {
                     autoComplete='tel'
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && <FieldError errors={[translateError(fieldState.error)]} />}
                 </Field>
               )}
             />
@@ -124,14 +128,14 @@ export default function RegisterForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor='register-password'>Mật khẩu</FieldLabel>
+                  <FieldLabel htmlFor='register-password'>{t('password')}</FieldLabel>
                   <div className='relative'>
                     {/* new-password: trình duyệt gợi ý mật khẩu mạnh và lưu đúng mật khẩu mới */}
                     <Input
                       {...field}
                       id='register-password'
                       type={showPassword ? 'text' : 'password'}
-                      placeholder='Tối thiểu 8 ký tự'
+                      placeholder={t('passwordPlaceholder')}
                       autoComplete='new-password'
                       aria-invalid={fieldState.invalid}
                       className='pr-9'
@@ -140,12 +144,12 @@ export default function RegisterForm() {
                       type='button'
                       onClick={() => setShowPassword((prev) => !prev)}
                       className='absolute inset-y-0 right-0 flex w-9 items-center justify-center text-muted-foreground hover:text-foreground'
-                      aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                      aria-label={showPassword ? t('hidePassword') : t('showPassword')}
                     >
                       {showPassword ? <EyeOff className='size-4' /> : <Eye className='size-4' />}
                     </button>
                   </div>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && <FieldError errors={[translateError(fieldState.error)]} />}
                 </Field>
               )}
             />
@@ -155,17 +159,17 @@ export default function RegisterForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor='register-confirm-password'>Nhập lại mật khẩu</FieldLabel>
+                  <FieldLabel htmlFor='register-confirm-password'>{t('confirmPassword')}</FieldLabel>
                   {/* Dùng chung showPassword với ô trên: bấm 👁 là hiện cả 2 ô */}
                   <Input
                     {...field}
                     id='register-confirm-password'
                     type={showPassword ? 'text' : 'password'}
-                    placeholder='Nhập lại mật khẩu'
+                    placeholder={t('confirmPassword')}
                     autoComplete='new-password'
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && <FieldError errors={[translateError(fieldState.error)]} />}
                 </Field>
               )}
             />
@@ -177,12 +181,12 @@ export default function RegisterForm() {
         {/* form='form-register': nút nằm ngoài thẻ <form> vẫn submit được form đó */}
         <Button type='submit' form='form-register' className='w-full' disabled={registerMutation.isPending}>
           {registerMutation.isPending && <Loader2 className='animate-spin' />}
-          Đăng ký
+          {t('register')}
         </Button>
         <p className='text-sm text-muted-foreground'>
-          Đã có tài khoản?{' '}
+          {t('haveAccount')}{' '}
           <Link href='/login' className='font-medium text-foreground underline-offset-4 hover:underline'>
-            Đăng nhập
+            {t('login')}
           </Link>
         </p>
       </CardFooter>

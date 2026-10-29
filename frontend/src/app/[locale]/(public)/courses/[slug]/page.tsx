@@ -7,14 +7,13 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import Waves from '@/components/waves'
 import { getCategoryStyle } from '@/constants/category'
-import { CourseLevelLabels } from '@/constants/type'
 import { formatDate, formatDuration, formatPrice, generateSlugUrl, getIdFromSlugUrl } from '@/lib/format'
 import { HttpError } from '@/lib/http'
 import { cn } from '@/lib/utils'
 import { BarChart3, Clock, Globe, House, Infinity as InfinityIcon, PlayCircle, Users } from 'lucide-react'
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
-import { getLocale } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { cache, Suspense } from 'react'
 import CourseReviews from './course-reviews'
@@ -37,13 +36,15 @@ const getCourse = cache(async (id: number) => {
 // title 'React...' + template '%s | EduPlatform' ở layout gốc → tab hiện 'React... | EduPlatform'
 export async function generateMetadata({ params }: PageProps<'/[locale]/courses/[slug]'>): Promise<Metadata> {
   const id = getIdFromSlugUrl((await params).slug)
-  const notFoundMetadata: Metadata = { title: 'Không tìm thấy khóa học' }
+  const t = await getTranslations('CourseDetail')
+  const notFoundMetadata: Metadata = { title: t('notFound') }
   if (!Number.isInteger(id) || id <= 0) return notFoundMetadata
 
   try {
     const course = (await getCourse(id)).payload.data
     // Không có subtitle → tự viết 1 câu mô tả để Google vẫn có đoạn mô tả
-    const description = course.subtitle || `Khóa học ${course.title} của ${course.instructor.name} trên EduPlatform`
+    const description =
+      course.subtitle || t('metaDescription', { title: course.title, instructor: course.instructor.name })
     return {
       title: course.title,
       description,
@@ -74,6 +75,11 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
   // params cũng là Promise phải await
 
   const { slug } = await params
+  const [t, tCourses, locale] = await Promise.all([
+    getTranslations('CourseDetail'),
+    getTranslations('Courses'),
+    getLocale()
+  ])
   // 2. 'react-tu-co-ban-den-nang-cao-i.15' → 15
   const id = getIdFromSlugUrl(slug)
   // 3. Slug bậy (/courses/abc → NaN) → hiện trang 404 của Next, KHÔNG gọi API
@@ -97,7 +103,7 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
     // Lỗi khác (backend sập, 500...) → báo lỗi, header / footer vẫn còn
     return (
       <p className='rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive'>
-        Không tải được khóa học. Vui lòng thử lại sau.
+        {t('loadError')}
       </p>
     )
   }
@@ -110,7 +116,7 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
   // 5. Slug sai chữ nhưng đúng id (gõ tay, link cũ trước khi khóa đổi tên...) → chuyển về URL chuẩn.
   //    Mỗi khóa chỉ có ĐÚNG 1 URL → Google không coi là nội dung trùng lặp
   const canonicalSlug = generateSlugUrl({ name: course.title, id: course.id })
-  if (slug !== canonicalSlug) redirect({ href: `/courses/${canonicalSlug}`, locale: await getLocale() })
+  if (slug !== canonicalSlug) redirect({ href: `/courses/${canonicalSlug}`, locale })
 
   // Icon danh mục (cùng icon với ô danh mục ở trang chủ và ảnh bìa)
   const { Icon: CategoryIcon } = getCategoryStyle(course.category)
@@ -125,14 +131,14 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
         <Waves className='h-1/4' />
 
         {/* Đường dẫn: bấm danh mục → /courses đã lọc sẵn danh mục đó (bộ lọc nằm trên URL) */}
-        <nav className='relative flex flex-wrap items-center gap-2 text-sm text-white/80' aria-label='Đường dẫn'>
+        <nav className='relative flex flex-wrap items-center gap-2 text-sm text-white/80' aria-label={t('breadcrumb')}>
           <Link href='/' className='flex items-center gap-1 hover:text-white'>
             <House className='size-3.5' />
-            Trang chủ
+            {t('home')}
           </Link>
           <span>/</span>
           <Link href='/courses' className='hover:text-white'>
-            Khóa học
+            {t('courses')}
           </Link>
           <span>/</span>
           <Link href={`/courses?categoryId=${course.category.id}`} className='hover:text-white'>
@@ -147,7 +153,7 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
             {course.category.name}
           </span>
           <span className='rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm'>
-            {CourseLevelLabels[course.level]}
+            {tCourses(`levels.${course.level}`)}
           </span>
         </div>
 
@@ -159,15 +165,15 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
             <span className='flex items-center gap-1.5'>
               <RatingStars value={course.rating.averageRating} emptyClassName='text-white/40' />
               <span className='font-semibold'>{course.rating.averageRating}</span>
-              <span className='text-white/80'>({course.rating.totalReviews} đánh giá)</span>
+              <span className='text-white/80'>({tCourses('reviews', { count: course.rating.totalReviews })})</span>
             </span>
           ) : (
-            <span className='text-white/80'>Chưa có đánh giá</span>
+            <span className='text-white/80'>{tCourses('noReviews')}</span>
           )}
           <span className='flex items-center gap-1.5'>
             <Users className='size-4 text-white/80' />
             <span className='font-semibold'>{course.studentCount}</span>
-            <span className='text-white/80'>học viên</span>
+            <span className='text-white/80'>{t('studentsLabel', { count: course.studentCount })}</span>
           </span>
         </div>
 
@@ -177,11 +183,11 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
             <AvatarFallback className='text-foreground'>{course.instructor.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className='flex flex-col'>
-            <span className='text-white/80'>Giảng viên</span>
+            <span className='text-white/80'>{t('instructor')}</span>
             <span className='font-medium'>{course.instructor.name}</span>
           </div>
           <span className='ml-2 border-l border-white/30 pl-4 text-white/80'>
-            Xuất bản {formatDate(course.publishedAt)}
+            {t('published', { date: formatDate(course.publishedAt, locale) })}
           </span>
         </div>
       </section>
@@ -200,10 +206,10 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
 
           <div className='flex flex-col items-center gap-4 px-3 pt-5 pb-3'>
             <div className='flex flex-col items-center'>
-              <span className='text-sm text-muted-foreground'>Học phí</span>
+              <span className='text-sm text-muted-foreground'>{t('price')}</span>
               {/* Có phí: màu san hô (giống giá trên thẻ khóa học). Miễn phí: xanh thương hiệu */}
               <span className={cn('text-3xl font-bold', course.price > 0 ? 'text-highlight' : 'text-primary')}>
-                {formatPrice(course.price)}
+                {formatPrice(course.price, locale)}
               </span>
             </div>
 
@@ -214,28 +220,37 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
               <li className='flex items-center gap-3'>
                 <BarChart3 className='size-4 shrink-0 text-primary' />
                 <span>
-                  Trình độ <span className='font-semibold'>{CourseLevelLabels[course.level]}</span>
+                  {t.rich('levelInfo', {
+                    level: tCourses(`levels.${course.level}`),
+                    b: (chunks) => <span className='font-semibold'>{chunks}</span>
+                  })}
                 </span>
               </li>
               <li className='flex items-center gap-3'>
                 <PlayCircle className='size-4 shrink-0 text-primary' />
                 <span>
-                  Tổng số <span className='font-semibold'>{course.totalLectures}</span> bài giảng
+                  {t.rich('lecturesInfo', {
+                    count: course.totalLectures,
+                    b: (chunks) => <span className='font-semibold'>{chunks}</span>
+                  })}
                 </span>
               </li>
               <li className='flex items-center gap-3'>
                 <Clock className='size-4 shrink-0 text-primary' />
                 <span>
-                  Thời lượng <span className='font-semibold'>{formatDuration(course.totalDurationSec)}</span>
+                  {t.rich('durationInfo', {
+                    duration: formatDuration(course.totalDurationSec, locale),
+                    b: (chunks) => <span className='font-semibold'>{chunks}</span>
+                  })}
                 </span>
               </li>
               <li className='flex items-center gap-3'>
                 <Globe className='size-4 shrink-0 text-primary' />
-                {course.language === 'vi' ? 'Tiếng Việt' : course.language}
+                {course.language === 'vi' ? t('vietnamese') : course.language}
               </li>
               <li className='flex items-center gap-3'>
                 <InfinityIcon className='size-4 shrink-0 text-primary' />
-                Học mọi lúc, mọi nơi
+                {t('anytime')}
               </li>
             </ul>
           </div>
@@ -246,13 +261,13 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
         {/* ===== ③ Giới thiệu =====
             whitespace-pre-line: giữ xuống dòng (\n) trong mô tả, không thì cả đoạn dính thành 1 dòng */}
         <section className='flex flex-col gap-3'>
-          <h2 className={sectionTitle}>Giới thiệu khóa học</h2>
+          <h2 className={sectionTitle}>{t('about')}</h2>
           <p className='whitespace-pre-line leading-relaxed text-muted-foreground'>{course.description}</p>
         </section>
 
         {/* ===== ④ Mục lục ===== */}
         <section className='flex flex-col gap-3'>
-          <h2 className={sectionTitle}>Nội dung khóa học</h2>
+          <h2 className={sectionTitle}>{t('content')}</h2>
           <Curriculum
             sections={course.sections}
             totalLectures={course.totalLectures}
@@ -263,7 +278,7 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
         {/* ===== ⑤ Đánh giá ===== */}
         <section className='flex flex-col gap-3'>
           <div className='flex items-center gap-2'>
-            <h2 className={sectionTitle}>Đánh giá của học viên</h2>
+            <h2 className={sectionTitle}>{t('reviews')}</h2>
             {course.rating.totalReviews > 0 && <Badge variant='secondary'>{course.rating.totalReviews}</Badge>}
           </div>
           {/* Chỉ người ĐÃ GHI DANH mới viết / sửa / xóa đánh giá (backend cũng chặn: 403).

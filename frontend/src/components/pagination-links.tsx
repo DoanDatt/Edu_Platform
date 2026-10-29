@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
 
 export type SearchParams = Record<string, string | string[] | undefined>
 
@@ -18,6 +19,7 @@ export default function PaginationLinks({
   totalPages: number
   searchParams: SearchParams // tham số đang có trên URL, để giữ bộ lọc khi chuyển trang
 }) {
+  const t = useTranslations('Common')
   if (totalPages <= 1) return null
 
   // Link tới trang n: GIỮ NGUYÊN mọi bộ lọc trên URL, chỉ đổi page
@@ -41,9 +43,9 @@ export default function PaginationLinks({
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
 
   return (
-    <nav aria-label='Phân trang' className='flex items-center justify-center gap-1'>
+    <nav aria-label={t('pagination')} className='flex items-center justify-center gap-1'>
       <Button asChild variant={'outline'} size={'icon'} className={page <= 1 ? 'pointer-events-none opacity-50' : ''}>
-        <Link href={hrefFor(page - 1)} aria-label='Trang trước'>
+        <Link href={hrefFor(page - 1)} aria-label={t('previousPage')}>
           <ChevronLeft />
         </Link>
       </Button>
@@ -60,7 +62,7 @@ export default function PaginationLinks({
         size={'icon'}
         className={page >= totalPages ? 'pointer-events-none opacity-50' : ''}
       >
-        <Link href={hrefFor(page + 1)} aria-label='Trang sau'>
+        <Link href={hrefFor(page + 1)} aria-label={t('nextPage')}>
           <ChevronRight />
         </Link>
       </Button>

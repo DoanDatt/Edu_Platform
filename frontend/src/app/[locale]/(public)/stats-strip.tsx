@@ -1,6 +1,7 @@
 import courseApiRequest from '@/apiRequests/course'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BookOpen, LucideIcon, Star, UserRound, Users } from 'lucide-react'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 // Dải số liệu ngay dưới banner: số THẬT, tính từ danh sách khóa học công khai (không bịa số cho đẹp).
 // Backend chưa có API thống kê công khai → lấy tối đa 100 khóa rồi tự cộng (đủ cho quy mô hiện tại)
@@ -10,6 +11,8 @@ export default async function StatsStrip() {
     .then((res) => res.payload)
     .catch(() => null)
   if (!result || result.totalItems === 0) return null
+  const [t, locale] = await Promise.all([getTranslations('Stats'), getLocale()])
+  const formatNumber = (value: number) => value.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN')
 
   const courses = result.data
   const enrollments = courses.reduce((sum, course) => sum + course.studentCount, 0)
@@ -20,15 +23,15 @@ export default async function StatsStrip() {
   const averageRating = totalReviews > 0 ? (ratingSum / totalReviews).toFixed(1) : null
 
   const stats: { Icon: LucideIcon; value: string; label: string }[] = [
-    { Icon: BookOpen, value: result.totalItems.toLocaleString('vi-VN'), label: 'Khóa học' },
-    { Icon: Users, value: enrollments.toLocaleString('vi-VN'), label: 'Lượt ghi danh' },
-    { Icon: UserRound, value: instructors.toLocaleString('vi-VN'), label: 'Giảng viên' },
-    ...(averageRating ? [{ Icon: Star, value: `${averageRating}/5`, label: 'Đánh giá trung bình' }] : [])
+    { Icon: BookOpen, value: formatNumber(result.totalItems), label: t('courses') },
+    { Icon: Users, value: formatNumber(enrollments), label: t('enrollments') },
+    { Icon: UserRound, value: formatNumber(instructors), label: t('instructors') },
+    ...(averageRating ? [{ Icon: Star, value: `${averageRating}/5`, label: t('averageRating') }] : [])
   ]
 
   return (
     <section
-      aria-label='Số liệu nền tảng'
+      aria-label={t('label')}
       className='grid grid-cols-2 gap-4 rounded-3xl border bg-card p-5 shadow-xl shadow-blue-900/10 md:grid-cols-4 md:p-6'
     >
       {stats.map(({ Icon, value, label }) => (

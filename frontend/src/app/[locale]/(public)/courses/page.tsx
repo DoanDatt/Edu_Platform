@@ -1,13 +1,14 @@
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 import CourseList from './course-list'
 import { Suspense } from 'react'
 import CourseFilters from './course-filter'
 import categoryApiRequest from '@/apiRequests/category'
 import PageBanner from '@/components/page-banner'
 
-export const metadata: Metadata = {
-  title: 'Khóa học',
-  description: 'Khám phá các khóa học lập trình, thiết kế, marketing, khoa học dữ liệu trên EduPlatform'
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('Courses')
+  return { title: t('metaTitle'), description: t('metaDescription') }
 }
 
 async function CategoryFilters() {
@@ -21,14 +22,11 @@ async function CategoryFilters() {
 }
 
 async function CoursesPage({ searchParams }: PageProps<'/[locale]/courses'>) {
+  const t = await getTranslations('Courses')
   return (
     <div className='flex flex-col gap-6'>
       {/* ===== Tiêu đề ===== */}
-      <PageBanner
-        eyebrow='Thư viện khóa học'
-        title='Khóa học'
-        description='Học theo tốc độ của bạn, từ cơ bản đến nâng cao.'
-      />
+      <PageBanner eyebrow={t('eyebrow')} title={t('title')} description={t('description')} />
 
       {/* ===== Bộ lọc (chưa hoạt động) ===== */}
       <Suspense fallback={<div className='h-10' />}>
@@ -36,7 +34,7 @@ async function CoursesPage({ searchParams }: PageProps<'/[locale]/courses'>) {
       </Suspense>
 
       {/* ===== Danh sách ===== */}
-      <Suspense fallback={<p className='text-muted-foreground'>Đang tải khóa học...</p>}>
+      <Suspense fallback={<p className='text-muted-foreground'>{t('loading')}</p>}>
         <CourseList searchParams={searchParams} />
       </Suspense>
     </div>

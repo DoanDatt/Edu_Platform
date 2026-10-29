@@ -13,6 +13,7 @@ import categoryApiRequest from '@/apiRequests/category'
 import { Button } from '@/components/ui/button'
 import { Gift } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
 
 // Layout chung cho các trang công khai: (public) là route group, KHÔNG có trong URL.
 // Bố cục:
@@ -22,29 +23,35 @@ import { Link } from '@/i18n/navigation'
 //   │  footer                                                                                  │
 // Màn hình nhỏ hơn lg: menu tầng dưới chuyển vào menu trượt (MobileNav)
 
+// Khóa dịch trong namespace "Footer" (messages/*.json): gõ sai khóa là TypeScript báo lỗi
+type FooterKey = Parameters<ReturnType<typeof useTranslations<'Footer'>>>[0]
+
 // Các cột link ở footer (dùng lại bộ lọc có sẵn của trang /courses)
-const footerLinks = [
+const footerLinks: { title: FooterKey; links: { label: FooterKey; href: string }[] }[] = [
   {
-    title: 'Khám phá',
+    title: 'explore',
     links: [
-      { label: 'Tất cả khóa học', href: '/courses' },
-      { label: 'Khóa miễn phí', href: '/courses?price=free' },
-      { label: 'Học nhiều nhất', href: '/courses?sort=popular' },
-      { label: 'Blog', href: '/blog' },
-      { label: 'Giới thiệu', href: '/about' }
+      { label: 'allCourses', href: '/courses' },
+      { label: 'freeCourses', href: '/courses?price=free' },
+      { label: 'popularCourses', href: '/courses?sort=popular' },
+      { label: 'blog', href: '/blog' },
+      { label: 'about', href: '/about' }
     ]
   },
   {
-    title: 'Tài khoản',
+    title: 'account',
     links: [
-      { label: 'Đăng nhập', href: '/login' },
-      { label: 'Đăng ký', href: '/register' },
-      { label: 'Khóa của tôi', href: '/my-courses' }
+      { label: 'login', href: '/login' },
+      { label: 'register', href: '/register' },
+      { label: 'myCourses', href: '/my-courses' }
     ]
   }
 ]
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
+  const t = useTranslations('Header')
+  const tFooter = useTranslations('Footer')
+
   return (
     // overflow-x-clip: khối tràn ngang (banner trang chủ dùng w-screen) không làm trang bị cuộn ngang.
     // Dùng clip chứ không dùng hidden: hidden tạo khung cuộn mới → header sticky bên trong hết dính
@@ -73,7 +80,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             >
               <Link href='/courses?price=free'>
                 <Gift />
-                Học miễn phí
+                {t('learnFree')}
               </Link>
             </Button>
             {/* Dưới lg: nút mở menu trượt (có ô tìm kiếm + menu) */}
@@ -82,7 +89,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         </div>
 
         {/* ===== Tầng dưới (máy tính): menu chính có menu con xổ xuống ===== */}
-        <nav className='hidden border-t lg:block' aria-label='Điều hướng chính'>
+        <nav className='hidden border-t lg:block' aria-label={t('mainNav')}>
           {/* relative: tấm menu lớn (Khóa học, Blog) định vị theo khung này → canh giữa cả thanh menu */}
           <div className='relative mx-auto w-full max-w-7xl px-4 md:px-6'>
             {/* MainMenu dùng usePathname(): ở route động pathname chỉ biết lúc chạy → bọc Suspense.
@@ -105,20 +112,18 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className='mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 text-sm md:grid-cols-[2fr_1fr_1fr] md:px-6'>
           <div className='flex max-w-sm flex-col gap-3'>
             <Logo />
-            <p className='text-muted-foreground'>
-              Học lập trình, thiết kế, marketing, khoa học dữ liệu theo tốc độ của riêng bạn. Mọi lúc, mọi nơi.
-            </p>
+            <p className='text-muted-foreground'>{tFooter('tagline')}</p>
           </div>
           {footerLinks.map((group) => (
-            <nav key={group.title} aria-label={group.title} className='flex flex-col gap-2.5'>
-              <h3 className='font-semibold'>{group.title}</h3>
+            <nav key={group.title} aria-label={tFooter(group.title)} className='flex flex-col gap-2.5'>
+              <h3 className='font-semibold'>{tFooter(group.title)}</h3>
               {group.links.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   className='w-fit text-muted-foreground transition-colors hover:text-primary'
                 >
-                  {link.label}
+                  {tFooter(link.label)}
                 </Link>
               ))}
             </nav>
@@ -126,7 +131,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         </div>
         <div className='border-t'>
           <p className='mx-auto w-full max-w-7xl px-4 py-4 text-xs text-muted-foreground md:px-6'>
-            © 2026 EduPlatform · Dự án cá nhân, thiết kế và phát triển bởi Đoàn Công Đạt
+            {tFooter('copyright')}
           </p>
         </div>
       </footer>

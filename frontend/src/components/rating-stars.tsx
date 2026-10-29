@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import { Star } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 // 5 ngôi sao, tô vàng theo điểm (làm tròn): 4.5 → 5 sao vàng, 3.4 → 3 sao vàng
 // Dùng chung cho thẻ khóa học, đầu trang chi tiết, khối đánh giá
@@ -13,10 +14,11 @@ export default function RatingStars({
   className?: string
   emptyClassName?: string
 }) {
+  const t = useTranslations('Common')
   const filled = Math.round(value)
   return (
     // aria-label: trình đọc màn hình đọc "4.5 trên 5 sao" thay vì 5 icon vô nghĩa
-    <span className='inline-flex items-center gap-0.5' aria-label={`${value} trên 5 sao`}>
+    <span className='inline-flex items-center gap-0.5' aria-label={t('stars', { value })}>
       {[1, 2, 3, 4, 5].map((star) => (
         <Star
           key={star}

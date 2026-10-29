@@ -8,6 +8,8 @@ import { generateSlugUrl } from '@/lib/format'
 import { FeaturedReviewType } from '@/schemaValidations/review.schema'
 import { Quote } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 
 // Ít nhất chừng này thẻ cho MỖI nửa băng chạy: ít đánh giá quá thì lặp lại danh sách cho đủ dài,
 // không thì băng ngắn hơn màn hình → lộ khoảng trống khi chạy
@@ -28,17 +30,14 @@ export default async function TestimonialMarquee() {
 
   // Ít quá thì nhìn trống trải, giống web chưa ai dùng → ẩn cả khối
   if (reviews.length < 2) return null
+  const t = await getTranslations('Testimonials')
 
   const half: FeaturedReviewType[] = []
   while (half.length < MIN_CARDS_PER_HALF) half.push(...reviews)
 
   return (
     <section className='flex flex-col gap-8'>
-      <SectionHeading
-        eyebrow='Cảm nhận'
-        title='Học viên nói gì về EduPlatform'
-        description='Đánh giá thật từ học viên đã học khóa đó'
-      />
+      <SectionHeading eyebrow={t('eyebrow')} title={t('title')} description={t('description')} />
       {/* Băng chạy hết chiều ngang màn hình (FullBleed, bỏ giới hạn 7xl của phần nội dung), mờ dần ở 2 mép */}
       <FullBleed innerClassName='max-w-none px-0'>
         <div className='group overflow-hidden mask-x-from-90% mask-x-to-100% motion-reduce:overflow-x-auto'>
@@ -63,6 +62,8 @@ export default async function TestimonialMarquee() {
 }
 
 function TestimonialCard({ review, hidden = false }: { review: FeaturedReviewType; hidden?: boolean }) {
+  const t = useTranslations('Testimonials')
+
   return (
     <figure
       aria-hidden={hidden || undefined}
@@ -84,7 +85,7 @@ function TestimonialCard({ review, hidden = false }: { review: FeaturedReviewTyp
             href={`/courses/${generateSlugUrl({ name: review.course.title, id: review.course.id })}`}
             className='truncate text-xs text-muted-foreground hover:text-primary'
           >
-            Học viên khóa {review.course.title}
+            {t('studentOf', { course: review.course.title })}
           </Link>
         </div>
       </figcaption>

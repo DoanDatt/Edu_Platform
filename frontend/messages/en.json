@@ -4,5 +4,452 @@
   },
   "LocaleSwitcher": {
     "label": "Change language"
+  },
+  "Menu": {
+    "home": "Home",
+    "courses": "Courses",
+    "dashboard": "Dashboard",
+    "blog": "Blog",
+    "about": "About us",
+    "login": "Log in",
+    "register": "Sign up",
+    "badgeFree": "Free",
+    "badgeHot": "Hot",
+    "badgeNew": "New",
+    "badgeFaq": "FAQ",
+    "aboutUs": "About us",
+    "support": "Support",
+    "ourStory": "The EduPlatform story",
+    "highlights": "Highlights",
+    "howItWorks": "How learning works",
+    "forInstructors": "For instructors",
+    "faq": "FAQ",
+    "buyGuide": "How to buy a course",
+    "progressGuide": "How progress is tracked",
+    "signUp": "Create an account",
+    "aboutTagline": "Learn online consistently and see your progress every day.",
+    "aboutTotals": "{courses, plural, one {# course} other {# courses}} · {topics, plural, one {# topic} other {# topics}}",
+    "learnMore": "Learn more",
+    "dashboardOf": "{role} dashboard",
+    "roleStudent": "Student",
+    "roleInstructor": "Instructor",
+    "roleAdmin": "Admin",
+    "studentGuestNote": "Sign up for free to learn and track your progress.",
+    "instructorGuestNote": "For instructor accounts (granted by an administrator).",
+    "myCourses": "My courses",
+    "purchaseHistory": "Purchase history",
+    "pendingOrders": "Pending payments",
+    "accountInfo": "Account details",
+    "changePassword": "Change password",
+    "instructorOverview": "Overview & revenue",
+    "instructorCourses": "My courses",
+    "createCourse": "Create a new course",
+    "adminDashboard": "Dashboard",
+    "reviewCourses": "Review courses",
+    "allCourses": "All courses",
+    "categories": "Categories",
+    "users": "Users",
+    "freeCourses": "Free courses",
+    "popularCourses": "Most popular",
+    "newestCourses": "New releases",
+    "paidCourses": "Paid courses",
+    "priceLowToHigh": "Price: low to high",
+    "blogCategories": "Categories",
+    "allPosts": "All posts",
+    "postCount": "{count, plural, one {# post} other {# posts}}",
+    "latestPosts": "Latest posts",
+    "promoTitle": "Level up your skills",
+    "promoText": "Start with our free courses today.",
+    "promoCta": "Start learning",
+    "libraryTitle": "Course library",
+    "libraryText": "{courses, plural, one {# course} other {# courses}} across {topics, plural, one {# topic} other {# topics}}, from beginner to advanced.",
+    "libraryFallback": "Courses from beginner to advanced, at your own pace.",
+    "exploreNow": "Explore now",
+    "explore": "Explore",
+    "byTopic": "By topic",
+    "courseCount": "{count, plural, one {# course} other {# courses}}"
+  },
+  "Blog": {
+    "metaTitle": "Blog",
+    "metaDescription": "Learning roadmaps, online study tips and EduPlatform how-to guides",
+    "eyebrow": "EduPlatform Blog",
+    "title": "Knowledge & learning experiences",
+    "description": "Learning roadmaps, tips for studying online and guides to using the platform.",
+    "all": "All",
+    "categories": "Categories",
+    "read": "Read",
+    "minRead": "{minutes} min read",
+    "allPosts": "All posts",
+    "related": "Related posts",
+    "notFound": "Post not found"
+  },
+  "Header": {
+    "learnFree": "Learn for free",
+    "mainNav": "Main navigation",
+    "openMenu": "Open menu",
+    "navigationMenu": "Navigation menu",
+    "login": "Log in",
+    "register": "Sign up",
+    "filterByCategory": "Filter by category",
+    "allCategories": "All categories",
+    "searchPlaceholder": "Search courses...",
+    "searchLabel": "Search courses",
+    "search": "Search",
+    "pendingOrdersCount": "{count, plural, one {# pending payment} other {# pending payments}}",
+    "orders": "Orders",
+    "pendingOrders": "Pending payments",
+    "toggleTheme": "Toggle light / dark mode"
+  },
+  "Footer": {
+    "tagline": "Learn programming, design, marketing and data science at your own pace. Anytime, anywhere.",
+    "explore": "Explore",
+    "account": "Account",
+    "allCourses": "All courses",
+    "freeCourses": "Free courses",
+    "popularCourses": "Most popular",
+    "blog": "Blog",
+    "about": "About us",
+    "login": "Log in",
+    "register": "Sign up",
+    "myCourses": "My courses",
+    "copyright": "© 2026 EduPlatform · A personal project, designed and built by Đoàn Công Đạt"
+  },
+  "Nav": {
+    "home": "Home",
+    "courses": "Courses",
+    "myCourses": "My courses",
+    "teaching": "Teaching",
+    "admin": "Admin",
+    "blog": "Blog",
+    "about": "About us"
+  },
+  "Account": {
+    "roles": {
+      "ADMIN": "Administrator",
+      "INSTRUCTOR": "Instructor",
+      "STUDENT": "Student"
+    },
+    "logoutSuccess": "Logged out successfully",
+    "openMenu": "Open account menu",
+    "avatar": "Avatar",
+    "profile": "Account details",
+    "purchaseHistory": "Purchase history",
+    "changePassword": "Change password",
+    "logout": "Log out"
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "labelUnread": "Notifications, {count} unread",
+    "markAllRead": "Mark all as read",
+    "loadError": "Could not load notifications.",
+    "empty": "No notifications yet",
+    "unread": "Unread"
+  },
+  "Home": {
+    "h1": "EduPlatform: learn programming, design and marketing online",
+    "popularEyebrow": "Featured",
+    "popularTitle": "Most loved courses",
+    "popularDescription": "The courses with the most enrollments on EduPlatform",
+    "freeEyebrow": "Free",
+    "freeTitle": "Start without spending a cent",
+    "freeDescription": "Create an account and start learning right away",
+    "viewAllCourses": "View all courses"
+  },
+  "Hero": {
+    "badge": "An online learning platform made in Vietnam",
+    "titleStart": "Learn step by step,",
+    "titleHighlight": "go further",
+    "titleEnd": "every day",
+    "description": "Programming, design, marketing, data science. Learn at your own pace, track progress lesson by lesson, and read honest reviews from real students.",
+    "searchPlaceholder": "What do you want to learn today?",
+    "searchLabel": "Search courses",
+    "search": "Search",
+    "suggestions": "Try:",
+    "quickFree": "Free courses",
+    "quickPopular": "Most popular",
+    "quickNewest": "New releases",
+    "reviews": "{count, plural, one {# review} other {# reviews}}",
+    "students": "{count, plural, one {# student} other {# students}}",
+    "enrolled": "currently enrolled"
+  },
+  "Stats": {
+    "label": "Platform statistics",
+    "courses": "Courses",
+    "enrollments": "Enrollments",
+    "instructors": "Instructors",
+    "averageRating": "Average rating"
+  },
+  "Testimonials": {
+    "eyebrow": "Testimonials",
+    "title": "What students say about EduPlatform",
+    "description": "Real reviews from students who took the course",
+    "studentOf": "Student of {course}"
+  },
+  "Categories": {
+    "eyebrow": "Categories",
+    "title": "Explore by topic",
+    "courseCount": "{count, plural, one {# course} other {# courses}}"
+  },
+  "Cta": {
+    "title": "Ready to start your learning journey?",
+    "description": "Plenty of free and paid courses are waiting for you. Learn at your own pace and track every lesson.",
+    "myCourses": "My courses",
+    "register": "Sign up for free",
+    "explore": "Explore courses"
+  },
+  "Features": {
+    "video": {
+      "title": "Video lessons",
+      "description": "Organized into chapters with short lessons, and you resume right where you left off."
+    },
+    "progress": {
+      "title": "Honest progress",
+      "description": "A lesson only counts as done after you watch 90% of it, so your completion rate stays real."
+    },
+    "payment": {
+      "title": "Flexible payments",
+      "description": "Bank transfer via QR code (confirmed automatically) or PayPal for international learners."
+    },
+    "anywhere": {
+      "title": "Learn anywhere",
+      "description": "Works great on phones and desktops, with a dark mode for late-night study sessions."
+    }
+  },
+  "AboutSection": {
+    "learningChapter": "Learning · Chapter 3",
+    "watched": "Watched 72% · 90% needed to complete",
+    "autoComplete": "Lessons complete automatically",
+    "paymentReceived": "Payment received",
+    "paymentDetail": "QR transfer · unlocked instantly",
+    "eyebrow": "About EduPlatform",
+    "title": "A platform that keeps you learning and shows your progress",
+    "description": "Everything you need to learn online in one place: choosing a course, paying, studying and tracking your progress.",
+    "explore": "Explore courses"
+  },
+  "About": {
+    "metaTitle": "About us",
+    "metaDescription": "EduPlatform is an online learning platform that helps you study consistently, pay easily and see your progress.",
+    "eyebrow": "About us",
+    "title": "Learn online consistently and see your progress",
+    "description": "EduPlatform brings together everything you need to learn on your own: choosing a course, paying, studying and tracking progress.",
+    "storyEyebrow": "Our story",
+    "storyTitle": "It started with one question: why do people quit online courses?",
+    "storyParagraph1": "Buying a course is easy, finishing it is hard. Long videos, no idea how far you have come, ticking \"done\" without actually watching. EduPlatform was built to solve exactly those problems.",
+    "storyParagraph2": "Lessons are split into chapters, progress is based on real watch time, and you can start learning as soon as you pay. Students always know where they are, and instructors see how their courses are received.",
+    "valueItems": {
+      "mission": {
+        "title": "Mission",
+        "description": "Help self-learners finish their courses instead of giving up halfway."
+      },
+      "vision": {
+        "title": "Vision",
+        "description": "A simple place for Vietnamese learners to choose courses, study and track their progress."
+      },
+      "values": {
+        "title": "Values",
+        "description": "Transparency: real progress, reviews from real students and clearly displayed prices."
+      }
+    },
+    "highlightsEyebrow": "Highlights",
+    "highlightsTitle": "Everything you need to learn effectively",
+    "highlightsDescription": "Only features that are actually live on the platform",
+    "stepsEyebrow": "How it works",
+    "stepsTitle": "Start learning in 4 steps",
+    "stepItems": {
+      "signUp": {
+        "title": "Create an account",
+        "description": "Sign up for free with your email and start learning right away."
+      },
+      "buy": {
+        "title": "Choose & pay",
+        "description": "Free courses are one click away. Paid courses accept QR bank transfer or PayPal."
+      },
+      "learn": {
+        "title": "Learn & track progress",
+        "description": "Watch 90% of a video and the lesson completes itself, updating your course progress."
+      },
+      "review": {
+        "title": "Review the course",
+        "description": "Rate it and share your thoughts to help future learners pick the right course."
+      }
+    },
+    "instructorEyebrow": "For instructors",
+    "instructorTitle": "Share your knowledge",
+    "instructorPoints": {
+      "createCourse": "Create courses with chapters and lessons",
+      "uploadVideo": "Upload lesson videos directly",
+      "submitReview": "Submit for review before publishing",
+      "trackRevenue": "Track students and revenue"
+    },
+    "instructorNote": "Instructor accounts are granted by an administrator.",
+    "instructorCta": "Go to instructor dashboard",
+    "faqEyebrow": "FAQ",
+    "faqTitle": "Frequently asked questions",
+    "faqDescription": "Can't find your answer? Check out the guides on our Blog.",
+    "faqGuides": "How-to guides",
+    "faqItems": {
+      "access": {
+        "question": "How long can I access a course after buying it?",
+        "answer": "Forever. Enrolled courses always stay in \"My courses\" and you can come back to them anytime."
+      },
+      "payment": {
+        "question": "Which payment methods are available?",
+        "answer": "Bank transfer via QR code (the system detects the payment and unlocks the course within minutes) or PayPal for learners abroad."
+      },
+      "transferPending": {
+        "question": "I transferred the money but the course is still locked?",
+        "answer": "Make sure the transfer reference contains the order code. The checkout page re-checks every few seconds, and pending orders are always available from the cart icon at the top of the page."
+      },
+      "completion": {
+        "question": "When does a lesson count as completed?",
+        "answer": "When you have watched at least 90% of the video. Skipping ahead does not count, so your completion rate always reflects real learning."
+      },
+      "becomeInstructor": {
+        "question": "How do I become an instructor?",
+        "answer": "Instructor accounts are granted by an administrator. You can then create a course, add chapters, lessons and videos, and submit it for review before it is published."
+      }
+    }
+  },
+  "Common": {
+    "pagination": "Pagination",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "stars": "{value} out of 5 stars"
+  },
+  "Validation": {
+    "invalidEmail": "Invalid email address",
+    "passwordMin": "Password must be at least 8 characters",
+    "nameRequired": "Please enter your name",
+    "invalidPhone": "Invalid phone number",
+    "passwordMismatch": "Passwords do not match",
+    "passwordRequired": "Please enter your password",
+    "ratingRange": "Rating must be between 1 and 5 stars"
+  },
+  "Courses": {
+    "metaTitle": "Courses",
+    "metaDescription": "Explore programming, design, marketing and data science courses on EduPlatform",
+    "eyebrow": "Course library",
+    "title": "Courses",
+    "description": "Learn at your own pace, from beginner to advanced.",
+    "loading": "Loading courses...",
+    "searchPlaceholder": "Search courses",
+    "category": "Category",
+    "allCategories": "All categories",
+    "level": "Level",
+    "allLevels": "All levels",
+    "levels": {
+      "BEGINNER": "Beginner",
+      "INTERMEDIATE": "Intermediate",
+      "ADVANCED": "Advanced",
+      "ALL_LEVELS": "All levels"
+    },
+    "price": "Price",
+    "allPrices": "All prices",
+    "free": "Free",
+    "paid": "Paid",
+    "sort": "Sort by",
+    "sortNewest": "Newest",
+    "sortPopular": "Most students",
+    "sortPriceAsc": "Price: low to high",
+    "sortPriceDesc": "Price: high to low",
+    "clearFilters": "Clear filters",
+    "loadError": "Could not load courses. Please try again later",
+    "emptyTitle": "No matching courses found",
+    "emptyDescription": "Try a different keyword, remove some filters or browse all courses.",
+    "viewAll": "View all courses",
+    "found": "{count, plural, one {# course found} other {# courses found}}",
+    "reviews": "{count, plural, one {# review} other {# reviews}}",
+    "noReviews": "No reviews yet",
+    "lessons": "{count, plural, one {# lesson} other {# lessons}}",
+    "students": "{count, plural, one {# student} other {# students}}",
+    "viewDetail": "View details"
+  },
+  "CourseDetail": {
+    "notFound": "Course not found",
+    "metaDescription": "{title} by {instructor} on EduPlatform",
+    "loadError": "Could not load this course. Please try again later.",
+    "breadcrumb": "Breadcrumb",
+    "home": "Home",
+    "courses": "Courses",
+    "studentsLabel": "{count, plural, one {student} other {students}}",
+    "instructor": "Instructor",
+    "published": "Published {date}",
+    "price": "Price",
+    "levelInfo": "Level <b>{level}</b>",
+    "lecturesInfo": "<b>{count}</b> {count, plural, one {lecture} other {lectures}} in total",
+    "durationInfo": "Duration <b>{duration}</b>",
+    "vietnamese": "Vietnamese",
+    "anytime": "Learn anytime, anywhere",
+    "about": "About this course",
+    "content": "Course content",
+    "reviews": "Student reviews",
+    "noContent": "This course has no content yet.",
+    "curriculumSummary": "<b>{sections}</b> {sections, plural, one {section} other {sections}} · <b>{lectures}</b> {lectures, plural, one {lecture} other {lectures}} · <b>{duration}</b>",
+    "collapseAll": "Collapse all",
+    "expandAll": "Expand all",
+    "lessonCount": "{count, plural, one {# lesson} other {# lessons}}",
+    "preview": "Preview",
+    "noReviewsTitle": "No reviews yet",
+    "noReviewsDescription": "Be the first to leave a review after taking the course.",
+    "loginToBuy": "Log in to buy this course",
+    "loginToEnroll": "Log in to enroll",
+    "goToCourse": "Go to course",
+    "enrollSuccess": "Enrolled successfully",
+    "buy": "Buy course · {price}",
+    "enrollFree": "Enroll for free"
+  },
+  "Review": {
+    "confirmDelete": "Delete your review for this course?",
+    "deleted": "Review deleted",
+    "writeTitle": "Review this course",
+    "editTitle": "Edit your review",
+    "yourReview": "Your review",
+    "edit": "Edit",
+    "delete": "Delete",
+    "updated": "Review updated",
+    "thanks": "Thanks for your review",
+    "ratingLabel": "How many stars would you give this course?",
+    "commentLabel": "Comment (optional)",
+    "commentPlaceholder": "Was the course easy to follow? What did you learn?",
+    "cancel": "Cancel",
+    "save": "Save changes",
+    "submit": "Submit review"
+  },
+  "Auth": {
+    "benefits": {
+      "ownPace": "Learn at your own pace and rewatch lessons as often as you like",
+      "trackProgress": "Track every lesson and pick up exactly where you left off",
+      "realReviews": "Honest reviews from students who actually took the course"
+    },
+    "login": "Log in",
+    "register": "Sign up",
+    "loginShellTitle": "Welcome back!",
+    "loginShellDescription": "Log in to continue the courses you have started.",
+    "registerShellTitle": "Start your learning journey",
+    "registerShellDescription": "Create a free account, enroll in courses and track your progress today.",
+    "loginDescription": "Welcome back to EduPlatform",
+    "registerDescription": "Create an account to start learning on EduPlatform",
+    "emailPlaceholder": "you@email.com",
+    "password": "Password",
+    "passwordPlaceholder": "At least 8 characters",
+    "confirmPassword": "Confirm password",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password",
+    "name": "Full name",
+    "namePlaceholder": "John Smith",
+    "phone": "Phone number",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "loggingOut": "Logging out...",
+    "refreshing": "Refreshing your session..."
+  },
+  "StarInput": {
+    "label": "Rating",
+    "stars": "{count, plural, one {# star} other {# stars}}",
+    "terrible": "Terrible",
+    "poor": "Poor",
+    "average": "Average",
+    "good": "Good",
+    "excellent": "Excellent"
   }
 }

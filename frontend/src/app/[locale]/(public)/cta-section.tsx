@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button'
 import Waves from '@/components/waves'
 import { ArrowRight } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
 
 // Khối kêu gọi cuối trang chủ: dải xanh TRÀN NGANG có sóng, cùng phong cách banner đầu trang
 // → trang mở và đóng bằng cùng 1 "giọng" màu thương hiệu.
 // Client Component để đổi nút theo trạng thái đăng nhập (token ở localStorage, server không biết):
 //   chưa đăng nhập → "Đăng ký miễn phí";  đã đăng nhập → "Khóa học của tôi"
 export default function CtaSection() {
+  const t = useTranslations('Cta')
   const { isAuth } = useAppContext()
 
   return (
@@ -26,15 +28,11 @@ export default function CtaSection() {
         </>
       }
     >
-      <h2 className='max-w-2xl text-3xl leading-tight font-bold text-balance md:text-4xl'>
-        Sẵn sàng bắt đầu hành trình học?
-      </h2>
-      <p className='max-w-2xl text-white/90 md:text-lg'>
-        Nhiều khóa học miễn phí và có phí đang chờ bạn. Học theo tốc độ của mình, theo dõi tiến độ từng bài.
-      </p>
+      <h2 className='max-w-2xl text-3xl leading-tight font-bold text-balance md:text-4xl'>{t('title')}</h2>
+      <p className='max-w-2xl text-white/90 md:text-lg'>{t('description')}</p>
       <div className='mt-2 flex flex-wrap justify-center gap-3'>
         <Button asChild size='lg' className='rounded-full bg-white px-6 text-sky-700 hover:bg-white/90'>
-          {isAuth ? <Link href='/my-courses'>Khóa học của tôi</Link> : <Link href='/register'>Đăng ký miễn phí</Link>}
+          {isAuth ? <Link href='/my-courses'>{t('myCourses')}</Link> : <Link href='/register'>{t('register')}</Link>}
         </Button>
         <Button
           asChild
@@ -43,7 +41,7 @@ export default function CtaSection() {
           className='rounded-full border-white/70 bg-transparent px-6 text-white hover:bg-white/10 hover:text-white'
         >
           <Link href='/courses'>
-            Khám phá khóa học <ArrowRight />
+            {t('explore')} <ArrowRight />
           </Link>
         </Button>
       </div>

@@ -6,8 +6,10 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 import { useRouter } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
 
 export default function Logout() {
+  const t = useTranslations('Auth')
   const { mutateAsync } = useLogoutMutation()
   const router = useRouter()
   const { setRole } = useAppContext()
@@ -36,5 +38,5 @@ export default function Logout() {
     })
   }, [mutateAsync, accessTokenFromUrl, setRole, queryClient, router])
 
-  return <p className='py-16 text-center text-muted-foreground'>Đang đăng xuất...</p>
+  return <p className='py-16 text-center text-muted-foreground'>{t('loggingOut')}</p>
 }

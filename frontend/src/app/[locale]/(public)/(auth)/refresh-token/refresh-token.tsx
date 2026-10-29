@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { useRouter } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
 
 // Chỉ cho quay về đường dẫn NỘI BỘ ('/my-courses'...). Chặn '//trang-khac.com' hay 'https://...':
 // nếu không, kẻ xấu gửi link /refresh-token?redirect=https://trang-gia.com để dụ người dùng sang web giả
@@ -18,6 +19,7 @@ const getSafeRedirect = (redirect: string | null) =>
 // Khác khóa học: KHÔNG đưa refresh token lên URL (sẽ lưu vào lịch sử trình duyệt),
 // Route Handler /api/auth/refresh-token tự đọc refresh token từ cookie
 export default function RefreshToken() {
+  const t = useTranslations('Auth')
   const router = useRouter()
   const { setRole } = useAppContext()
   const queryClient = useQueryClient()
@@ -50,7 +52,7 @@ export default function RefreshToken() {
   return (
     <div className='flex flex-1 items-center justify-center gap-2 py-16 text-muted-foreground'>
       <Loader2 className='size-4 animate-spin' />
-      Đang làm mới phiên đăng nhập...
+      {t('refreshing')}
     </div>
   )
 }

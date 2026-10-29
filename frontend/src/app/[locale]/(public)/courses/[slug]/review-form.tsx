@@ -12,6 +12,8 @@ import { Loader2 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { useRouter } from '@/i18n/navigation'
+import { useZodErrorTranslator } from '@/i18n/zod-errors'
+import { useTranslations } from 'next-intl'
 
 // 1 form dùng cho CẢ viết mới lẫn sửa:
 //   review = undefined → viết mới: form trống, gửi bằng create (body có thêm courseId)
@@ -25,6 +27,8 @@ export default function ReviewForm({
   review?: ReviewType
   onDone?: () => void // gọi sau khi gửi xong / bấm Hủy (để thoát chế độ sửa)
 }) {
+  const t = useTranslations('Review')
+  const translateError = useZodErrorTranslator()
   const router = useRouter()
   const createMutation = useCreateReviewMutation()
   const updateMutation = useUpdateReviewMutation()
@@ -47,10 +51,10 @@ export default function ReviewForm({
     try {
       if (review) {
         await updateMutation.mutateAsync({ reviewId: review.id, body: data })
-        toast.success('Đã cập nhật đánh giá')
+        toast.success(t('updated'))
       } else {
         await createMutation.mutateAsync({ ...data, courseId })
-        toast.success('Cảm ơn bạn đã đánh giá')
+        toast.success(t('thanks'))
       }
       // Hook đã invalidateQueries(['reviews']) → "đánh giá của tôi" (client) tải lại.
       // Danh sách đánh giá + điểm trung bình render ở SERVER → refresh để server tính lại
@@ -70,9 +74,9 @@ export default function ReviewForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel>Bạn đánh giá khóa học này bao nhiêu sao?</FieldLabel>
+              <FieldLabel>{t('ratingLabel')}</FieldLabel>
               <StarInput value={field.value} onChange={field.onChange} invalid={fieldState.invalid} />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              {fieldState.invalid && <FieldError errors={[translateError(fieldState.error)]} />}
             </Field>
           )}
         />
@@ -82,16 +86,16 @@ export default function ReviewForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor='review-comment'>Nhận xét (không bắt buộc)</FieldLabel>
+              <FieldLabel htmlFor='review-comment'>{t('commentLabel')}</FieldLabel>
               <Textarea
                 {...field}
                 id='review-comment'
                 rows={4}
                 maxLength={2000}
-                placeholder='Khóa học có dễ hiểu không? Bạn học được gì?'
+                placeholder={t('commentPlaceholder')}
                 aria-invalid={fieldState.invalid}
               />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              {fieldState.invalid && <FieldError errors={[translateError(fieldState.error)]} />}
             </Field>
           )}
         />
@@ -100,12 +104,12 @@ export default function ReviewForm({
       <div className='flex justify-end gap-2'>
         {isEdit && (
           <Button type='button' variant='ghost' onClick={onDone} disabled={isPending}>
-            Hủy
+            {t('cancel')}
           </Button>
         )}
         <Button type='submit' disabled={isPending}>
           {isPending && <Loader2 className='animate-spin' />}
-          {isEdit ? 'Lưu thay đổi' : 'Gửi đánh giá'}
+          {isEdit ? t('save') : t('submit')}
         </Button>
       </div>
     </form>

@@ -1,17 +1,18 @@
 import type { Metadata } from 'next'
+import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import AuthShell from '../auth-shell'
 import RegisterForm from './form-register'
 
-export const metadata: Metadata = {
-  title: 'Đăng ký' // → "Đăng ký | EduPlatform" (template ở root layout)
+export async function generateMetadata(): Promise<Metadata> {
+  // → "Đăng ký | EduPlatform" (template ở root layout)
+  return { title: (await getTranslations('Auth'))('register') }
 }
 
 export default function RegisterPage() {
+  const t = useTranslations('Auth')
   return (
-    <AuthShell
-      title='Bắt đầu hành trình học của bạn'
-      description='Tạo tài khoản miễn phí, ghi danh khóa học và theo dõi tiến độ ngay hôm nay.'
-    >
+    <AuthShell title={t('registerShellTitle')} description={t('registerShellDescription')}>
       <RegisterForm />
     </AuthShell>
   )

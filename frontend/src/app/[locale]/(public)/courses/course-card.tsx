@@ -2,18 +2,20 @@ import CourseCover from '@/components/course-cover'
 import RatingStars from '@/components/rating-stars'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { CourseLevelLabels } from '@/constants/type'
 import { formatPrice, generateSlugUrl } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { PublicCourseType } from '@/schemaValidations/course.schema'
 import { ArrowRight, BookOpen, Users } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 
 // Thẻ 1 khóa học. Cả thẻ là 1 link tới trang chi tiết.
 // Phong cách: nền trắng, viền mảnh pha xanh, bo góc lớn. Rê chuột: nổi lên, viền + bóng đổ ngả màu xanh thương hiệu.
 // Bố cục từ trên xuống: ảnh bìa (nhãn trình độ ở góc) · sao + số đánh giá · tên · số bài + số học viên ·
 // mô tả ngắn · giảng viên · (vạch ngăn) giá + "Xem chi tiết"
 export default function CourseCard({ course }: { course: PublicCourseType }) {
+  const t = useTranslations('Courses')
+  const locale = useLocale()
   // Link dạng slug: /courses/react-tu-co-ban-den-nang-cao-i.15
   const href = `/courses/${generateSlugUrl({ name: course.title, id: course.id })}`
 
@@ -30,7 +32,7 @@ export default function CourseCard({ course }: { course: PublicCourseType }) {
         />
         {/* Nhãn trình độ nổi trên góc ảnh */}
         <span className='absolute top-2.5 right-2.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-slate-800 shadow-sm backdrop-blur-sm'>
-          {CourseLevelLabels[course.level]}
+          {t(`levels.${course.level}`)}
         </span>
       </div>
 
@@ -41,10 +43,10 @@ export default function CourseCard({ course }: { course: PublicCourseType }) {
             <>
               <RatingStars value={course.rating.averageRating} className='size-3.5' />
               <span className='font-semibold'>{course.rating.averageRating}</span>
-              <span className='text-muted-foreground'>({course.rating.totalReviews} đánh giá)</span>
+              <span className='text-muted-foreground'>({t('reviews', { count: course.rating.totalReviews })})</span>
             </>
           ) : (
-            <span className='text-muted-foreground'>Chưa có đánh giá</span>
+            <span className='text-muted-foreground'>{t('noReviews')}</span>
           )}
         </div>
 
@@ -56,11 +58,11 @@ export default function CourseCard({ course }: { course: PublicCourseType }) {
         <div className='flex items-center gap-4 text-xs text-muted-foreground'>
           <span className='flex items-center gap-1.5'>
             <BookOpen className='size-3.5' />
-            {course.totalLectures} bài học
+            {t('lessons', { count: course.totalLectures })}
           </span>
           <span className='flex items-center gap-1.5'>
             <Users className='size-3.5' />
-            {course.studentCount} học viên
+            {t('students', { count: course.studentCount })}
           </span>
         </div>
 
@@ -81,10 +83,10 @@ export default function CourseCard({ course }: { course: PublicCourseType }) {
           <div className='flex items-center justify-between gap-3 border-t pt-3'>
             {/* Khóa có phí: giá màu san hô (màu nhấn ấm) cho nổi bật. Miễn phí: màu xanh thương hiệu */}
             <span className={cn('text-lg font-bold', course.price > 0 ? 'text-highlight' : 'text-primary')}>
-              {formatPrice(course.price)}
+              {formatPrice(course.price, locale)}
             </span>
             <span className='flex items-center gap-1 text-sm font-medium text-primary'>
-              Xem chi tiết
+              {t('viewDetail')}
               <ArrowRight className='size-4 transition-transform group-hover:translate-x-0.5' />
             </span>
           </div>

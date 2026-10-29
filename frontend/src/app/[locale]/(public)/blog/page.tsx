@@ -1,25 +1,25 @@
 import PageBanner from '@/components/page-banner'
-import { BlogCategory, blogCategories, sortedBlogPosts } from '@/content/blog'
+import { BlogCategory, blogCategories, getBlogCategoryName, getBlogPosts } from '@/content/blog'
+import { Link } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
 import type { Metadata } from 'next'
+import { useTranslations } from 'next-intl'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Suspense } from 'react'
 import BlogCard from './blog-card'
-import { Link } from '@/i18n/navigation'
 
-export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'Lộ trình học, kinh nghiệm học online và hướng dẫn sử dụng EduPlatform'
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('Blog')
+  return { title: t('metaTitle'), description: t('metaDescription') }
 }
 
 // /blog?category=lap-trinh: danh sách bài viết, lọc theo chuyên mục trên URL
 export default function BlogPage({ searchParams }: PageProps<'/[locale]/blog'>) {
+  const t = useTranslations('Blog')
+
   return (
     <div className='flex flex-col gap-8'>
-      <PageBanner
-        eyebrow='Blog EduPlatform'
-        title='Chia sẻ kiến thức & kinh nghiệm học tập'
-        description='Lộ trình học, mẹo học online hiệu quả và hướng dẫn sử dụng nền tảng.'
-      />
+      <PageBanner eyebrow={t('eyebrow')} title={t('title')} description={t('description')} />
       {/* searchParams là dữ liệu lúc chạy → đọc trong component con bọc Suspense */}
       <Suspense>
         <BlogList searchParams={searchParams} />
@@ -29,19 +29,23 @@ export default function BlogPage({ searchParams }: PageProps<'/[locale]/blog'>) 
 }
 
 async function BlogList({ searchParams }: { searchParams: PageProps<'/[locale]/blog'>['searchParams'] }) {
+  const [t, locale] = await Promise.all([getTranslations('Blog'), getLocale()])
   const raw = (await searchParams).category
   // Chuyên mục lạ (?category=abc) → coi như xem tất cả
   const category = typeof raw === 'string' && raw in blogCategories ? (raw as BlogCategory) : undefined
-  const posts = category ? sortedBlogPosts.filter((post) => post.category === category) : sortedBlogPosts
+  const posts = getBlogPosts(locale).filter((post) => !category || post.category === category)
 
   const filters: { value?: BlogCategory; label: string }[] = [
-    { label: 'Tất cả' },
-    ...(Object.keys(blogCategories) as BlogCategory[]).map((value) => ({ value, label: blogCategories[value] }))
+    { label: t('all') },
+    ...(Object.keys(blogCategories) as BlogCategory[]).map((value) => ({
+      value,
+      label: getBlogCategoryName(value, locale)
+    }))
   ]
 
   return (
     <div className='flex flex-col gap-6'>
-      <nav aria-label='Chuyên mục' className='flex flex-wrap gap-2'>
+      <nav aria-label={t('categories')} className='flex flex-wrap gap-2'>
         {filters.map(({ value, label }) => (
           <Link
             key={label}

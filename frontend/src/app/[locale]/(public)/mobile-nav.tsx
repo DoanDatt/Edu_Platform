@@ -9,16 +9,18 @@ import { Suspense, useState } from 'react'
 import HeaderSearch from './header-search'
 import NavItems from './nav-items'
 import { Link } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
 
 // Menu trượt từ phải, hiện khi màn hình nhỏ hơn lg (header chưa đủ chỗ cho tab menu): ô tìm kiếm + menu + đăng nhập / đăng ký
 export default function MobileNav() {
+  const t = useTranslations('Header')
   const [open, setOpen] = useState(false)
   const { isAuth } = useAppContext()
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant='ghost' size='icon' className='lg:hidden' aria-label='Mở menu'>
+        <Button variant='ghost' size='icon' className='lg:hidden' aria-label={t('openMenu')}>
           <Menu className='size-5' />
         </Button>
       </SheetTrigger>
@@ -28,7 +30,7 @@ export default function MobileNav() {
           <SheetTitle asChild>
             <Logo />
           </SheetTitle>
-          <SheetDescription className='sr-only'>Menu điều hướng</SheetDescription>
+          <SheetDescription className='sr-only'>{t('navigationMenu')}</SheetDescription>
         </SheetHeader>
         {/* Bấm vào link (thẻ <a>) hoặc gửi form tìm kiếm thì đóng menu, không thì menu vẫn che trang mới */}
         <div
@@ -47,10 +49,10 @@ export default function MobileNav() {
           {!isAuth && (
             <div className='flex flex-col gap-2 border-t pt-4'>
               <Button asChild className='rounded-full'>
-                <Link href='/login'>Đăng nhập</Link>
+                <Link href='/login'>{t('login')}</Link>
               </Button>
               <Button asChild variant='outline' className='rounded-full'>
-                <Link href='/register'>Đăng ký</Link>
+                <Link href='/register'>{t('register')}</Link>
               </Button>
             </div>
           )}

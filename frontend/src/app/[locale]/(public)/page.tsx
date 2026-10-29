@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { Suspense } from 'react'
 import AboutSection from './about-section'
 import CategorySection, { CategorySectionSkeleton } from './category-section'
@@ -12,10 +13,12 @@ import TestimonialMarquee, { TestimonialMarqueeSkeleton } from './testimonial-ma
 // Nhịp nền khi cuộn: banner sáng → cảm nhận chạy ngang → danh mục (trắng) → khóa nổi bật (nền xanh nhạt tràn ngang)
 // → giới thiệu (trắng) → khóa miễn phí (nền xanh nhạt) → kêu gọi (dải xanh đậm nối liền footer)
 export default function HomePage() {
+  const t = useTranslations('Home')
+
   return (
     <div className='flex flex-col gap-20'>
       {/* h1 cho SEO / trình đọc màn hình: tiêu đề banner là h2, trang vẫn cần đúng 1 h1 */}
-      <h1 className='sr-only'>EduPlatform: học lập trình, thiết kế, marketing trực tuyến</h1>
+      <h1 className='sr-only'>{t('h1')}</h1>
       <div className='flex flex-col'>
         <HeroBanner />
         {/* Dải số liệu chồng lên đáy cong của banner (margin âm + z-10): 2 khối liền một mạch */}
@@ -41,9 +44,9 @@ export default function HomePage() {
         <Suspense fallback={<CourseSectionSkeleton count={8} />}>
           <CourseSection
             tinted
-            eyebrow='Nổi bật'
-            title='Khóa học được yêu thích nhất'
-            description='Những khóa có nhiều học viên đăng ký nhất trên EduPlatform'
+            eyebrow={t('popularEyebrow')}
+            title={t('popularTitle')}
+            description={t('popularDescription')}
             query={{ sort: 'popular', limit: 8 }}
             href='/courses?sort=popular'
           />
@@ -56,9 +59,9 @@ export default function HomePage() {
         <Suspense fallback={<CourseSectionSkeleton count={4} />}>
           <CourseSection
             tinted
-            eyebrow='Miễn phí'
-            title='Bắt đầu mà không tốn đồng nào'
-            description='Đăng ký tài khoản là học được ngay'
+            eyebrow={t('freeEyebrow')}
+            title={t('freeTitle')}
+            description={t('freeDescription')}
             query={{ price: 'free', limit: 4 }}
             href='/courses?price=free'
           />

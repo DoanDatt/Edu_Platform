@@ -16,16 +16,13 @@ import { useQueryClient } from '@tanstack/react-query'
 import { KeyRound, LogOut, ReceiptText, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 import { Link, useRouter } from '@/i18n/navigation'
-
-const roleLabels: Record<string, string> = {
-  ADMIN: 'Quản trị viên',
-  INSTRUCTOR: 'Giảng viên',
-  STUDENT: 'Học viên'
-}
+import { RoleType } from '@/constants/type'
+import { useTranslations } from 'next-intl'
 
 // Ảnh + tên ở góc header, bấm vào sổ menu: Thông tin tài khoản, Đổi mật khẩu, Đăng xuất.
 // Dùng chung cho header công khai, khu admin, khu giảng viên. Chưa đăng nhập thì không hiện gì
 export default function AccountMenu() {
+  const t = useTranslations('Account')
   const { isAuth, setRole } = useAppContext()
   const { data } = useMeQuery({ enabled: isAuth })
   const logoutMutation = useLogoutMutation()
@@ -42,7 +39,7 @@ export default function AccountMenu() {
     if (logoutMutation.isPending) return
     try {
       await logoutMutation.mutateAsync()
-      toast.success('Đăng xuất thành công')
+      toast.success(t('logoutSuccess'))
     } catch (error) {
       // Route Handler luôn trả 200, chỉ lỗi khi mất mạng
       handleErrorApi({ error })
@@ -60,15 +57,17 @@ export default function AccountMenu() {
         <button
           type='button'
           className='flex items-center gap-3 rounded-full p-0.5 outline-none focus-visible:ring-2 focus-visible:ring-ring sm:rounded-md sm:px-2 sm:py-1 sm:hover:bg-accent'
-          aria-label='Mở menu tài khoản'
+          aria-label={t('openMenu')}
         >
           {/* whitespace-nowrap + max-w + truncate: header chật thì tên dài bị cắt "...", không gãy thành nhiều dòng */}
           <span className='hidden max-w-40 text-right leading-tight whitespace-nowrap sm:block'>
             <span className='block truncate text-sm font-medium'>{account?.name ?? '...'}</span>
-            <span className='block text-xs text-muted-foreground'>{account ? roleLabels[account.role.name] : ''}</span>
+            <span className='block text-xs text-muted-foreground'>
+              {account ? t(`roles.${account.role.name as RoleType}`) : ''}
+            </span>
           </span>
           <Avatar>
-            <AvatarImage src={account?.avatar ?? undefined} alt={account?.name ?? 'Ảnh đại diện'} />
+            <AvatarImage src={account?.avatar ?? undefined} alt={account?.name ?? t('avatar')} />
             <AvatarFallback>{initial}</AvatarFallback>
           </Avatar>
         </button>
@@ -86,26 +85,26 @@ export default function AccountMenu() {
         <DropdownMenuItem asChild>
           <Link href='/profile'>
             <UserRound />
-            Thông tin tài khoản
+            {t('profile')}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href='/my-orders'>
             <ReceiptText />
-            Lịch sử mua hàng
+            {t('purchaseHistory')}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href='/profile/change-password'>
             <KeyRound />
-            Đổi mật khẩu
+            {t('changePassword')}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
 
         <DropdownMenuItem variant='destructive' onSelect={logout} disabled={logoutMutation.isPending}>
           <LogOut />
-          Đăng xuất
+          {t('logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

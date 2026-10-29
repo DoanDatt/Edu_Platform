@@ -7,6 +7,7 @@ import { GetCoursesQueryType } from '@/schemaValidations/course.schema'
 import { ArrowRight } from 'lucide-react'
 import CourseCard, { CourseCardSkeleton } from './courses/course-card'
 import { Link } from '@/i18n/navigation'
+import { getTranslations } from 'next-intl/server'
 
 // Một khối khóa học trên trang chủ: tiêu đề canh giữa + lưới CourseCard + nút "Xem tất cả" ở cuối.
 // Dùng lại cho nhiều khối, chỉ khác query (nổi bật, miễn phí...).
@@ -35,6 +36,7 @@ export default async function CourseSection({
 
   // Không có khóa nào → ẩn cả khối, không để lại tiêu đề trơ trọi
   if (courses.length === 0) return null
+  const t = await getTranslations('Home')
 
   const content = (
     <>
@@ -50,7 +52,7 @@ export default async function CourseSection({
         className='mx-auto h-12 rounded-full bg-linear-to-r from-sky-500 to-blue-600 px-7 text-base shadow-lg shadow-sky-500/25 hover:opacity-95'
       >
         <Link href={href}>
-          Xem tất cả khóa học <ArrowRight />
+          {t('viewAllCourses')} <ArrowRight />
         </Link>
       </Button>
     </>

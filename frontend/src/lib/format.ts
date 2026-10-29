@@ -1,22 +1,32 @@
-// Tạo 1 lần rồi dùng lại: Intl.NumberFormat khá tốn, không nên tạo mới mỗi lần định dạng
-const vndFormatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+import type { Locale } from 'next-intl'
 
-// 0 → 'Miễn phí', 499000 → '499.000 ₫'
-export const formatPrice = (price: number) => {
+// Song ngữ: mỗi hàm nhận thêm locale (mặc định 'vi' → chỗ cũ chưa truyền vẫn ra tiếng Việt như trước).
+// Tiền luôn là VND (giá khóa học lưu bằng VND), chỉ đổi cách viết số theo ngôn ngữ
+const intlLocale = (locale: Locale) => (locale === 'en' ? 'en-US' : 'vi-VN')
+
+// Tạo 1 lần rồi dùng lại: Intl.NumberFormat khá tốn, không nên tạo mới mỗi lần định dạng
+const vndFormatters: Record<Locale, Intl.NumberFormat> = {
+  vi: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }),
+  en: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'VND' })
+}
+
+// 0 → 'Miễn phí' / 'Free', 499000 → '499.000 ₫' / '₫499,000'
+export const formatPrice = (price: number, locale: Locale = 'vi') => {
   if (price === 0) {
-    return 'Miễn phí'
+    return locale === 'en' ? 'Free' : 'Miễn phí'
   } else {
-    return vndFormatter.format(price)
+    return vndFormatters[locale].format(price)
   }
 }
 
-// Tổng thời lượng: 3240 giây → '54 phút', 8100 → '2 giờ 15 phút', 7200 → '2 giờ'
-export const formatDuration = (seconds: number) => {
+// Tổng thời lượng: 3240 giây → '54 phút', 8100 → '2 giờ 15 phút', 7200 → '2 giờ' (en: '54 min', '2 hr 15 min')
+export const formatDuration = (seconds: number, locale: Locale = 'vi') => {
   const hours = Math.floor(seconds / 3600) // số giờ tròn
   const minutes = Math.round((seconds % 3600) / 60) // % 3600: số giây CÒN LẠI sau khi bỏ các giờ tròn
-  if (hours > 0 && minutes > 0) return `${hours} giờ ${minutes} phút`
-  if (hours > 0) return `${hours} giờ`
-  return `${minutes} phút`
+  const [h, m] = locale === 'en' ? ['hr', 'min'] : ['giờ', 'phút']
+  if (hours > 0 && minutes > 0) return `${hours} ${h} ${minutes} ${m}`
+  if (hours > 0) return `${hours} ${h}`
+  return `${minutes} ${m}`
 }
 
 // Thời lượng 1 bài dạng đồng hồ: 300 → '05:00', 425 → '07:05', 3725 → '1:02:05'
@@ -30,21 +40,25 @@ export const formatClock = (seconds: number) => {
   return hours > 0 ? `${hours}:${mm}:${ss}` : `${mm}:${ss}`
 }
 
-// Ngày dạng Việt Nam: '2026-10-11T20:37:49.299Z' → '12/10/2026' (theo giờ máy người xem)
-export const formatDate = (iso: string) => new Date(iso).toLocaleDateString('vi-VN')
+// Ngày: '2026-10-11T20:37:49.299Z' → vi '12/10/2026', en '10/12/2026' (theo giờ máy người xem)
+export const formatDate = (iso: string, locale: Locale = 'vi') => new Date(iso).toLocaleDateString(intlLocale(locale))
 
-const relativeFormatter = new Intl.RelativeTimeFormat('vi', { numeric: 'auto' })
+const relativeFormatters: Record<Locale, Intl.RelativeTimeFormat> = {
+  vi: new Intl.RelativeTimeFormat('vi', { numeric: 'auto' }),
+  en: new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+}
 
 // Thời gian tương đối cho thông báo: 'vừa xong', '5 phút trước', '3 giờ trước', 'hôm qua', '4 ngày trước'.
 // Quá 30 ngày thì hiện ngày cụ thể (12/10/2026) cho dễ đọc
-export const formatRelativeTime = (iso: string) => {
+export const formatRelativeTime = (iso: string, locale: Locale = 'vi') => {
   const seconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000) // số âm = trong quá khứ
   const abs = Math.abs(seconds)
-  if (abs < 60) return 'vừa xong'
+  const relativeFormatter = relativeFormatters[locale]
+  if (abs < 60) return locale === 'en' ? 'just now' : 'vừa xong'
   if (abs < 3600) return relativeFormatter.format(Math.round(seconds / 60), 'minute')
   if (abs < 86_400) return relativeFormatter.format(Math.round(seconds / 3600), 'hour')
   if (abs < 30 * 86_400) return relativeFormatter.format(Math.round(seconds / 86_400), 'day')
-  return formatDate(iso)
+  return formatDate(iso, locale)
 }
 
 // Bỏ dấu tiếng Việt: 'Lập trình Đà Nẵng' → 'Lap trinh Da Nang'

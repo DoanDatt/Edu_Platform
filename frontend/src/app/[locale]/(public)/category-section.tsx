@@ -5,6 +5,7 @@ import { getCategoryStyle } from '@/constants/category'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { Link } from '@/i18n/navigation'
+import { getTranslations } from 'next-intl/server'
 
 // Ô danh mục dạng ảnh: ảnh nền + lớp phủ tối + tên và số khóa ở giữa.
 // Danh mục không có ảnh riêng → backend lấy ảnh bìa khóa đông học viên nhất (coverImage).
@@ -17,10 +18,11 @@ export default async function CategorySection() {
     .catch(() => [])
 
   if (categories.length === 0) return null
+  const t = await getTranslations('Categories')
 
   return (
     <section className='flex flex-col gap-6'>
-      <SectionHeading eyebrow='Danh mục' title='Khám phá theo chủ đề' />
+      <SectionHeading eyebrow={t('eyebrow')} title={t('title')} />
       {/* auto-fit: số cột tự theo số danh mục (mỗi ô rộng tối thiểu 13rem), cột thừa bị gộp lại
           → 4 danh mục thì 4 ô chia đều cả hàng, không để trống ô cuối */}
       <div className='grid grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-4'>
@@ -64,7 +66,7 @@ export default async function CategorySection() {
               <span className='relative flex flex-col items-center gap-1.5 px-4 text-center'>
                 <span className='font-heading text-lg leading-tight font-semibold drop-shadow-sm'>{category.name}</span>
                 <span className='rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium backdrop-blur-sm'>
-                  {category.courseCount} khóa học
+                  {t('courseCount', { count: category.courseCount })}
                 </span>
               </span>
             </Link>

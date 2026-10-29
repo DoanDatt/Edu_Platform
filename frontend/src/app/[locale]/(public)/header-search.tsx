@@ -5,6 +5,7 @@ import { CategoryListItemType } from '@/schemaValidations/category.schema'
 import { ChevronDown, Search } from 'lucide-react'
 import { FormEvent } from 'react'
 import { useRouter } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
 
 // Ô tìm kiếm trên header: [Tất cả danh mục ▾ | Tìm khóa học... 🔍] → /courses?categoryId=..&search=..
 // Trang /courses đọc bộ lọc trên URL để lọc, ô tìm kiếm ở đó cũng tự điền theo URL.
@@ -18,6 +19,7 @@ export default function HeaderSearch({
   className?: string
   categories?: CategoryListItemType[]
 }) {
+  const t = useTranslations('Header')
   const router = useRouter()
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -44,11 +46,11 @@ export default function HeaderSearch({
           <div className='relative hidden shrink-0 lg:block'>
             <select
               name='categoryId'
-              aria-label='Lọc theo danh mục'
+              aria-label={t('filterByCategory')}
               defaultValue=''
               className='h-11 max-w-44 cursor-pointer appearance-none truncate rounded-l-full bg-transparent pr-8 pl-5 text-sm text-muted-foreground outline-none'
             >
-              <option value=''>Tất cả danh mục</option>
+              <option value=''>{t('allCategories')}</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -63,13 +65,13 @@ export default function HeaderSearch({
       <input
         name='search'
         type='search'
-        placeholder='Tìm khóa học...'
-        aria-label='Tìm khóa học'
+        placeholder={t('searchPlaceholder')}
+        aria-label={t('searchLabel')}
         className='h-full min-w-0 flex-1 bg-transparent px-4 text-sm outline-none placeholder:text-muted-foreground'
       />
       <button
         type='submit'
-        aria-label='Tìm kiếm'
+        aria-label={t('search')}
         className='mr-1 flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground'
       >
         <Search className='size-4' />

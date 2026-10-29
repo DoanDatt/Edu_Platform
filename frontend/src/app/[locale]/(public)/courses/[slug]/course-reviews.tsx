@@ -3,16 +3,20 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { formatDate } from '@/lib/format'
 import { RatingSummaryType, ReviewType } from '@/schemaValidations/review.schema'
 import { MessageSquare } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
 
 // Khối đánh giá: điểm trung bình + thanh phân bố số sao + danh sách đánh giá mới nhất
 export default function CourseReviews({ rating, reviews }: { rating: RatingSummaryType; reviews: ReviewType[] }) {
+  const t = useTranslations('CourseDetail')
+  const tCourses = useTranslations('Courses')
+  const locale = useLocale()
   // Chưa ai đánh giá → trạng thái rỗng (không vẽ thanh 0% vô nghĩa)
   if (rating.totalReviews === 0) {
     return (
       <div className='flex flex-col items-center gap-2 rounded-xl border border-dashed py-10 text-center'>
         <MessageSquare className='size-8 text-muted-foreground' />
-        <p className='font-medium'>Chưa có đánh giá nào</p>
-        <p className='text-sm text-muted-foreground'>Hãy là người đầu tiên đánh giá sau khi học.</p>
+        <p className='font-medium'>{t('noReviewsTitle')}</p>
+        <p className='text-sm text-muted-foreground'>{t('noReviewsDescription')}</p>
       </div>
     )
   }
@@ -24,7 +28,7 @@ export default function CourseReviews({ rating, reviews }: { rating: RatingSumma
         <div className='flex flex-col items-center gap-1 sm:w-32'>
           <span className='text-5xl font-bold text-amber-600 dark:text-amber-400'>{rating.averageRating}</span>
           <RatingStars value={rating.averageRating} className='size-3.5' />
-          <span className='text-xs text-muted-foreground'>{rating.totalReviews} đánh giá</span>
+          <span className='text-xs text-muted-foreground'>{tCourses('reviews', { count: rating.totalReviews })}</span>
         </div>
 
         {/* Phân bố số sao: 5 sao ở trên cùng */}
@@ -61,7 +65,7 @@ export default function CourseReviews({ rating, reviews }: { rating: RatingSumma
               <div className='flex flex-wrap items-center gap-x-3 gap-y-1'>
                 <span className='font-medium'>{review.user.name}</span>
                 <RatingStars value={review.rating} className='size-3.5' />
-                <span className='text-xs text-muted-foreground'>{formatDate(review.createdAt)}</span>
+                <span className='text-xs text-muted-foreground'>{formatDate(review.createdAt, locale)}</span>
               </div>
               {/* comment rỗng ('') → không vẽ đoạn văn trống */}
               {review.comment && <p className='text-sm leading-relaxed text-muted-foreground'>{review.comment}</p>}

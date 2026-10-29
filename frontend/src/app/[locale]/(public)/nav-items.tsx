@@ -5,31 +5,32 @@ import { RoleType, RoleValues } from '@/constants/type'
 import { cn } from '@/lib/utils'
 import { BookOpen, GraduationCap, House, Info, LucideIcon, Newspaper, Presentation, ShieldCheck } from 'lucide-react'
 import { Link, usePathname } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
 
 // Cách đọc:
 //   không có role → ai cũng thấy
 //   role          → chỉ hiện khi đã đăng nhập VÀ role nằm trong danh sách
 // Đăng nhập / Đăng ký không nằm ở đây: đã chuyển thành nút ở góc phải header (AuthButtons)
 const menuItems: {
-  title: string
+  title: Parameters<ReturnType<typeof useTranslations<'Nav'>>>[0] // khóa dịch, namespace "Nav"
   href: string
   Icon: LucideIcon
   role?: RoleType[]
 }[] = [
-  { title: 'Trang chủ', href: '/', Icon: House },
+  { title: 'home', href: '/', Icon: House },
   // Danh mục khóa học công khai: tìm kiếm, lọc (GET /courses)
-  { title: 'Khóa học', href: '/courses', Icon: BookOpen },
+  { title: 'courses', href: '/courses', Icon: BookOpen },
   {
     // Khóa đã ghi danh + tiến độ. Giảng viên và admin cũng ghi danh học được nên cũng thấy
-    title: 'Khóa của tôi',
+    title: 'myCourses',
     href: '/my-courses',
     Icon: GraduationCap,
     role: [RoleValues.Student, RoleValues.Instructor, RoleValues.Admin]
   },
-  { title: 'Giảng dạy', href: '/instructor', Icon: Presentation, role: [RoleValues.Instructor] },
-  { title: 'Quản trị', href: '/admin', Icon: ShieldCheck, role: [RoleValues.Admin] },
-  { title: 'Blog', href: '/blog', Icon: Newspaper },
-  { title: 'Giới thiệu', href: '/about', Icon: Info }
+  { title: 'teaching', href: '/instructor', Icon: Presentation, role: [RoleValues.Instructor] },
+  { title: 'admin', href: '/admin', Icon: ShieldCheck, role: [RoleValues.Admin] },
+  { title: 'blog', href: '/blog', Icon: Newspaper },
+  { title: 'about', href: '/about', Icon: Info }
 ]
 
 // Danh sách dọc trong menu trượt (điện thoại / tablet, dưới lg), icon bên trái chữ.
@@ -37,6 +38,7 @@ const menuItems: {
 // Server: chỉ các mục không cần role (server không biết trạng thái đăng nhập).
 // Client: ngay sau đó AppProvider đọc token → hiện thêm mục theo role
 export default function NavItems() {
+  const t = useTranslations('Nav')
   const pathname = usePathname()
   const { role } = useAppContext()
 
@@ -59,7 +61,7 @@ export default function NavItems() {
         )}
       >
         <Icon className={cn('size-4', isActive && 'text-primary')} />
-        {title}
+        {t(title)}
       </Link>
     )
   })

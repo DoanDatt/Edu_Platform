@@ -8,6 +8,7 @@ import { useCreateOrderMutation } from '@/queries/useOrder'
 import { Loader2, ShoppingCart } from 'lucide-react'
 import { toast } from 'sonner'
 import { Link, useRouter } from '@/i18n/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 
 // Nút chính của trang chi tiết, theo isEnrolled backend trả về:
 //   null  → khách chưa đăng nhập   → "Đăng nhập để ghi danh / mua" (link sang /login)
@@ -25,6 +26,8 @@ export default function EnrollButton({
   isEnrolled: boolean | null
   price: number
 }) {
+  const t = useTranslations('CourseDetail')
+  const locale = useLocale()
   const enrollMutation = useEnrollMutation()
   const createOrderMutation = useCreateOrderMutation()
   const router = useRouter()
@@ -33,7 +36,7 @@ export default function EnrollButton({
   if (isEnrolled === null) {
     return (
       <Button asChild size='lg' className='h-11 w-full rounded-full text-base'>
-        <Link href='/login'>{isPaid ? 'Đăng nhập để mua khóa học' : 'Đăng nhập để ghi danh'}</Link>
+        <Link href='/login'>{isPaid ? t('loginToBuy') : t('loginToEnroll')}</Link>
       </Button>
     )
   }
@@ -41,7 +44,7 @@ export default function EnrollButton({
   if (isEnrolled) {
     return (
       <Button asChild size='lg' className='h-11 w-full rounded-full text-base'>
-        <Link href={`/learn/${courseId}`}>Vào học</Link>
+        <Link href={`/learn/${courseId}`}>{t('goToCourse')}</Link>
       </Button>
     )
   }
@@ -51,7 +54,7 @@ export default function EnrollButton({
     if (enrollMutation.isPending) return
     try {
       await enrollMutation.mutateAsync({ courseId })
-      toast.success('Ghi danh thành công')
+      toast.success(t('enrollSuccess'))
       // router.refresh(): chạy lại Server Component của trang này (KHÔNG tải lại cả trang)
       // → getDetail trả isEnrolled: true → nút đổi thành "Vào học", số học viên +1
       router.refresh()
@@ -82,7 +85,7 @@ export default function EnrollButton({
         disabled={createOrderMutation.isPending}
       >
         {createOrderMutation.isPending ? <Loader2 className='animate-spin' /> : <ShoppingCart />}
-        Mua khóa học · {formatPrice(price)}
+        {t('buy', { price: formatPrice(price, locale) })}
       </Button>
     )
   }
@@ -95,7 +98,7 @@ export default function EnrollButton({
       disabled={enrollMutation.isPending}
     >
       {enrollMutation.isPending && <Loader2 className='animate-spin' />}
-      Ghi danh miễn phí
+      {t('enrollFree')}
     </Button>
   )
 }

@@ -6,14 +6,16 @@ import { ArrowRight, Search, Star, Users } from 'lucide-react'
 import Form from 'next/form'
 import { Suspense } from 'react'
 import CourseCard from './courses/course-card'
-import { Link } from '@/i18n/navigation'
+import { getPathname, Link } from '@/i18n/navigation'
+import { useLocale, useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 
 // Lối tắt dưới ô tìm kiếm: bộ lọc có sẵn của trang /courses
 const quickLinks = [
-  { label: 'Khóa miễn phí', href: '/courses?price=free' },
-  { label: 'Học nhiều nhất', href: '/courses?sort=popular' },
-  { label: 'Mới ra mắt', href: '/courses?sort=newest' }
-]
+  { label: 'quickFree', href: '/courses?price=free' },
+  { label: 'quickPopular', href: '/courses?sort=popular' },
+  { label: 'quickNewest', href: '/courses?sort=newest' }
+] as const
 
 // Banner đầu trang chủ, TRÀN HẾT chiều ngang, nền sáng (xanh biển rất nhạt + vầng màu mờ), đáy là sóng cong.
 //   Trái: tiêu đề lớn chữ đậm, 1 cụm chữ tô gradient + gạch sóng san hô, mô tả, ô tìm kiếm, lối tắt
@@ -21,6 +23,9 @@ const quickLinks = [
 // -mt-6 / md:-mt-8: bù padding trên của <main> → banner dính sát header.
 // Chữ + ô tìm kiếm hiện ngay (không chờ API); riêng thẻ khóa học nằm trong Suspense
 export default function HeroBanner() {
+  const t = useTranslations('Hero')
+  const locale = useLocale()
+
   return (
     <FullBleed
       className='-mt-6 bg-linear-to-br from-sky-50 via-white to-blue-100/70 md:-mt-8 dark:from-slate-900 dark:via-slate-950 dark:to-sky-950'
@@ -42,25 +47,23 @@ export default function HeroBanner() {
       <div className='flex flex-col items-start gap-6'>
         <span className='flex items-center gap-2 rounded-full border bg-card/80 px-3.5 py-1.5 text-sm font-medium shadow-sm backdrop-blur'>
           <span aria-hidden className='size-2 rounded-full bg-emerald-500 shadow-[0_0_0_4px] shadow-emerald-500/20' />
-          Nền tảng học trực tuyến cho người Việt
+          {t('badge')}
         </span>
         <h2 className='text-4xl leading-[1.15] font-bold tracking-tight md:text-6xl'>
-          Học từng bước,
+          {t('titleStart')}
           <br />
           {/* Cụm chữ nhấn: chữ tô gradient xanh + gạch sóng màu san hô bên dưới */}
           <span className='relative inline-block bg-linear-to-r from-sky-500 to-blue-700 bg-clip-text text-transparent'>
-            tiến xa
+            {t('titleHighlight')}
             <WavyUnderline className='absolute -bottom-2 left-0 text-highlight' />
           </span>{' '}
-          mỗi ngày
+          {t('titleEnd')}
         </h2>
-        <p className='max-w-xl text-lg text-muted-foreground'>
-          Lập trình, thiết kế, marketing, khoa học dữ liệu. Học theo tốc độ của bạn, theo dõi tiến độ từng bài, nhận
-          đánh giá thật từ học viên đã học.
-        </p>
+        <p className='max-w-xl text-lg text-muted-foreground'>{t('description')}</p>
 
         <Form
-          action='/courses'
+          // Form của Next không tự gắn tiền tố ngôn ngữ như <Link> → tự tạo đường dẫn đúng ngôn ngữ
+          action={getPathname({ href: '/courses', locale })}
           role='search'
           className='flex w-full max-w-xl items-center gap-2 rounded-full border bg-card p-1.5 shadow-xl shadow-sky-900/10'
         >
@@ -68,27 +71,27 @@ export default function HeroBanner() {
           <input
             name='search'
             type='search'
-            placeholder='Bạn muốn học gì hôm nay?'
-            aria-label='Tìm khóa học'
+            placeholder={t('searchPlaceholder')}
+            aria-label={t('searchLabel')}
             className='h-11 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground'
           />
           <button
             type='submit'
             className='h-11 shrink-0 rounded-full bg-linear-to-r from-sky-500 to-blue-600 px-6 text-sm font-semibold text-white shadow-md shadow-sky-500/30 transition-opacity hover:opacity-90'
           >
-            Tìm kiếm
+            {t('search')}
           </button>
         </Form>
 
         <div className='flex flex-wrap items-center gap-2 text-sm'>
-          <span className='text-muted-foreground'>Gợi ý:</span>
+          <span className='text-muted-foreground'>{t('suggestions')}</span>
           {quickLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className='flex items-center gap-1 rounded-full border bg-card/70 px-3 py-1 transition-colors hover:border-primary/40 hover:text-primary'
             >
-              {link.label} <ArrowRight className='size-3.5' />
+              {t(link.label)} <ArrowRight className='size-3.5' />
             </Link>
           ))}
         </div>
@@ -122,6 +125,7 @@ async function HeroCourse() {
     .then((res) => res.payload.data[0])
     .catch(() => undefined)
   if (!course) return null
+  const t = await getTranslations('Hero')
 
   return (
     <div className='relative'>
@@ -135,7 +139,7 @@ async function HeroCourse() {
           </span>
           <span className='flex flex-col leading-tight'>
             <span className='font-semibold'>{course.rating.averageRating}/5</span>
-            <span className='text-xs text-muted-foreground'>{course.rating.totalReviews} đánh giá</span>
+            <span className='text-xs text-muted-foreground'>{t('reviews', { count: course.rating.totalReviews })}</span>
           </span>
         </span>
       )}
@@ -144,8 +148,8 @@ async function HeroCourse() {
           <Users className='size-4' />
         </span>
         <span className='flex flex-col leading-tight'>
-          <span className='font-semibold'>{course.studentCount} học viên</span>
-          <span className='text-xs text-muted-foreground'>đang theo học</span>
+          <span className='font-semibold'>{t('students', { count: course.studentCount })}</span>
+          <span className='text-xs text-muted-foreground'>{t('enrolled')}</span>
         </span>
       </span>
     </div>

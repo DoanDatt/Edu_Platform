@@ -2,9 +2,11 @@
 
 import { Button } from '@/components/ui/button'
 import { Moon, Sun } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
 
 export default function DarkModeToggle() {
+  const t = useTranslations('Header')
   const { resolvedTheme, setTheme } = useTheme()
 
   return (
@@ -12,7 +14,7 @@ export default function DarkModeToggle() {
       variant='ghost'
       size='icon'
       className='relative'
-      aria-label='Đổi giao diện sáng / tối'
+      aria-label={t('toggleTheme')}
       onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
     >
       {/* Vẽ cả 2 icon, CSS (dark:) quyết định cái nào hiện.

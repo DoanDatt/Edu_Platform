@@ -28,6 +28,7 @@ import {
   XCircle
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 
 // Icon + màu theo loại thông báo: nhìn là biết tin tốt (xanh) hay tin xấu (đỏ)
@@ -54,6 +55,8 @@ const typeStyles: Record<keyof typeof NotificationType, { Icon: LucideIcon; clas
 // Chuông thông báo ở header (trang công khai + khu giảng viên / admin). Chưa đăng nhập thì không hiện.
 // Số đỏ = số chưa đọc, tự cập nhật 30 giây / lần (xem useUnreadCountQuery). Bấm chuông mới tải danh sách
 export default function NotificationBell() {
+  const t = useTranslations('Notifications')
+  const locale = useLocale()
   const { isAuth } = useAppContext()
   const [open, setOpen] = useState(false)
   const router = useRouter()
@@ -106,7 +109,7 @@ export default function NotificationBell() {
           variant='ghost'
           size='icon'
           className='relative'
-          aria-label={unreadCount ? `Thông báo, ${unreadCount} chưa đọc` : 'Thông báo'}
+          aria-label={unreadCount ? t('labelUnread', { count: unreadCount }) : t('title')}
         >
           <Bell className='size-5' />
           {!!unreadCount && (
@@ -120,7 +123,7 @@ export default function NotificationBell() {
       {/* min(): điện thoại hẹp thì menu co theo màn hình, không tràn ra ngoài */}
       <DropdownMenuContent align='end' className='w-[min(24rem,calc(100vw-2rem))] p-0'>
         <div className='flex items-center justify-between gap-2 border-b px-4 py-3'>
-          <span className='font-semibold'>Thông báo</span>
+          <span className='font-semibold'>{t('title')}</span>
           {!!unreadCount && (
             <button
               type='button'
@@ -129,7 +132,7 @@ export default function NotificationBell() {
               className='flex items-center gap-1 text-xs font-medium text-primary hover:underline disabled:opacity-50'
             >
               <CheckCheck className='size-3.5' />
-              Đánh dấu đã đọc tất cả
+              {t('markAllRead')}
             </button>
           )}
         </div>
@@ -148,11 +151,11 @@ export default function NotificationBell() {
               ))}
             </div>
           ) : listQuery.isError ? (
-            <p className='p-4 text-sm text-destructive'>Không tải được thông báo.</p>
+            <p className='p-4 text-sm text-destructive'>{t('loadError')}</p>
           ) : notifications.length === 0 ? (
             <div className='flex flex-col items-center gap-2 px-4 py-10 text-center text-sm text-muted-foreground'>
               <Bell className='size-8' />
-              Chưa có thông báo nào
+              {t('empty')}
             </div>
           ) : (
             notifications.map((notification) => {
@@ -176,12 +179,12 @@ export default function NotificationBell() {
                     </span>
                     <span className='line-clamp-2 text-xs text-muted-foreground'>{notification.message}</span>
                     <span className={cn('text-xs', isUnread ? 'text-primary' : 'text-muted-foreground')}>
-                      {formatRelativeTime(notification.createdAt)}
+                      {formatRelativeTime(notification.createdAt, locale)}
                     </span>
                   </div>
                   {/* Chấm xanh: chưa đọc */}
                   {isUnread && (
-                    <span className='mt-1.5 size-2 shrink-0 rounded-full bg-primary' aria-label='Chưa đọc' />
+                    <span className='mt-1.5 size-2 shrink-0 rounded-full bg-primary' aria-label={t('unread')} />
                   )}
                 </DropdownMenuItem>
               )

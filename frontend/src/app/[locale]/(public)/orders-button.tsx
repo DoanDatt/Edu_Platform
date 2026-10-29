@@ -6,6 +6,7 @@ import { OrderStatus } from '@/constants/type'
 import { useMyOrderQuery } from '@/queries/useOrder'
 import { ShoppingCart } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
 
 // Biểu tượng giỏ hàng trên header. Web mua TỪNG khóa (không có giỏ nhiều món) → giỏ = các đơn ĐANG CHỜ thanh toán:
 // huy hiệu là số đơn chờ (thật, từ API), bấm vào mở lịch sử mua hàng lọc sẵn đơn chờ để thanh toán tiếp.
@@ -18,6 +19,7 @@ export default function OrdersButton() {
 
 // Tách component: hook chỉ chạy khi đã đăng nhập (hook không được gọi trong if)
 function PendingOrdersButton() {
+  const t = useTranslations('Header')
   // limit 1: chỉ cần totalItems (số đơn chờ), không cần danh sách
   const { data } = useMyOrderQuery({ status: OrderStatus.PENDING, page: 1, limit: 1 })
   const pendingCount = data?.payload.totalItems ?? 0
@@ -26,8 +28,8 @@ function PendingOrdersButton() {
     <Button asChild variant='ghost' size='icon' className='relative rounded-full'>
       <Link
         href='/my-orders?status=PENDING'
-        aria-label={pendingCount > 0 ? `${pendingCount} đơn chờ thanh toán` : 'Đơn hàng'}
-        title='Đơn chờ thanh toán'
+        aria-label={pendingCount > 0 ? t('pendingOrdersCount', { count: pendingCount }) : t('orders')}
+        title={t('pendingOrders')}
       >
         <ShoppingCart className='size-5' />
         {pendingCount > 0 && (

@@ -2,6 +2,7 @@
 
 import { Badge } from '@/components/ui/badge'
 import { formatClock, formatDuration } from '@/lib/format'
+import { useLocale, useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { PublicSectionType } from '@/schemaValidations/section.schema'
 import { Lock, Minus, PlayCircle, Plus } from 'lucide-react'
@@ -20,12 +21,14 @@ export default function Curriculum({
   totalLectures: number
   totalDurationSec: number
 }) {
+  const t = useTranslations('CourseDetail')
+  const locale = useLocale()
   // Mặc định mở sẵn chương đầu. Set: tập hợp id, kiểm tra "có trong tập không" bằng .has()
   const [openIds, setOpenIds] = useState(() => new Set(sections.slice(0, 1).map((section) => section.id)))
   const allOpen = sections.length > 0 && openIds.size === sections.length
 
   if (sections.length === 0) {
-    return <p className='text-sm text-muted-foreground'>Khóa học chưa có nội dung.</p>
+    return <p className='text-sm text-muted-foreground'>{t('noContent')}</p>
   }
 
   const toggleAll = () => setOpenIds(allOpen ? new Set() : new Set(sections.map((section) => section.id)))
@@ -45,12 +48,15 @@ export default function Curriculum({
     <div className='flex flex-col gap-3'>
       <div className='flex flex-wrap items-center justify-between gap-2 text-sm'>
         <p>
-          <span className='font-semibold'>{sections.length}</span> chương ·{' '}
-          <span className='font-semibold'>{totalLectures}</span> bài giảng ·{' '}
-          <span className='font-semibold'>{formatDuration(totalDurationSec)}</span>
+          {t.rich('curriculumSummary', {
+            sections: sections.length,
+            lectures: totalLectures,
+            duration: formatDuration(totalDurationSec, locale),
+            b: (chunks) => <span className='font-semibold'>{chunks}</span>
+          })}
         </p>
         <button type='button' onClick={toggleAll} className='font-medium text-primary hover:underline'>
-          {allOpen ? 'Thu gọn tất cả' : 'Mở rộng tất cả'}
+          {allOpen ? t('collapseAll') : t('expandAll')}
         </button>
       </div>
 
@@ -73,7 +79,9 @@ export default function Curriculum({
                 <span className='flex-1 font-semibold'>
                   {sectionIndex + 1}. {section.title}
                 </span>
-                <span className='shrink-0 text-sm text-muted-foreground'>{section.lectures.length} bài</span>
+                <span className='shrink-0 text-sm text-muted-foreground'>
+                  {t('lessonCount', { count: section.lectures.length })}
+                </span>
               </summary>
 
               <ul>
@@ -92,7 +100,7 @@ export default function Curriculum({
                     <span className={cn('flex-1', !lecture.isPreview && 'text-muted-foreground')}>
                       {sectionIndex + 1}.{lectureIndex + 1} {lecture.title}
                     </span>
-                    {lecture.isPreview && <Badge variant='secondary'>Xem thử</Badge>}
+                    {lecture.isPreview && <Badge variant='secondary'>{t('preview')}</Badge>}
                     <span className='tabular-nums text-muted-foreground'>{formatClock(lecture.durationSec)}</span>
                   </li>
                 ))}

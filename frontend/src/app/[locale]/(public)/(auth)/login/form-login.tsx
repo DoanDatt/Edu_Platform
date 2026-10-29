@@ -15,8 +15,12 @@ import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { Link, useRouter } from '@/i18n/navigation'
+import { useZodErrorTranslator } from '@/i18n/zod-errors'
+import { useTranslations } from 'next-intl'
 
 export default function LoginForm() {
+  const t = useTranslations('Auth')
+  const translateError = useZodErrorTranslator()
   const loginMutation = useLoginMutation()
   const { setRole } = useAppContext()
   const router = useRouter()
@@ -52,8 +56,8 @@ export default function LoginForm() {
     // Hiện dần + trượt từ dưới lên khi mở trang
     <Card className='w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-300 motion-reduce:animate-none'>
       <CardHeader className='text-center'>
-        <CardTitle className='text-2xl'>Đăng nhập</CardTitle>
-        <CardDescription>Chào mừng bạn quay lại EduPlatform</CardDescription>
+        <CardTitle className='text-2xl'>{t('login')}</CardTitle>
+        <CardDescription>{t('loginDescription')}</CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -74,11 +78,11 @@ export default function LoginForm() {
                     {...field}
                     id='login-email'
                     type='email'
-                    placeholder='ban@email.com'
+                    placeholder={t('emailPlaceholder')}
                     autoComplete='email'
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && <FieldError errors={[translateError(fieldState.error)]} />}
                 </Field>
               )}
             />
@@ -88,7 +92,7 @@ export default function LoginForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor='login-password'>Mật khẩu</FieldLabel>
+                  <FieldLabel htmlFor='login-password'>{t('password')}</FieldLabel>
                   <div className='relative'>
                     <Input
                       {...field}
@@ -103,12 +107,12 @@ export default function LoginForm() {
                       type='button'
                       onClick={() => setShowPassword((prev) => !prev)}
                       className='absolute inset-y-0 right-0 flex w-9 items-center justify-center text-muted-foreground hover:text-foreground'
-                      aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                      aria-label={showPassword ? t('hidePassword') : t('showPassword')}
                     >
                       {showPassword ? <EyeOff className='size-4' /> : <Eye className='size-4' />}
                     </button>
                   </div>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && <FieldError errors={[translateError(fieldState.error)]} />}
                 </Field>
               )}
             />
@@ -130,12 +134,12 @@ export default function LoginForm() {
         {/* form='form-login': nút nằm ngoài thẻ <form> vẫn submit được form đó */}
         <Button type='submit' form='form-login' className='w-full' disabled={loginMutation.isPending}>
           {loginMutation.isPending && <Loader2 className='animate-spin' />}
-          Đăng nhập
+          {t('login')}
         </Button>
         <p className='text-sm text-muted-foreground'>
-          Chưa có tài khoản?{' '}
+          {t('noAccount')}{' '}
           <Link href='/register' className='font-medium text-foreground underline-offset-4 hover:underline'>
-            Đăng ký
+            {t('register')}
           </Link>
         </p>
       </CardFooter>

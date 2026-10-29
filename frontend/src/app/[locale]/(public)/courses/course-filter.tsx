@@ -8,6 +8,7 @@ import { Search, X } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
 
 // Ngừng gõ bao lâu (mili giây) thì tự tìm
 const SEARCH_DEBOUNCE_MS = 400
@@ -17,6 +18,7 @@ const FILTER_KEYS = ['search', 'categoryId', 'level', 'price', 'sort']
 
 export default function CourseFilters({ categories }: { categories: CategoryType[] }) {
   const router = useRouter()
+  const t = useTranslations('Courses')
   const searchParams = useSearchParams()
 
   // ===== Ô tìm kiếm: 3 giá trị cần phân biệt =====
@@ -104,20 +106,20 @@ export default function CourseFilters({ categories }: { categories: CategoryType
         <Input
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          placeholder='Tìm khóa học'
+          placeholder={t('searchPlaceholder')}
           className='h-10 pl-9'
-          aria-label='Tìm khóa học'
+          aria-label={t('searchPlaceholder')}
         />
       </form>
 
       {/* Điện thoại: 2 cột, máy tính bảng: 4 cột, máy tính: nằm cùng hàng với ô tìm kiếm */}
       <div className='grid grid-cols-2 gap-3 sm:grid-cols-4 lg:flex'>
         <Select value={searchParams.get('categoryId') ?? 'all'} onValueChange={(v) => updateParam('categoryId', v)}>
-          <SelectTrigger className='h-10 w-full lg:w-44' aria-label='Danh mục'>
+          <SelectTrigger className='h-10 w-full lg:w-44' aria-label={t('category')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='all'>Tất cả danh mục</SelectItem>
+            <SelectItem value='all'>{t('allCategories')}</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category.id} value={String(category.id)}>
                 {category.name}
@@ -127,37 +129,37 @@ export default function CourseFilters({ categories }: { categories: CategoryType
         </Select>
 
         <Select value={searchParams.get('level') ?? 'all'} onValueChange={(v) => updateParam('level', v)}>
-          <SelectTrigger className='h-10 w-full lg:w-40' aria-label='Trình độ'>
+          <SelectTrigger className='h-10 w-full lg:w-40' aria-label={t('level')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='all'>Mọi trình độ</SelectItem>
-            <SelectItem value='BEGINNER'>Cơ bản</SelectItem>
-            <SelectItem value='INTERMEDIATE'>Trung cấp</SelectItem>
-            <SelectItem value='ADVANCED'>Nâng cao</SelectItem>
+            <SelectItem value='all'>{t('allLevels')}</SelectItem>
+            <SelectItem value='BEGINNER'>{t('levels.BEGINNER')}</SelectItem>
+            <SelectItem value='INTERMEDIATE'>{t('levels.INTERMEDIATE')}</SelectItem>
+            <SelectItem value='ADVANCED'>{t('levels.ADVANCED')}</SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={searchParams.get('price') ?? 'all'} onValueChange={(v) => updateParam('price', v)}>
-          <SelectTrigger className='h-10 w-full lg:w-36' aria-label='Giá'>
+          <SelectTrigger className='h-10 w-full lg:w-36' aria-label={t('price')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='all'>Mọi mức giá</SelectItem>
-            <SelectItem value='free'>Miễn phí</SelectItem>
-            <SelectItem value='paid'>Có phí</SelectItem>
+            <SelectItem value='all'>{t('allPrices')}</SelectItem>
+            <SelectItem value='free'>{t('free')}</SelectItem>
+            <SelectItem value='paid'>{t('paid')}</SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={searchParams.get('sort') ?? 'newest'} onValueChange={(v) => updateParam('sort', v)}>
-          <SelectTrigger className='h-10 w-full lg:w-40' aria-label='Sắp xếp'>
+          <SelectTrigger className='h-10 w-full lg:w-40' aria-label={t('sort')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='newest'>Mới nhất</SelectItem>
-            <SelectItem value='popular'>Nhiều học viên</SelectItem>
-            <SelectItem value='price_asc'>Giá tăng dần</SelectItem>
-            <SelectItem value='price_desc'>Giá giảm dần</SelectItem>
+            <SelectItem value='newest'>{t('sortNewest')}</SelectItem>
+            <SelectItem value='popular'>{t('sortPopular')}</SelectItem>
+            <SelectItem value='price_asc'>{t('sortPriceAsc')}</SelectItem>
+            <SelectItem value='price_desc'>{t('sortPriceDesc')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -166,7 +168,7 @@ export default function CourseFilters({ categories }: { categories: CategoryType
       {hasFilter && (
         <Button variant='ghost' className='h-10 self-start lg:self-auto' onClick={clearFilters}>
           <X />
-          Xóa bộ lọc
+          {t('clearFilters')}
         </Button>
       )}
     </div>

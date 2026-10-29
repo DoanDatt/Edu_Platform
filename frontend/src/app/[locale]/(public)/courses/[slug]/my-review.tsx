@@ -11,11 +11,14 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import ReviewForm from './review-form'
 import { useRouter } from '@/i18n/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 
 // Khối "đánh giá của tôi" trên trang chi tiết. Chỉ hiện khi đã ghi danh (page.tsx kiểm tra isEnrolled).
 //   chưa đánh giá → form viết mới
 //   đã đánh giá   → thẻ đánh giá + nút Sửa (chuyển sang form, điền sẵn) / Xóa
 export default function MyReview({ courseId }: { courseId: number }) {
+  const t = useTranslations('Review')
+  const locale = useLocale()
   const router = useRouter()
   const myReviewQuery = useMyReviewQuery(courseId)
   const deleteMutation = useDeleteReviewMutation()
@@ -31,10 +34,10 @@ export default function MyReview({ courseId }: { courseId: number }) {
   const handleDelete = async () => {
     if (!myReview || deleteMutation.isPending) return
     // confirm(): hộp thoại có sẵn của trình duyệt. Sau này có thể đổi sang AlertDialog của shadcn cho đẹp
-    if (!confirm('Xóa đánh giá của bạn cho khóa học này?')) return
+    if (!confirm(t('confirmDelete'))) return
     try {
       await deleteMutation.mutateAsync(myReview.id)
-      toast.success('Đã xóa đánh giá')
+      toast.success(t('deleted'))
       router.refresh() // danh sách + điểm trung bình (server) tính lại
     } catch (error) {
       handleErrorApi({ error })
@@ -46,24 +49,24 @@ export default function MyReview({ courseId }: { courseId: number }) {
       {myReview === null ? (
         // ===== Chưa đánh giá =====
         <>
-          <h3 className='font-semibold'>Đánh giá khóa học</h3>
+          <h3 className='font-semibold'>{t('writeTitle')}</h3>
           <ReviewForm courseId={courseId} />
         </>
       ) : isEditing ? (
         // ===== Đang sửa: form điền sẵn dữ liệu cũ =====
         <>
-          <h3 className='font-semibold'>Sửa đánh giá của bạn</h3>
+          <h3 className='font-semibold'>{t('editTitle')}</h3>
           <ReviewForm courseId={courseId} review={myReview} onDone={() => setIsEditing(false)} />
         </>
       ) : (
         // ===== Đã đánh giá =====
         <>
           <div className='flex items-center justify-between gap-2'>
-            <h3 className='font-semibold'>Đánh giá của bạn</h3>
+            <h3 className='font-semibold'>{t('yourReview')}</h3>
             <div className='flex gap-1'>
               <Button variant='ghost' size='sm' onClick={() => setIsEditing(true)}>
                 <Pencil />
-                Sửa
+                {t('edit')}
               </Button>
               <Button
                 variant='ghost'
@@ -73,13 +76,13 @@ export default function MyReview({ courseId }: { courseId: number }) {
                 className='text-destructive hover:text-destructive'
               >
                 {deleteMutation.isPending ? <Loader2 className='animate-spin' /> : <Trash2 />}
-                Xóa
+                {t('delete')}
               </Button>
             </div>
           </div>
           <div className='flex items-center gap-3'>
             <RatingStars value={myReview.rating} />
-            <span className='text-xs text-muted-foreground'>{formatDate(myReview.createdAt)}</span>
+            <span className='text-xs text-muted-foreground'>{formatDate(myReview.createdAt, locale)}</span>
           </div>
           {myReview.comment && <p className='text-sm leading-relaxed text-muted-foreground'>{myReview.comment}</p>}
         </>

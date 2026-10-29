@@ -1,13 +1,10 @@
 import { LogoMark } from '@/components/logo'
 import Waves from '@/components/waves'
 import { CheckCircle2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 // Lợi ích hiện ở panel bên trái trang đăng nhập / đăng ký (đều là tính năng web có thật)
-const benefits = [
-  'Học theo tốc độ của bạn, xem lại bài bao nhiêu lần cũng được',
-  'Theo dõi tiến độ từng bài, quay lại đúng chỗ đang học dở',
-  'Đánh giá thật từ học viên đã học khóa đó'
-]
+const benefits = ['ownPace', 'trackProgress', 'realReviews'] as const
 
 // Khung chung cho trang Đăng nhập / Đăng ký: chia đôi màn hình.
 //   Trái (chỉ máy tính, lg+): panel thương hiệu nền xanh có sóng trôi, lời chào + lợi ích
@@ -22,6 +19,8 @@ export default function AuthShell({
   description: string
   children: React.ReactNode
 }) {
+  const t = useTranslations('Auth.benefits')
+
   return (
     <div className='grid flex-1 overflow-hidden rounded-3xl border bg-card shadow-sm lg:grid-cols-2'>
       <aside className='relative hidden flex-col gap-10 overflow-hidden bg-linear-to-br from-sky-400 via-sky-500 to-blue-600 p-10 text-white lg:flex dark:from-sky-600 dark:via-sky-700 dark:to-blue-800'>
@@ -40,7 +39,7 @@ export default function AuthShell({
           {benefits.map((benefit) => (
             <li key={benefit} className='flex items-start gap-3'>
               <CheckCircle2 className='mt-0.5 size-5 shrink-0 text-white/90' />
-              <span className='text-white/90'>{benefit}</span>
+              <span className='text-white/90'>{t(benefit)}</span>
             </li>
           ))}
         </ul>

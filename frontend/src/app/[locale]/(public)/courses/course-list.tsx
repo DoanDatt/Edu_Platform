@@ -5,6 +5,7 @@ import { SearchX } from 'lucide-react'
 import { GetCoursesQuery } from '@/schemaValidations/course.schema'
 import PaginationLinks from '@/components/pagination-links'
 import { Link } from '@/i18n/navigation'
+import { getTranslations } from 'next-intl/server'
 
 const PAGE_SIZE = 12
 type SearchParams = Record<string, string | string[] | undefined>
@@ -13,6 +14,7 @@ const first = (value: string | string[] | undefined) => (Array.isArray(value) ? 
 
 export default async function CourseList({ searchParams }: { searchParams: Promise<SearchParams> }) {
   // raw.page có thể là: undefined | '2' | 'abc' | ['1', '2'] (khi URL là ?page=1&page=2)
+  const t = await getTranslations('Courses')
   const raw = await searchParams
   const parsed = GetCoursesQuery.safeParse({
     search: first(raw.search),
@@ -29,7 +31,7 @@ export default async function CourseList({ searchParams }: { searchParams: Promi
   } catch {
     return (
       <p className='rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive'>
-        Không tải được danh sách khóa học. Vui lòng thử lại sau
+        {t('loadError')}
       </p>
     )
   }
@@ -43,12 +45,10 @@ export default async function CourseList({ searchParams }: { searchParams: Promi
         <span className='flex size-14 items-center justify-center rounded-full bg-muted'>
           <SearchX className='size-7 text-muted-foreground' />
         </span>
-        <p className='mt-2 font-semibold'>Không tìm thấy khóa học phù hợp</p>
-        <p className='max-w-sm text-sm text-muted-foreground'>
-          Thử đổi từ khóa, bỏ bớt bộ lọc hoặc xem tất cả khóa học.
-        </p>
+        <p className='mt-2 font-semibold'>{t('emptyTitle')}</p>
+        <p className='max-w-sm text-sm text-muted-foreground'>{t('emptyDescription')}</p>
         <Button asChild variant='outline' className='mt-3'>
-          <Link href='/courses'>Xem tất cả khóa học</Link>
+          <Link href='/courses'>{t('viewAll')}</Link>
         </Button>
       </div>
     )
@@ -56,7 +56,7 @@ export default async function CourseList({ searchParams }: { searchParams: Promi
 
   return (
     <div className='flex flex-col gap-6'>
-      <p className='text-sm text-muted-foreground'>Tìm thấy {totalItems} khóa học</p>
+      <p className='text-sm text-muted-foreground'>{t('found', { count: totalItems })}</p>
       <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
         {courses.map((course) => (
           <CourseCard key={course.id} course={course} />
