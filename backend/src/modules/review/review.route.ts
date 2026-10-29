@@ -4,6 +4,7 @@ import { requireAuth, requirePermission } from '../../middleware/auth.middleware
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate.middleware'
 import {
   CreateReviewBodySchema,
+  GetFeaturedReviewsQuerySchema,
   GetReviewsQuerySchema,
   ReviewCourseParamsSchema,
   ReviewParamsSchema,
@@ -14,6 +15,8 @@ const reviewRouter = Router()
 
 // Công khai: đánh giá của một khóa đã xuất bản
 reviewRouter.get('/', validateQuery(GetReviewsQuerySchema), reviewController.getReviews)
+// Công khai: đánh giá nổi bật cho trang chủ ("/featured" là route cố định, đứng trước các route có tham số)
+reviewRouter.get('/featured', validateQuery(GetFeaturedReviewsQuerySchema), reviewController.getFeaturedReviews)
 
 // Route cố định "/mine/..." đứng trước "/:reviewId"
 reviewRouter.get(

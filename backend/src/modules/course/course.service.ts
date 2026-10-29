@@ -186,7 +186,30 @@ const SORT_ORDER: Record<GetCoursesQueryType['sort'], Prisma.CourseOrderByWithRe
   price_desc: [{ price: 'desc' }, { id: 'desc' }],
 }
 
-export const getPublicCourses = async ({ page, limit, search, categoryId, level, price, sort }: GetCoursesQueryType) => {
+// Số bài giảng còn hoạt động (trong chương còn hoạt động) của NHIỀU khóa cùng lúc, cho thẻ khóa học "12 bài học".
+// Prisma không đếm lồng 2 tầng (khóa → chương → bài) được → lấy số bài của từng chương rồi cộng theo khóa
+const countLecturesByCourse = async (courseIds: number[]) => {
+  const result = new Map<number, number>()
+  if (courseIds.length === 0) return result
+  const sections = await prisma.section.findMany({
+    where: { courseId: { in: courseIds }, deletedAt: null },
+    select: { courseId: true, _count: { select: { lectures: { where: { deletedAt: null } } } } },
+  })
+  for (const section of sections) {
+    result.set(section.courseId, (result.get(section.courseId) ?? 0) + section._count.lectures)
+  }
+  return result
+}
+
+export const getPublicCourses = async ({
+  page,
+  limit,
+  search,
+  categoryId,
+  level,
+  price,
+  sort,
+}: GetCoursesQueryType) => {
   // Lọc động: điều kiện nào không gửi thì để undefined → Prisma bỏ qua
   const where: Prisma.CourseWhereInput = {
     ...publicCourseWhere,
@@ -195,10 +218,7 @@ export const getPublicCourses = async ({ page, limit, search, categoryId, level,
     price: price === 'free' ? 0 : price === 'paid' ? { gt: 0 } : undefined,
     // Tìm trong tên HOẶC mô tả ngắn, không phân biệt hoa thường
     OR: search
-      ? [
-          { title: { contains: search, mode: 'insensitive' } },
-          { subtitle: { contains: search, mode: 'insensitive' } },
-        ]
+      ? [{ title: { contains: search, mode: 'insensitive' } }, { subtitle: { contains: search, mode: 'insensitive' } }]
       : undefined,
   }
 
@@ -213,11 +233,13 @@ export const getPublicCourses = async ({ page, limit, search, categoryId, level,
     }),
   ])
 
-  // Điểm đánh giá của cả trang trong 1 query (groupBy)
-  const ratings = await getRatingByCourse(courses.map((c) => c.id))
+  // Điểm đánh giá + số bài học của cả trang, mỗi thứ 1 query (không lặp từng khóa)
+  const courseIds = courses.map((c) => c.id)
+  const [ratings, lectureCounts] = await Promise.all([getRatingByCourse(courseIds), countLecturesByCourse(courseIds)])
   const data = courses.map(({ _count, ...course }) => ({
     ...course,
     studentCount: _count.enrollments,
+    totalLectures: lectureCounts.get(course.id) ?? 0,
     rating: ratings.get(course.id) ?? { averageRating: 0, totalReviews: 0 },
   }))
   return { data, totalItems, page, limit, totalPages: Math.ceil(totalItems / limit) }

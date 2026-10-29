@@ -6,7 +6,12 @@ import { Prisma } from '../../generated/prisma/client'
 import { AccessTokenPayload } from '../../utils/jwt'
 import { isEnrolled } from '../enrollment/enrollment.service'
 import { notifySafely } from '../notification/notification.service'
-import { CreateReviewBodyType, GetReviewsQueryType, UpdateReviewBodyType } from './review.schema'
+import {
+  CreateReviewBodyType,
+  GetFeaturedReviewsQueryType,
+  GetReviewsQueryType,
+  UpdateReviewBodyType,
+} from './review.schema'
 
 const reviewInclude = {
   user: { select: { id: true, name: true, avatar: true } },
@@ -84,6 +89,40 @@ export const getReviews = async ({ courseId, page, limit }: GetReviewsQueryType)
   return { data, summary, totalItems, page, limit, totalPages: Math.ceil(totalItems / limit) }
 }
 
+// Nhận xét ngắn quá ("hay", "ok") thì không đưa lên trang chủ
+const FEATURED_MIN_COMMENT_LENGTH = 10
+
+// Đánh giá nổi bật (trang chủ): 4–5 sao, có nhận xét đủ dài, thuộc khóa đang xuất bản.
+// Mỗi người tối đa 1 đánh giá (không để 1 học viên chiếm hết khối). Mới nhất trước
+export const getFeaturedReviews = async ({ limit }: GetFeaturedReviewsQueryType) => {
+  // Lấy dư rồi lọc bằng JS: Prisma không lọc được theo độ dài chuỗi
+  const reviews = await prisma.review.findMany({
+    where: {
+      rating: { gte: 4 },
+      comment: { not: '' },
+      course: { status: CourseStatus.PUBLISHED, deletedAt: null },
+    },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    take: limit * 5,
+    select: {
+      id: true,
+      rating: true,
+      comment: true,
+      createdAt: true,
+      user: { select: { id: true, name: true, avatar: true } },
+      course: { select: { id: true, title: true } },
+    },
+  })
+  const seenUsers = new Set<number>()
+  return reviews
+    .filter((review) => {
+      if (review.comment.trim().length < FEATURED_MIN_COMMENT_LENGTH || seenUsers.has(review.user.id)) return false
+      seenUsers.add(review.user.id)
+      return true
+    })
+    .slice(0, limit)
+}
+
 // Đánh giá của tôi cho 1 khóa (để frontend điền sẵn form sửa). Chưa đánh giá → null
 export const getMyReview = (userId: number, courseId: number) =>
   prisma.review.findUnique({
@@ -111,7 +150,10 @@ export const createReview = async ({ courseId, ...data }: CreateReviewBodyType, 
   }
 
   // Báo giảng viên có đánh giá mới. Link /courses/:id: trang chi tiết tự chuyển sang URL chuẩn có tên khóa
-  const course = await prisma.course.findUnique({ where: { id: courseId }, select: { title: true, instructorId: true } })
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { title: true, instructorId: true },
+  })
   if (course) {
     await notifySafely({
       userId: course.instructorId,

@@ -2,11 +2,18 @@ import { Request, Response } from 'express'
 import * as reviewService from './review.service'
 import {
   CreateReviewBodyType,
+  GetFeaturedReviewsQueryType,
   GetReviewsQueryType,
   ReviewCourseParamsType,
   ReviewParamsType,
   UpdateReviewBodyType,
 } from './review.schema'
+
+export const getFeaturedReviews = async (req: Request, res: Response) => {
+  const query = req.query as unknown as GetFeaturedReviewsQueryType
+  const data = await reviewService.getFeaturedReviews(query)
+  res.json({ message: 'Lấy đánh giá nổi bật thành công', data })
+}
 
 export const getReviews = async (req: Request, res: Response) => {
   const query = req.query as unknown as GetReviewsQueryType

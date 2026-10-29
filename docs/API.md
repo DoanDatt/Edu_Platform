@@ -172,7 +172,7 @@ File được phục vụ lại tại `url` (GET, công khai). Video hỗ trợ 
 
 | Method | Path | Ai | Body / Query | Ghi chú |
 |---|---|---|---|---|
-| GET | `/categories` | Công khai | `?page&limit` | Sắp theo tên A→Z. Mỗi item `{ id, name, description }` |
+| GET | `/categories` | Công khai | `?page&limit` | Sắp theo tên A→Z. Mỗi item `{ id, name, description, courseCount }`. `courseCount` = số khóa **đã xuất bản** trong danh mục |
 | GET | `/categories/:categoryId` | Công khai | | |
 | POST | `/categories` | 🔑 Admin | `{ name, description? }` | 409 nếu trùng tên (không phân biệt hoa thường) |
 | PUT | `/categories/:categoryId` | 🔑 Admin | `{ name, description? }` | |
@@ -209,6 +209,7 @@ Mỗi phần tử trong `data`:
   "category": { "id": 1, "name": "Lập trình Web" },
   "instructor": { "id": 3, "name": "Nguyễn Văn An", "avatar": null },
   "studentCount": 2,
+  "totalLectures": 8,
   "rating": { "averageRating": 4.5, "totalReviews": 2 }
 }
 ```
@@ -393,6 +394,7 @@ Gợi ý trang học: bên trái là mục lục (`completed` hiện dấu ✓, 
 | Method | Path | Ai | Body / Query | Ghi chú |
 |---|---|---|---|---|
 | GET | `/reviews` | Công khai | `?courseId` (bắt buộc) `&page&limit` | Mới nhất trước, kèm `summary` (giống `rating` ở trang chi tiết). Mỗi item có `user: { id, name, avatar }` |
+| GET | `/reviews/featured` | Công khai | `?limit` (1–12, mặc định 6) | Đánh giá nổi bật cho trang chủ: 4–5 sao, nhận xét từ 10 ký tự, khóa đang xuất bản, mỗi người tối đa 1 đánh giá, mới nhất trước. Mỗi item `{ id, rating, comment, createdAt, user: { id, name, avatar }, course: { id, title } }` |
 | GET | `/reviews/mine/:courseId` | 🔑 | | Đánh giá của tôi, chưa có thì `data: null` (dùng để hiện form "Viết" hay "Sửa") |
 | POST | `/reviews` | 🔑 | `{ courseId, rating, comment? }` | Phải ghi danh trước (403). Mỗi khóa đánh giá một lần (409) |
 | PUT | `/reviews/:reviewId` | 🔑 tác giả | `{ rating, comment? }` | |

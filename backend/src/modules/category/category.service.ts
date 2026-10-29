@@ -1,4 +1,5 @@
 import prisma from '../../lib/prisma'
+import { CourseStatus } from '../../generated/prisma/enums'
 import { HttpError, onUniqueViolation } from '../../utils/error'
 import { CreateCategoryBodyType, GetCategoriesQueryType, UpdateCategoryBodyType } from './category.schema'
 
@@ -20,11 +21,20 @@ export const getCategories = async ({ page, limit }: GetCategoriesQueryType) => 
       take: limit,
       // sắp xếp theo tên A -> Z
       orderBy: { name: 'asc' }, // danh mục hiển thị theo bảng chữ cái
-      // chỉ lấy id, name, description
-      select: categorySelect,
+      // id, name, description + số khóa ĐÃ XUẤT BẢN trong danh mục (ô danh mục ở trang chủ: "12 khóa học")
+      select: {
+        ...categorySelect,
+        _count: { select: { courses: { where: { status: CourseStatus.PUBLISHED, deletedAt: null } } } },
+      },
     }),
   ])
-  return { data, totalItems, page, limit, totalPages: Math.ceil(totalItems / limit) }
+  return {
+    data: data.map(({ _count, ...category }) => ({ ...category, courseCount: _count.courses })),
+    totalItems,
+    page,
+    limit,
+    totalPages: Math.ceil(totalItems / limit),
+  }
 }
 
 export const getCategoryById = async (id: number) => {
@@ -92,7 +102,10 @@ export const deleteCategory = async (id: number, deleteById: number) => {
     },
   })
   if (courseCount > 0) {
-    throw new HttpError(409, `Còn ${courseCount} khóa học thuộc danh mục này, hãy chuyển chúng sang danh mục khác trước`)
+    throw new HttpError(
+      409,
+      `Còn ${courseCount} khóa học thuộc danh mục này, hãy chuyển chúng sang danh mục khác trước`,
+    )
   }
   await prisma.category.update({
     where: { id },

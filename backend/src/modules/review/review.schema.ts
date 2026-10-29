@@ -25,6 +25,15 @@ export const GetReviewsQuerySchema = PaginationQuerySchema.extend({
 
 export type GetReviewsQueryType = z.infer<typeof GetReviewsQuerySchema>
 
+// GET /reviews/featured?limit=6 → đánh giá tốt, có nhận xét, cho khối "Học viên nói gì" ở trang chủ
+export const GetFeaturedReviewsQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(12).default(6),
+  })
+  .strict()
+
+export type GetFeaturedReviewsQueryType = z.infer<typeof GetFeaturedReviewsQuerySchema>
+
 const ReviewContentSchema = z.object({
   rating: z.number().int().min(1, 'Số sao từ 1 đến 5').max(5, 'Số sao từ 1 đến 5'),
   comment: z.string().trim().max(2000).optional(),
