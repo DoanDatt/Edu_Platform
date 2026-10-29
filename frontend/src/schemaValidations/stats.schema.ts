@@ -1,5 +1,6 @@
 import { CourseStatus } from '@/constants/type'
 import z from 'zod'
+import { RevenueSchema } from './revenue.schema'
 
 // 1 khóa trong danh sách khóa nổi bật (nhiều học viên nhất)
 const TopCourseSchema = z.object({
@@ -24,7 +25,8 @@ export const InstructorStatsSchema = z.object({
     total: z.number(),
     averageRating: z.number()
   }),
-  topCourses: z.array(TopCourseSchema)
+  topCourses: z.array(TopCourseSchema),
+  revenue: RevenueSchema
 })
 export type InstructorStatsType = z.infer<typeof InstructorStatsSchema>
 
@@ -61,7 +63,8 @@ export const AdminStatsSchema = z.object({
   reviews: z.object({
     total: z.number(),
     averageRating: z.number()
-  })
+  }),
+  revenue: RevenueSchema
 })
 export type AdminStatsType = z.infer<typeof AdminStatsSchema>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import StatCard from '@/components/stat-card'
-import RevenueSection from './revenue-section'
+import RevenueSection from '@/components/dashboard/revenue-section'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -99,8 +99,8 @@ export default function AdminDashboard() {
         />
       </div>
 
-      {/* ===== Doanh thu (giao diện mẫu, chờ phần thanh toán) ===== */}
-      <RevenueSection />
+      {/* ===== Doanh thu cả hệ thống (đơn đã thanh toán) ===== */}
+      <RevenueSection revenue={stats.revenue} description='Toàn hệ thống · 30 ngày gần nhất' />
 
       <div className='grid gap-6 lg:grid-cols-[1fr_360px]'>
         {/* ===== Cần xử lý: khóa chờ duyệt ===== */}

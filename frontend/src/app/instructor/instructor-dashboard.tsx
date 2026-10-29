@@ -1,6 +1,7 @@
 'use client'
 
 import CourseStatusBadge from '@/components/course-status-badge'
+import RevenueSection from '@/components/dashboard/revenue-section'
 import StatCard from '@/components/stat-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -45,6 +46,9 @@ export default function InstructorDashboard() {
           Icon={Clock}
         />
       </div>
+
+      {/* ===== Doanh thu từ các khóa của giảng viên này ===== */}
+      <RevenueSection revenue={stats.revenue} description='Từ các khóa học của bạn · 30 ngày gần nhất' />
 
       {/* ===== Số khóa theo trạng thái ===== */}
       <Card>
