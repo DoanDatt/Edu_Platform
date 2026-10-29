@@ -3,8 +3,8 @@
 import { useAppContext } from '@/components/app-provider'
 import { checkAndRefreshToken } from '@/lib/utils'
 import { useQueryClient } from '@tanstack/react-query'
-import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { usePathname, useRouter } from '@/i18n/navigation'
 
 // Những page sau sẽ không check refresh token (chưa đăng nhập, hoặc trang tự xử lý token)
 const UNAUTHENTICATED_PATH = ['/login', '/logout', '/refresh-token', '/register']

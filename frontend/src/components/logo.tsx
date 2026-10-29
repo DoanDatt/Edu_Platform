@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 
 // Biểu tượng riêng của EduPlatform: quyển sách mở nằm trên con sóng (học + chủ đề biển)
 export function LogoMark({ className }: { className?: string }) {

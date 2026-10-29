@@ -3,10 +3,10 @@ import DarkModeToggle from '@/components/dark-mode-toggle'
 import Logo from '@/components/logo'
 import NotificationBell from '@/components/notification-bell'
 import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
 import { Suspense } from 'react'
 import { DashboardMobileNav, DashboardNav } from './dashboard-nav'
 import { DashboardMenuName } from './menus'
+import { Link } from '@/i18n/navigation'
 
 // Khung chung cho khu quản trị và khu giảng viên: sidebar trái + thanh trên + nội dung.
 // Trước đây chỉ admin có → viết riêng trong app/admin. Có thêm khu giảng viên (chỗ dùng thứ 2)

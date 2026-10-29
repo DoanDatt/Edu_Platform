@@ -5,10 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import { Menu } from 'lucide-react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { dashboardMenus, DashboardMenuName } from './menus'
+import { Link, usePathname } from '@/i18n/navigation'
 
 // Danh sách link sidebar, dùng chung cho sidebar máy tính và menu trượt điện thoại
 export function DashboardNav({ menu, onNavigate }: { menu: DashboardMenuName; onNavigate?: () => void }) {

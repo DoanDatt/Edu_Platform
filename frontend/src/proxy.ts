@@ -1,4 +1,6 @@
 import { RoleType, RoleValues } from '@/constants/type'
+import { routing } from '@/i18n/routing'
+import createMiddleware from 'next-intl/middleware'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -31,8 +33,24 @@ const getRoleFromAccessToken = (accessToken: string): RoleType | undefined => {
   }
 }
 
+// Middleware của next-intl: thêm / bỏ tiền tố ngôn ngữ, "viết lại" /courses → /vi/courses bên trong
+const intlProxy = createMiddleware(routing)
+
+// Tách tiền tố ngôn ngữ: '/en/my-courses' → { prefix: '/en', pathname: '/my-courses' }; tiếng Việt không có tiền tố
+const splitLocale = (fullPathname: string) => {
+  const locale = routing.locales.find((item) => fullPathname === `/${item}` || fullPathname.startsWith(`/${item}/`))
+  if (!locale) return { prefix: '', pathname: fullPathname }
+  const prefix = locale === routing.defaultLocale ? '' : `/${locale}`
+  return { prefix, pathname: fullPathname.slice(locale.length + 1) || '/' }
+}
+
 export function proxy(request: NextRequest) {
-  const { pathname, search } = request.nextUrl
+  // Kiểm tra quyền trên đường dẫn KHÔNG có tiền tố ('/en/admin' vẫn là '/admin'),
+  // chuyển hướng thì giữ nguyên ngôn ngữ đang xem (đang ở /en → về /en/login)
+  const { prefix, pathname } = splitLocale(request.nextUrl.pathname)
+  const { search } = request.nextUrl
+  const redirectTo = (path: string) =>
+    NextResponse.redirect(new URL(`${prefix}${path === '/' && prefix ? '' : path}`, request.url))
   // 2 cookie do Route Handler /api/auth/login, register, refresh-token đặt, mỗi cookie tự mất khi token hết hạn:
   //   accessToken: 15 phút · refreshToken: 7 ngày
   const accessToken = request.cookies.get('accessToken')?.value
@@ -42,19 +60,20 @@ export function proxy(request: NextRequest) {
 
   // 1. Chưa đăng nhập (hoặc phiên 7 ngày đã hết) mà vào trang riêng → về trang đăng nhập
   if (matchPath(pathname, privatePaths) && !isAuth) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return redirectTo('/login')
   }
 
   // 2. Đăng nhập rồi mà vào đăng nhập / đăng ký / quên mật khẩu → về trang chủ
   if (matchPath(pathname, unAuthPaths) && isAuth) {
-    return NextResponse.redirect(new URL('/', request.url))
+    return redirectTo('/')
   }
 
   // 3. Còn phiên nhưng access token đã hết hạn (thường là lâu ngày mới quay lại web)
   //    → sang /refresh-token làm mới, xong quay về đúng trang này (giữ cả ?query)
   //    Phải làm TRƯỚC bước 4: refresh token của Edu không có role, cần access token mới đọc được role
   if (matchPath(pathname, privatePaths) && !accessToken) {
-    const url = new URL('/refresh-token', request.url)
+    const url = new URL(`${prefix}/refresh-token`, request.url)
+    // redirect KHÔNG kèm tiền tố: trang /refresh-token dùng router của next-intl, tự gắn lại tiền tố
     url.searchParams.set('redirect', pathname + search)
     return NextResponse.redirect(url)
   }
@@ -63,30 +82,19 @@ export function proxy(request: NextRequest) {
   if (accessToken) {
     const role = getRoleFromAccessToken(accessToken)
     if (matchPath(pathname, instructorPaths) && role !== RoleValues.Instructor) {
-      return NextResponse.redirect(new URL('/', request.url))
+      return redirectTo('/')
     }
     if (matchPath(pathname, adminPaths) && role !== RoleValues.Admin) {
-      return NextResponse.redirect(new URL('/', request.url))
+      return redirectTo('/')
     }
   }
 
-  return NextResponse.next()
+  // Qua hết các bước kiểm tra → để next-intl xử lý ngôn ngữ
+  return intlProxy(request)
 }
 
-// Proxy chỉ chạy với các đường dẫn này (trang công khai như /, /courses không cần chạy).
-// ':path*' khớp cả chính route đó lẫn mọi trang con: '/admin', '/admin/users', ...
+// Chạy với MỌI trang (next-intl cần xử lý ngôn ngữ ở cả trang công khai),
+// trừ /api (Route Handler), /_next, /_vercel và file tĩnh có dấu chấm (favicon.ico, ảnh...)
 export const config = {
-  matcher: [
-    '/my-courses/:path*',
-    '/my-orders/:path*',
-    '/checkout/:path*',
-    '/learn/:path*',
-    '/profile/:path*',
-    '/instructor/:path*',
-    '/admin/:path*',
-    '/login',
-    '/register',
-    '/forgot-password',
-    '/reset-password'
-  ]
+  matcher: '/((?!api|_next|_vercel|.*\\..*).*)'
 }

@@ -14,9 +14,8 @@ import { handleErrorApi } from '@/lib/utils'
 import { useLogoutMutation, useMeQuery } from '@/queries/useAuth'
 import { useQueryClient } from '@tanstack/react-query'
 import { KeyRound, LogOut, ReceiptText, UserRound } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { Link, useRouter } from '@/i18n/navigation'
 
 const roleLabels: Record<string, string> = {
   ADMIN: 'Quản trị viên',

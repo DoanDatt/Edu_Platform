@@ -27,8 +27,8 @@ import {
   UserPlus,
   XCircle
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from '@/i18n/navigation'
 
 // Icon + màu theo loại thông báo: nhìn là biết tin tốt (xanh) hay tin xấu (đỏ)
 const typeStyles: Record<keyof typeof NotificationType, { Icon: LucideIcon; className: string }> = {

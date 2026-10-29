@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { HttpError } from '@/lib/http'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 
 // Lỗi khi tải 1 khóa theo id (giảng viên: sửa thông tin, soạn nội dung; admin: xem để duyệt).
 // HttpError có status → báo đúng lý do thay vì một câu chung chung
