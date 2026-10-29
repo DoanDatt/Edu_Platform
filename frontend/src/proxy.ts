@@ -78,6 +78,8 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     '/my-courses/:path*',
+    '/my-orders/:path*',
+    '/checkout/:path*',
     '/learn/:path*',
     '/profile/:path*',
     '/instructor/:path*',
