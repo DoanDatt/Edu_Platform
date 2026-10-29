@@ -172,7 +172,7 @@ File được phục vụ lại tại `url` (GET, công khai). Video hỗ trợ 
 
 | Method | Path | Ai | Body / Query | Ghi chú |
 |---|---|---|---|---|
-| GET | `/categories` | Công khai | `?page&limit` | Sắp theo tên A→Z. Mỗi item `{ id, name, description, courseCount }`. `courseCount` = số khóa **đã xuất bản** trong danh mục |
+| GET | `/categories` | Công khai | `?page&limit` | Sắp theo tên A→Z. Mỗi item `{ id, name, description, courseCount, coverImage }`. `courseCount` = số khóa **đã xuất bản** trong danh mục. `coverImage` = ảnh bìa của khóa đông học viên nhất có ảnh (không có → `null`), dùng làm ảnh nền ô danh mục |
 | GET | `/categories/:categoryId` | Công khai | | |
 | POST | `/categories` | 🔑 Admin | `{ name, description? }` | 409 nếu trùng tên (không phân biệt hoa thường) |
 | PUT | `/categories/:categoryId` | 🔑 Admin | `{ name, description? }` | |

@@ -6,6 +6,8 @@ import { CreateCategoryBodyType, GetCategoriesQueryType, UpdateCategoryBodyType 
 // API công khai -> chỉ trả các field cần hiển thị, không lộ createdId, deletedAt
 const categorySelect = { id: true, name: true, description: true } as const
 
+const publishedCourse = { status: CourseStatus.PUBLISHED, deletedAt: null }
+
 export const getCategories = async ({ page, limit }: GetCategoriesQueryType) => {
   const where = {
     deletedAt: null,
@@ -22,14 +24,25 @@ export const getCategories = async ({ page, limit }: GetCategoriesQueryType) => 
       // sắp xếp theo tên A -> Z
       orderBy: { name: 'asc' }, // danh mục hiển thị theo bảng chữ cái
       // id, name, description + số khóa ĐÃ XUẤT BẢN trong danh mục (ô danh mục ở trang chủ: "12 khóa học")
+      // + ảnh bìa của khóa đông học viên nhất có ảnh → làm ảnh nền cho ô danh mục (danh mục không có ảnh riêng)
       select: {
         ...categorySelect,
-        _count: { select: { courses: { where: { status: CourseStatus.PUBLISHED, deletedAt: null } } } },
+        _count: { select: { courses: { where: publishedCourse } } },
+        courses: {
+          where: { ...publishedCourse, thumbnail: { not: null } },
+          orderBy: [{ enrollments: { _count: 'desc' } }, { id: 'asc' }],
+          take: 1,
+          select: { thumbnail: true },
+        },
       },
     }),
   ])
   return {
-    data: data.map(({ _count, ...category }) => ({ ...category, courseCount: _count.courses })),
+    data: data.map(({ _count, courses, ...category }) => ({
+      ...category,
+      courseCount: _count.courses,
+      coverImage: courses[0]?.thumbnail ?? null,
+    })),
     totalItems,
     page,
     limit,

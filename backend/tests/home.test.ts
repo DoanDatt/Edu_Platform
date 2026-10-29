@@ -40,6 +40,19 @@ describe('Số liệu trang chủ', () => {
     const res = await api().get('/categories?limit=100').expect(200)
     const category = res.body.data.find((c: { id: number }) => c.id === categoryId)
     expect(category.courseCount).toBe(1)
+    // Khóa trong danh mục chưa có ảnh bìa → chưa có ảnh nền
+    expect(category.coverImage).toBeNull()
+
+    // Khóa đã xuất bản có ảnh bìa → ảnh đó thành ảnh nền của danh mục
+    const thumbnail = 'https://res.cloudinary.com/demo/image/upload/sample.jpg'
+    const detail = await api().get(`/courses/mine/${courseId}`).set(bearer(instructor.token)).expect(200)
+    await api()
+      .put(`/courses/${courseId}`)
+      .set(bearer(instructor.token))
+      .send({ title: detail.body.data.title, price: 0, categoryId, thumbnail })
+      .expect(200)
+    const updated = await api().get('/categories?limit=100').expect(200)
+    expect(updated.body.data.find((c: { id: number }) => c.id === categoryId).coverImage).toBe(thumbnail)
   })
 
   it('đánh giá nổi bật: chỉ 4–5 sao, có nhận xét đủ dài, mỗi người 1 đánh giá', async () => {
