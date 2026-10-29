@@ -25,6 +25,8 @@ export const PublicCourseSchema = z.object({
     avatar: z.string().nullable()
   }),
   studentCount: z.number(),
+  // Số bài giảng (thẻ khóa học: "12 bài học")
+  totalLectures: z.number(),
   rating: z.object({
     averageRating: z.number(),
     totalReviews: z.number()

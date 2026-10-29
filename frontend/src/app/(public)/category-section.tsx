@@ -39,7 +39,10 @@ export default async function CategorySection() {
               >
                 <Icon className='size-5' />
               </span>
-              <span className='font-medium transition-colors group-hover:text-primary'>{category.name}</span>
+              <span className='flex min-w-0 flex-col'>
+                <span className='font-medium transition-colors group-hover:text-primary'>{category.name}</span>
+                <span className='text-xs text-muted-foreground'>{category.courseCount} khóa học</span>
+              </span>
             </Link>
           )
         })}

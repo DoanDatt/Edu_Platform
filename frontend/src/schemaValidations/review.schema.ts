@@ -31,6 +31,24 @@ export const ReviewListRes = PaginationRes.extend({
 })
 export type ReviewListResType = z.infer<typeof ReviewListRes>
 
+// GET /reviews/featured: đánh giá nổi bật cho trang chủ (kèm tên khóa được đánh giá)
+export const FeaturedReviewSchema = ReviewSchema.pick({
+  id: true,
+  rating: true,
+  comment: true,
+  createdAt: true,
+  user: true
+}).extend({
+  course: z.object({ id: z.number(), title: z.string() })
+})
+export type FeaturedReviewType = z.infer<typeof FeaturedReviewSchema>
+
+export const FeaturedReviewListRes = z.object({
+  data: z.array(FeaturedReviewSchema),
+  message: z.string()
+})
+export type FeaturedReviewListResType = z.infer<typeof FeaturedReviewListRes>
+
 export const GetReviewsQuery = PaginationQuery.extend({
   courseId: z.coerce.number()
 })

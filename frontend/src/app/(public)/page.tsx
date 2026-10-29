@@ -1,13 +1,16 @@
 import { Suspense } from 'react'
 import CategorySection, { CategorySectionSkeleton } from './category-section'
 import CourseSection, { CourseSectionSkeleton } from './course-section'
+import CtaSection from './cta-section'
 import FeatureSection from './feature-section'
 import HeroBanner from './hero-banner'
 import StatsStrip, { StatsStripSkeleton } from './stats-strip'
+import TestimonialSection, { TestimonialSectionSkeleton } from './testimonial-section'
 
-// Banner + khối "Vì sao chọn" hiện ngay (không gọi API). Mỗi khối gọi API nằm trong <Suspense> RIÊNG:
-// khối nào tải xong hiện khối đó, không khối nào phải chờ khối khác.
+// Banner + khối "Vì sao chọn" + khối kêu gọi cuối trang hiện ngay (không gọi API).
+// Mỗi khối gọi API nằm trong <Suspense> RIÊNG: khối nào tải xong hiện khối đó, không khối nào phải chờ khối khác.
 // Thứ tự có nhịp: banner → số liệu → danh mục → lưới khóa học → khối nền màu → lưới khóa học
+// → cảm nhận học viên → khối kêu gọi nền xanh (mở và đóng trang cùng màu thương hiệu)
 export default function HomePage() {
   return (
     <div className='flex flex-col gap-14'>
@@ -46,6 +49,12 @@ export default function HomePage() {
           href='/courses?price=free'
         />
       </Suspense>
+
+      <Suspense fallback={<TestimonialSectionSkeleton />}>
+        <TestimonialSection />
+      </Suspense>
+
+      <CtaSection />
     </div>
   )
 }
