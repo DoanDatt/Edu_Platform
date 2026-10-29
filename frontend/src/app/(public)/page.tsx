@@ -1,25 +1,25 @@
 import { Suspense } from 'react'
+import AboutSection from './about-section'
 import CategorySection, { CategorySectionSkeleton } from './category-section'
 import CourseSection, { CourseSectionSkeleton } from './course-section'
 import CtaSection from './cta-section'
-import FeatureSection from './feature-section'
 import HeroBanner from './hero-banner'
 import StatsStrip, { StatsStripSkeleton } from './stats-strip'
 import TestimonialSection, { TestimonialSectionSkeleton } from './testimonial-section'
 
-// Banner + khối "Vì sao chọn" + khối kêu gọi cuối trang hiện ngay (không gọi API).
-// Mỗi khối gọi API nằm trong <Suspense> RIÊNG: khối nào tải xong hiện khối đó, không khối nào phải chờ khối khác.
-// Thứ tự có nhịp: banner → số liệu → danh mục → lưới khóa học → khối nền màu → lưới khóa học
-// → cảm nhận học viên → khối kêu gọi nền xanh (mở và đóng trang cùng màu thương hiệu)
+// Trang chủ. Khối tĩnh (banner, giới thiệu, kêu gọi) hiện ngay; mỗi khối gọi API nằm trong <Suspense> RIÊNG:
+// khối nào tải xong hiện khối đó, không khối nào phải chờ khối khác.
+// Nhịp nền khi cuộn: banner sáng → danh mục (trắng) → khóa nổi bật (nền xanh nhạt tràn ngang) → giới thiệu (trắng)
+// → khóa miễn phí (nền xanh nhạt) → cảm nhận (trắng) → kêu gọi (dải xanh đậm nối liền footer)
 export default function HomePage() {
   return (
-    <div className='flex flex-col gap-14'>
+    <div className='flex flex-col gap-20'>
       {/* h1 cho SEO / trình đọc màn hình: tiêu đề banner là h2, trang vẫn cần đúng 1 h1 */}
       <h1 className='sr-only'>EduPlatform: học lập trình, thiết kế, marketing trực tuyến</h1>
       <div className='flex flex-col'>
         <HeroBanner />
-        {/* Dải số liệu chồng lên mép dưới banner (margin âm + z-10): 2 khối liền một mạch, không tách rời */}
-        <div className='relative z-10 -mt-16 md:-mt-20'>
+        {/* Dải số liệu chồng lên đáy cong của banner (margin âm + z-10): 2 khối liền một mạch */}
+        <div className='relative z-10 -mt-24 md:-mt-28'>
           <Suspense fallback={<StatsStripSkeleton />}>
             <StatsStrip />
           </Suspense>
@@ -30,28 +30,35 @@ export default function HomePage() {
         <CategorySection />
       </Suspense>
 
-      {/* Cùng 1 component, khác query → 2 khối khác nhau */}
-      <Suspense fallback={<CourseSectionSkeleton count={8} />}>
-        <CourseSection
-          eyebrow='Nổi bật'
-          title='Khóa học được yêu thích'
-          description='Được nhiều học viên đăng ký nhất'
-          query={{ sort: 'popular', limit: 8 }}
-          href='/courses?sort=popular'
-        />
-      </Suspense>
+      {/* Cùng 1 component, khác query → 2 khối khác nhau. tinted: nền xanh nhạt tràn ngang.
+          -my-10: khối nền màu đã có padding trong → bù bớt khoảng cách gap của trang cho đều */}
+      <div className='-my-10'>
+        <Suspense fallback={<CourseSectionSkeleton count={8} />}>
+          <CourseSection
+            tinted
+            eyebrow='Nổi bật'
+            title='Khóa học được yêu thích nhất'
+            description='Những khóa có nhiều học viên đăng ký nhất trên EduPlatform'
+            query={{ sort: 'popular', limit: 8 }}
+            href='/courses?sort=popular'
+          />
+        </Suspense>
+      </div>
 
-      <FeatureSection />
+      <AboutSection />
 
-      <Suspense fallback={<CourseSectionSkeleton count={4} />}>
-        <CourseSection
-          eyebrow='Miễn phí'
-          title='Bắt đầu mà không tốn đồng nào'
-          description='Đăng ký tài khoản là học được ngay'
-          query={{ price: 'free', limit: 4 }}
-          href='/courses?price=free'
-        />
-      </Suspense>
+      <div className='-my-10'>
+        <Suspense fallback={<CourseSectionSkeleton count={4} />}>
+          <CourseSection
+            tinted
+            eyebrow='Miễn phí'
+            title='Bắt đầu mà không tốn đồng nào'
+            description='Đăng ký tài khoản là học được ngay'
+            query={{ price: 'free', limit: 4 }}
+            href='/courses?price=free'
+          />
+        </Suspense>
+      </div>
 
       <Suspense fallback={<TestimonialSectionSkeleton />}>
         <TestimonialSection />

@@ -82,9 +82,7 @@ export default function AvatarForm({ profile }: { profile: ProfileType }) {
     <Card>
       <CardHeader>
         <CardTitle>Ảnh đại diện</CardTitle>
-        <CardDescription>
-          JPG, PNG, WEBP hoặc GIF, tối đa {MAX_IMAGE_MB} MB.
-        </CardDescription>
+        <CardDescription>JPG, PNG, WEBP hoặc GIF, tối đa {MAX_IMAGE_MB} MB.</CardDescription>
       </CardHeader>
       <CardContent className='flex flex-wrap items-center gap-5'>
         <div className='relative'>

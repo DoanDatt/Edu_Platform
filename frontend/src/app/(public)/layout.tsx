@@ -8,6 +8,8 @@ import AuthButtons from './auth-buttons'
 import HeaderSearch from './header-search'
 import MobileNav from './mobile-nav'
 import NavItems from './nav-items'
+import categoryApiRequest from '@/apiRequests/category'
+import CategoryMenu from './category-menu'
 
 // Layout chung cho các trang công khai: (public) là route group, KHÔNG có trong URL.
 // Bố cục:
@@ -45,6 +47,12 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <header className='sticky top-0 z-40 w-full border-b bg-background/85 backdrop-blur supports-backdrop-filter:bg-background/70'>
         <div className='mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 md:px-6'>
           <Logo />
+          {/* Nút Danh mục (máy tính): danh sách chủ đề lấy ở server, tải xong mới hiện (Suspense, không chặn header) */}
+          <div className='hidden lg:block'>
+            <Suspense fallback={null}>
+              <HeaderCategories />
+            </Suspense>
+          </div>
           <nav className='hidden items-center gap-1 lg:flex' aria-label='Điều hướng chính'>
             {/* NavItems dùng usePathname(): ở route động (/courses/[slug]) pathname chỉ biết lúc chạy
                 → phải bọc Suspense, không thì Next báo lỗi blocking-prerender */}
@@ -68,11 +76,13 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       </header>
 
       {/* min-w-0: cho phép nội dung co lại, không bị bảng / chữ dài đẩy tràn ngang */}
-      <main className='mx-auto flex w-full min-w-0 max-w-7xl flex-1 flex-col px-4 py-6 md:px-6 md:py-8'>
+      {/* pb lớn thay cho margin-top của footer: khối tràn ngang cuối trang (dải kêu gọi ở trang chủ)
+          dùng margin âm đúng bằng pb này để nối liền với footer */}
+      <main className='mx-auto flex w-full min-w-0 max-w-7xl flex-1 flex-col px-4 pt-6 pb-16 md:px-6 md:pt-8 md:pb-20'>
         {children}
       </main>
 
-      <footer className='mt-10 border-t bg-muted/50'>
+      <footer className='border-t bg-muted/50'>
         <div className='mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 text-sm md:grid-cols-[2fr_1fr_1fr] md:px-6'>
           <div className='flex max-w-sm flex-col gap-3'>
             <Logo />
@@ -103,4 +113,13 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       </footer>
     </div>
   )
+}
+
+// Lấy danh mục cho nút "Danh mục" trên header. Lỗi API → không hiện nút (header không được sập vì 1 nút)
+async function HeaderCategories() {
+  const categories = await categoryApiRequest
+    .list({ limit: 100 })
+    .then((res) => res.payload.data)
+    .catch(() => [])
+  return <CategoryMenu categories={categories} />
 }

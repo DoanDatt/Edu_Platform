@@ -22,18 +22,23 @@ export default async function TestimonialSection() {
   return (
     <section className='flex flex-col gap-6'>
       <SectionHeading
+        align='center'
         eyebrow='Cảm nhận'
         title='Học viên nói gì về EduPlatform'
         description='Đánh giá thật từ học viên đã học khóa đó'
       />
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+      {/* flex-wrap + justify-center: ít đánh giá (2 thẻ) thì vẫn nằm giữa, thẳng với tiêu đề canh giữa */}
+      <div className='flex flex-wrap justify-center gap-4'>
         {reviews.map((review) => (
-          <figure key={review.id} className='relative flex flex-col gap-4 rounded-2xl border bg-card p-5'>
+          <figure
+            key={review.id}
+            className='relative flex w-full flex-col gap-4 rounded-2xl bg-accent/60 p-6 transition-all md:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.667rem)] duration-300 hover:-translate-y-1 hover:bg-card hover:shadow-xl hover:shadow-primary/10'
+          >
             {/* Dấu ngoặc kép lớn mờ ở góc: trang trí, nhìn là biết đây là lời nhận xét */}
-            <Quote aria-hidden className='absolute top-4 right-4 size-10 text-primary/10' />
+            <Quote aria-hidden className='absolute top-5 right-5 size-12 text-primary/15' />
             <RatingStars value={review.rating} />
             <blockquote className='line-clamp-4 text-sm leading-relaxed'>“{review.comment}”</blockquote>
-            <figcaption className='mt-auto flex items-center gap-3 border-t pt-4'>
+            <figcaption className='mt-auto flex items-center gap-3 border-t border-primary/10 pt-4'>
               <Avatar className='size-10'>
                 <AvatarImage src={review.user.avatar ?? undefined} alt={review.user.name} />
                 <AvatarFallback>{review.user.name.charAt(0)}</AvatarFallback>
