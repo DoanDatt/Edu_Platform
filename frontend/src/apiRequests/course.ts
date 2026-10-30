@@ -4,6 +4,7 @@ import { MessageResType } from '@/schemaValidations/common.schema'
 import {
   AdminCourseDetailResType,
   AdminCourseListResType,
+  CourseFiltersResType,
   CourseStudentListResType,
   CreateCourseBodyType,
   GetAdminCoursesQueryType,
@@ -21,6 +22,8 @@ import {
 
 export const courseApiRequest = {
   list: (query?: Partial<GetCoursesQueryType>) => http.get<PublicCourseListResType>(`/courses${toQueryString(query)}`),
+  // Cột lọc của trang danh sách: lựa chọn + số khóa
+  filters: () => http.get<CourseFiltersResType>('/courses/filters'),
   // trang chi tiết là server component, mà ở server không có localstorage. Vì vậy http.ts không tự gắn được
   // token như chạy ở trình duyệt
   getDetail: (id: number, accessToken?: string) =>

@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { formatPrice } from '@/lib/format'
-import { handleErrorApi } from '@/lib/utils'
+import { cn, handleErrorApi } from '@/lib/utils'
 import { useEnrollMutation } from '@/queries/useEnrollments'
 import { useCreateOrderMutation } from '@/queries/useOrder'
 import { Loader2, ShoppingCart } from 'lucide-react'
@@ -20,11 +20,14 @@ import { useLocale, useTranslations } from 'next-intl'
 export default function EnrollButton({
   courseId,
   isEnrolled,
-  price
+  price,
+  className
 }: {
   courseId: number
   isEnrolled: boolean | null
   price: number
+  // Đổi kích thước theo chỗ đặt (vd nút nhỏ cạnh giá trên thẻ khóa học)
+  className?: string
 }) {
   const t = useTranslations('CourseDetail')
   const locale = useLocale()
@@ -35,7 +38,7 @@ export default function EnrollButton({
 
   if (isEnrolled === null) {
     return (
-      <Button asChild size='lg' className='h-11 w-full rounded-full text-base'>
+      <Button asChild size='lg' className={cn('h-11 w-full rounded-full text-base', className)}>
         <Link href='/login'>{isPaid ? t('loginToBuy') : t('loginToEnroll')}</Link>
       </Button>
     )
@@ -43,7 +46,7 @@ export default function EnrollButton({
 
   if (isEnrolled) {
     return (
-      <Button asChild size='lg' className='h-11 w-full rounded-full text-base'>
+      <Button asChild size='lg' className={cn('h-11 w-full rounded-full text-base', className)}>
         <Link href={`/learn/${courseId}`}>{t('goToCourse')}</Link>
       </Button>
     )
@@ -80,7 +83,7 @@ export default function EnrollButton({
     return (
       <Button
         size='lg'
-        className='h-11 w-full rounded-full text-base'
+        className={cn('h-11 w-full rounded-full text-base', className)}
         onClick={buy}
         disabled={createOrderMutation.isPending}
       >
@@ -93,7 +96,7 @@ export default function EnrollButton({
   return (
     <Button
       size='lg'
-      className='h-11 w-full rounded-full text-base'
+      className={cn('h-11 w-full rounded-full text-base', className)}
       onClick={enroll}
       disabled={enrollMutation.isPending}
     >

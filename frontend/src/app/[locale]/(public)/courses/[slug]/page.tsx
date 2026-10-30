@@ -1,14 +1,13 @@
 import courseApiRequest from '@/apiRequests/course'
 import reviewApiRequest from '@/apiRequests/review'
 import CourseCover from '@/components/course-cover'
-import RatingStars from '@/components/rating-stars'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatDate, formatDuration, formatPrice, generateSlugUrl, getIdFromSlugUrl } from '@/lib/format'
+import { formatDuration, formatPrice, generateSlugUrl, getIdFromSlugUrl } from '@/lib/format'
 import { HttpError } from '@/lib/http'
 import { cn } from '@/lib/utils'
-import { BarChart3, Clock, Globe, Infinity as InfinityIcon, PlayCircle, Users } from 'lucide-react'
+import { BarChart3, FileText } from 'lucide-react'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { getLocale, getTranslations } from 'next-intl/server'
@@ -18,6 +17,9 @@ import CourseReviews from './course-reviews'
 import EnrollButton from './enroll-button'
 import MyReview from './my-review'
 import Curriculum from './curriculum'
+import CourseComments from './course-comments'
+import CourseFaqs from './course-faqs'
+import CourseTabs from './course-tabs'
 import { redirect } from '@/i18n/navigation'
 import BreadcrumbBar from '@/components/breadcrumb-bar'
 
@@ -58,8 +60,6 @@ export async function generateMetadata({ params }: PageProps<'/[locale]/courses/
   }
 }
 
-// Tiêu đề các phần (Giới thiệu, Nội dung, Đánh giá): H4 của EduPress (Exo 20px... dùng 24px cho rõ phần)
-const sectionTitle = 'text-2xl leading-[1.2]'
 
 export default function CourseDetailPage({ params }: PageProps<`/[locale]/courses/[slug]`>) {
   return (
@@ -116,8 +116,56 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
   const canonicalSlug = generateSlugUrl({ name: course.title, id: course.id })
   if (slug !== canonicalSlug) redirect({ href: `/courses/${canonicalSlug}`, locale })
 
+  // Nội dung 5 tab (Server Component dựng sẵn, CourseTabs chỉ ẩn / hiện)
+  const overview = (
+    // whitespace-pre-line: giữ xuống dòng (\n) trong mô tả, không thì cả đoạn dính thành 1 dòng
+    <div className='flex flex-col gap-4 leading-relaxed text-muted-foreground'>
+      {course.subtitle && <p className='font-medium text-foreground'>{course.subtitle}</p>}
+      <p className='whitespace-pre-line'>{course.description}</p>
+    </div>
+  )
+
+  const instructorPanel = (
+    // Tab Instructor: ảnh vuông, tên, giới thiệu, số học viên + số khóa (số THẬT).
+    // Đoạn giới thiệu: tài khoản chưa có trường "bio" → tạm dùng câu MẪU, thay bằng dữ liệu thật sau
+    <div className='flex flex-col gap-5'>
+      <div className='flex flex-col gap-5 sm:flex-row'>
+        <Avatar className='size-[150px] shrink-0 rounded-[20px] after:rounded-[20px]'>
+          <AvatarImage src={course.instructor.avatar ?? undefined} alt={course.instructor.name} className='rounded-[20px]' />
+          <AvatarFallback className='rounded-[20px] bg-primary font-heading text-5xl text-white'>
+            {course.instructor.name.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+        <div className='flex flex-col gap-3'>
+          <h3 className='text-xl leading-[1.2]'>{course.instructor.name}</h3>
+          <p className='leading-relaxed text-muted-foreground'>{t('instructorBio', { name: course.instructor.name })}</p>
+          <div className='flex flex-col gap-2 text-base'>
+            <span className='flex items-center gap-2'>
+              <Image src='/edupress/icons/graduation-cap.svg' alt='' width={16} height={16} className='size-4' />
+              {tCourses('students', { count: course.instructor.studentCount })}
+            </span>
+            <span className='flex items-center gap-2'>
+              <FileText className='size-4 text-primary' />
+              {t('courseCount', { count: course.instructor.courseCount })}
+            </span>
+          </div>
+        </div>
+      </div>
+      <p className='leading-relaxed text-muted-foreground'>{t('instructorBioMore')}</p>
+    </div>
+  )
+
+  const reviewsPanel = (
+    <div className='flex flex-col gap-6'>
+      {/* Chỉ người ĐÃ GHI DANH mới viết / sửa / xóa đánh giá (backend cũng chặn: 403).
+          isEnrolled: null = khách, false = chưa ghi danh */}
+      {course.isEnrolled === true && <MyReview courseId={course.id} />}
+      <CourseReviews rating={course.rating} reviews={reviews} />
+    </div>
+  )
+
   return (
-    <div className='flex flex-col gap-0'>
+    <div className='flex flex-col'>
       {/* Dải đường dẫn xám: bấm danh mục → /courses đã lọc sẵn danh mục đó (bộ lọc nằm trên URL) */}
       <BreadcrumbBar
         items={[
@@ -127,21 +175,18 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
         ]}
       />
 
-      {/* Máy tính: 2 cột (nội dung bên trái, khung giá 360px bên phải, dính khi cuộn).
-          Điện thoại: 1 cột theo đúng thứ tự trong code: đầu trang → khung giá → nội dung */}
-      <div className='grid gap-x-10 gap-y-8 lg:grid-cols-[1fr_360px]'>
-        {/* ===== ① Đầu trang kiểu Course Single của EduPress: dải ĐEN tràn ngang, chữ trắng =====
-            Nền đen là 1 lớp riêng nằm ở hàng 1 của lưới, kéo rộng bằng màn hình (w-screen);
-            khung giá ở cột phải đè lên dải đen giống Figma */}
-        {/* Ô nền (2 cột) có 1 lớp đen w-screen đặt giữa → tràn hết màn hình; giống cách FullBleed làm.
-            section phía sau cũng relative và đứng sau trong code → nằm đè lên lớp đen */}
-        {/* col-[1/-1]: trải từ cột đầu tới cột cuối. KHÔNG dùng col-start-1 + col-span-2: cả 2 đều ghi grid-column,
-            col-span-2 đè mất col-start-1 → ô bị xếp tự động sang cột thừa */}
+      {/* Máy tính: 2 cột như Figma Course Single (nội dung ~840px bên trái, thẻ ảnh + giá 410px bên phải).
+          Điện thoại: 1 cột theo đúng thứ tự trong code: đầu trang → thẻ giá → tab → bình luận */}
+      <div className='grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_410px]'>
+        {/* ===== ① Dải ĐEN tràn ngang (Course Single của EduPress), chữ trắng =====
+            Nền đen là 1 lớp riêng ở hàng 1 của lưới, kéo rộng bằng màn hình (w-screen, giống FullBleed);
+            section phía sau cũng relative và đứng sau trong code → nằm đè lên lớp đen.
+            col-[1/-1]: trải từ cột đầu tới cột cuối. KHÔNG dùng col-start-1 + col-span-2: cả 2 đều ghi
+            grid-column, col-span-2 đè mất col-start-1 → ô bị xếp tự động sang cột thừa */}
         <div aria-hidden className='relative col-[1/-1] row-start-1'>
           <div className='absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 bg-black' />
         </div>
-        <section className='relative col-start-1 row-start-1 flex min-w-0 flex-col gap-4 py-10 text-white md:py-14'>
-          {/* Nhãn danh mục (nền xám đậm như Figma) + trình độ */}
+        <section className='relative col-start-1 row-start-1 flex min-w-0 flex-col gap-4 py-10 text-white md:py-[50px]'>
           <div className='flex flex-wrap items-center gap-3'>
             <span className='rounded-lg bg-[#555] px-3 py-2 text-base leading-normal font-medium'>
               {course.category.name}
@@ -154,13 +199,16 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
             </span>
           </div>
 
-          <h1 className='text-[32px] leading-[1.2] text-balance md:text-5xl'>{course.title}</h1>
-          {course.subtitle && <p className='max-w-3xl text-lg leading-normal text-[#eaeaea]'>{course.subtitle}</p>}
+          <h1 className='text-[32px] leading-[1.2] text-balance md:text-[40px]'>{course.title}</h1>
 
-          {/* Thông tin nhanh: icon cam như hàng meta của EduPress */}
+          {/* Hàng thông tin như Figma (2Weeks · 156 Students · All levels · 20 Lessons), icon cam */}
           <div className='flex flex-wrap items-center gap-x-6 gap-y-2 text-base leading-normal'>
             <span className='flex items-center gap-2'>
-              <Users className='size-4 text-primary' />
+              <Image src='/edupress/icons/clock.svg' alt='' width={16} height={16} className='size-4' />
+              {formatDuration(course.totalDurationSec, locale)}
+            </span>
+            <span className='flex items-center gap-2'>
+              <Image src='/edupress/icons/graduation-cap.svg' alt='' width={16} height={16} className='size-4' />
               {tCourses('students', { count: course.studentCount })}
             </span>
             <span className='flex items-center gap-2'>
@@ -168,145 +216,77 @@ async function CourseDetail({ params }: { params: PageProps<'/[locale]/courses/[
               {tCourses(`levels.${course.level}`)}
             </span>
             <span className='flex items-center gap-2'>
-              <PlayCircle className='size-4 text-primary' />
+              <FileText className='size-4 text-primary' />
               {tCourses('lessons', { count: course.totalLectures })}
-            </span>
-            {course.rating.totalReviews > 0 ? (
-              <span className='flex items-center gap-1.5'>
-                <RatingStars value={course.rating.averageRating} emptyClassName='text-white/30' />
-                <span className='font-medium'>{course.rating.averageRating}</span>
-                <span className='text-[#9d9d9d]'>({tCourses('reviews', { count: course.rating.totalReviews })})</span>
-              </span>
-            ) : (
-              <span className='text-[#9d9d9d]'>{tCourses('noReviews')}</span>
-            )}
-          </div>
-
-          <div className='flex flex-wrap items-center gap-3 text-base'>
-            <Avatar className='size-9'>
-              <AvatarImage src={course.instructor.avatar ?? undefined} alt={course.instructor.name} />
-              <AvatarFallback className='text-foreground'>{course.instructor.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className='flex flex-col'>
-              <span className='text-sm text-[#9d9d9d]'>{t('instructor')}</span>
-              <span className='font-medium'>{course.instructor.name}</span>
-            </div>
-            <span className='ml-2 border-l border-white/20 pl-4 text-[#9d9d9d]'>
-              {t('published', { date: formatDate(course.publishedAt, locale) })}
             </span>
           </div>
         </section>
 
-        {/* ===== ② Khung giá =====
-            lg:col-start-2 lg:row-start-1 lg:row-span-2: trên máy tính nằm ở cột phải, chồng lên dải đen
-            lg:sticky lg:top-24 lg:self-start: cuộn trang thì khung dính lại, nút ghi danh luôn trong tầm mắt */}
-        <aside className='lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-10 lg:self-start'>
+        {/* ===== ② Thẻ ảnh + giá + nút (Figma: "$49.0  Start Now") =====
+            lg:col-start-2 lg:row-start-1 lg:row-span-2: cột phải, chồng lên dải đen
+            lg:sticky lg:top-24 lg:self-start: cuộn trang thì thẻ dính lại, nút ghi danh luôn trong tầm mắt */}
+        <aside className='lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-[50px] lg:self-start'>
           <div className='overflow-hidden rounded-[20px] border bg-card shadow-[0_4px_10px_rgba(0,0,0,0.1)]'>
             <CourseCover
               course={course}
-              size='md'
               priority // ảnh chính của trang, tải ngay không chờ cuộn tới
-              sizes='(min-width: 1024px) 360px, 100vw'
+              sizes='(min-width: 1024px) 410px, 100vw'
               className='aspect-[410/250]'
             />
-
-            <div className='flex flex-col items-center gap-4 px-5 pt-5 pb-5'>
-              <div className='flex flex-col items-center'>
-                <span className='text-base text-muted-foreground'>{t('price')}</span>
-                {/* Miễn phí: xanh lá như "Free" của EduPress. Có phí: chữ thường */}
-                <span
-                  className={cn(
-                    'font-heading text-[32px] leading-[1.2] font-semibold',
-                    course.price === 0 && 'text-highlight'
-                  )}
-                >
-                  {formatPrice(course.price, locale)}
-                </span>
-              </div>
-
+            <div className='flex flex-wrap items-center justify-between gap-4 p-5'>
+              {/* Miễn phí: xanh lá như "Free" của EduPress. Có phí: đỏ như giá trong Figma */}
+              <span
+                className={cn(
+                  'font-heading text-2xl leading-[1.2] font-semibold',
+                  course.price === 0 ? 'text-highlight' : 'text-[#f51a1a]'
+                )}
+              >
+                {formatPrice(course.price, locale)}
+              </span>
               {/* Client Component: trang vẫn là Server Component, chỉ riêng nút này chạy ở trình duyệt */}
-              <EnrollButton courseId={course.id} isEnrolled={course.isEnrolled} price={course.price} />
-
-              <ul className='flex w-full flex-col gap-3 border-t pt-4 text-sm'>
-                <li className='flex items-center gap-3'>
-                  <BarChart3 className='size-4 shrink-0 text-primary' />
-                  <span>
-                    {t.rich('levelInfo', {
-                      level: tCourses(`levels.${course.level}`),
-                      b: (chunks) => <span className='font-semibold'>{chunks}</span>
-                    })}
-                  </span>
-                </li>
-                <li className='flex items-center gap-3'>
-                  <PlayCircle className='size-4 shrink-0 text-primary' />
-                  <span>
-                    {t.rich('lecturesInfo', {
-                      count: course.totalLectures,
-                      b: (chunks) => <span className='font-semibold'>{chunks}</span>
-                    })}
-                  </span>
-                </li>
-                <li className='flex items-center gap-3'>
-                  <Clock className='size-4 shrink-0 text-primary' />
-                  <span>
-                    {t.rich('durationInfo', {
-                      duration: formatDuration(course.totalDurationSec, locale),
-                      b: (chunks) => <span className='font-semibold'>{chunks}</span>
-                    })}
-                  </span>
-                </li>
-                <li className='flex items-center gap-3'>
-                  <Globe className='size-4 shrink-0 text-primary' />
-                  {course.language === 'vi' ? t('vietnamese') : course.language}
-                </li>
-                <li className='flex items-center gap-3'>
-                  <InfinityIcon className='size-4 shrink-0 text-primary' />
-                  {t('anytime')}
-                </li>
-              </ul>
+              <EnrollButton
+                courseId={course.id}
+                isEnrolled={course.isEnrolled}
+                price={course.price}
+                className='h-12 w-auto px-6 text-lg'
+              />
             </div>
           </div>
         </aside>
 
-        <div className='flex min-w-0 flex-col gap-10'>
-          {/* ===== ③ Giới thiệu =====
-            whitespace-pre-line: giữ xuống dòng (\n) trong mô tả, không thì cả đoạn dính thành 1 dòng */}
-          <section className='flex flex-col gap-3'>
-            <h2 className={sectionTitle}>{t('about')}</h2>
-            <p className='whitespace-pre-line leading-relaxed text-muted-foreground'>{course.description}</p>
-          </section>
-
-          {/* ===== ④ Mục lục ===== */}
-          <section className='flex flex-col gap-3'>
-            <h2 className={sectionTitle}>{t('content')}</h2>
-            <Curriculum
-              sections={course.sections}
-              totalLectures={course.totalLectures}
-              totalDurationSec={course.totalDurationSec}
-            />
-          </section>
-
-          {/* ===== ⑤ Đánh giá ===== */}
-          <section className='flex flex-col gap-3'>
-            <div className='flex items-center gap-2'>
-              <h2 className={sectionTitle}>{t('reviews')}</h2>
-              {course.rating.totalReviews > 0 && <Badge variant='secondary'>{course.rating.totalReviews}</Badge>}
-            </div>
-            {/* Chỉ người ĐÃ GHI DANH mới viết / sửa / xóa đánh giá (backend cũng chặn: 403).
-              isEnrolled: null = khách, false = chưa ghi danh */}
-            {course.isEnrolled === true && <MyReview courseId={course.id} />}
-            <CourseReviews rating={course.rating} reviews={reviews} />
-          </section>
+        {/* ===== ③ 5 tab + bình luận ===== */}
+        <div className='flex min-w-0 flex-col gap-[50px] lg:pt-2'>
+          <CourseTabs
+            tabs={[
+              { key: 'overview', label: t('tabOverview'), content: overview },
+              {
+                key: 'curriculum',
+                label: t('tabCurriculum'),
+                content: (
+                  <Curriculum
+                    sections={course.sections}
+                    totalLectures={course.totalLectures}
+                    totalDurationSec={course.totalDurationSec}
+                  />
+                )
+              },
+              { key: 'instructor', label: t('tabInstructor'), content: instructorPanel },
+              { key: 'faqs', label: t('tabFaqs'), content: <CourseFaqs /> },
+              { key: 'reviews', label: t('tabReviews'), content: reviewsPanel }
+            ]}
+          />
+          <CourseComments courseId={course.id} />
         </div>
       </div>
     </div>
   )
 }
 
+
 // Khung xám giả trong lúc chờ API (fallback của Suspense), hình dạng giống trang thật
 function CourseDetailSkeleton() {
   return (
-    <div className='grid gap-x-10 gap-y-8 lg:grid-cols-[1fr_360px]'>
+    <div className='grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_410px]'>
       <Skeleton className='h-72 rounded-[20px]' />
       <Skeleton className='h-120 rounded-[20px] lg:col-start-2 lg:row-span-2 lg:row-start-1' />
       <div className='flex flex-col gap-4'>

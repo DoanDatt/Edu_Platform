@@ -67,7 +67,8 @@
     "exploreNow": "Explore now",
     "explore": "Explore",
     "byTopic": "By topic",
-    "courseCount": "{count, plural, one {# course} other {# courses}}"
+    "courseCount": "{count, plural, one {# course} other {# courses}}",
+    "contact": "Contact"
   },
   "Blog": {
     "metaTitle": "Blog",
@@ -113,7 +114,8 @@
     "contactText": "Questions about a course or feedback to share? Send me an email and I will get back to you soon.",
     "email": "Email",
     "sourceCode": "Source code on GitHub",
-    "backToTop": "Back to top"
+    "backToTop": "Back to top",
+    "contactLink": "Contact us"
   },
   "Nav": {
     "home": "Home",
@@ -309,7 +311,10 @@
     "passwordMismatch": "Passwords do not match",
     "passwordRequired": "Please enter your password",
     "ratingRange": "Rating must be between 1 and 5 stars",
-    "otpFormat": "The code must be 6 digits"
+    "otpFormat": "The code must be 6 digits",
+    "commentRequired": "Please enter a comment",
+    "messageRequired": "Please enter a message",
+    "emailRequired": "Please enter your email"
   },
   "Courses": {
     "metaTitle": "Courses",
@@ -350,7 +355,15 @@
     "students": "{count, plural, one {# student} other {# students}}",
     "viewDetail": "View details",
     "byInstructor": "by <b>{name}</b>",
-    "viewMore": "View more"
+    "viewMore": "View more",
+    "allCourses": "All Courses",
+    "filterCategory": "Course Category",
+    "filterInstructors": "Instructors",
+    "filterReview": "Review",
+    "starsLabel": "{count, plural, one {# star} other {# stars}}",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "filters": "Filters"
   },
   "CourseDetail": {
     "notFound": "Course not found",
@@ -385,7 +398,33 @@
     "enrollSuccess": "Enrolled successfully",
     "buy": "Buy course · {price}",
     "enrollFree": "Enroll for free",
-    "byInstructorLine": "by <b>{name}</b>"
+    "byInstructorLine": "by <b>{name}</b>",
+    "tabOverview": "Overview",
+    "tabCurriculum": "Curriculum",
+    "tabInstructor": "Instructor",
+    "tabFaqs": "FAQs",
+    "tabReviews": "Reviews",
+    "instructorBio": "{name} teaches on EduPlatform and builds practical courses that take you from the basics to real projects, one short lesson at a time.",
+    "instructorBioMore": "Each course is organised into chapters with short video lessons, so you can learn at your own pace and come back to any lesson whenever you need it.",
+    "courseCount": "{count, plural, one {# course} other {# courses}}",
+    "faqItems": {
+      "access": {
+        "question": "How long can I access this course?",
+        "answer": "Forever. Once you enrol (or buy a paid course) you can watch every lesson as many times as you like."
+      },
+      "certificate": {
+        "question": "Do I get a certificate when I finish?",
+        "answer": "Not yet. Your progress is saved lesson by lesson; certificates are planned for a later update."
+      },
+      "refund": {
+        "question": "What if the course is not right for me?",
+        "answer": "Watch the free preview lessons and read the reviews before buying. For payment problems, contact us and we will help."
+      },
+      "support": {
+        "question": "Who can I ask when I get stuck?",
+        "answer": "Leave a comment below the course or send a message from the Contact page; the instructor and the team will reply."
+      }
+    }
   },
   "Review": {
     "confirmDelete": "Delete your review for this course?",
@@ -477,5 +516,32 @@
       "reviews": "Honest reviews from enrolled students",
       "payment": "Pay with MoMo, PayPal or bank transfer"
     }
+  },
+  "Comments": {
+    "title": "{count, plural, =0 {Comments} one {# comment} other {# comments}}",
+    "empty": "No comments yet! Be the first to comment.",
+    "leaveTitle": "Leave A Comment",
+    "notPublished": "Your email address will not be published. Required fields are marked *",
+    "name": "Name",
+    "email": "Email",
+    "comment": "Comment",
+    "remember": "Save my name and email in this browser for the next time I comment",
+    "submit": "Post Comment",
+    "sent": "Your comment has been posted",
+    "pagination": "Comment pages",
+    "previous": "Previous page",
+    "next": "Next page"
+  },
+  "Contact": {
+    "metaTitle": "Contact",
+    "title": "Contact",
+    "heading": "Need A Direct Line?",
+    "description": "Questions about a course, a payment or becoming an instructor? Send a message and I will get back to you by email soon.",
+    "locationLabel": "Location",
+    "location": "Ho Chi Minh City, Vietnam",
+    "emailLabel": "Email",
+    "mapTitle": "Map of Ho Chi Minh City",
+    "formTitle": "Contact Us",
+    "sent": "Message sent. I will reply by email soon."
   }
 }

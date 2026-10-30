@@ -35,10 +35,18 @@ export const PublicCourseSchema = z.object({
 
 export type PublicCourseType = z.infer<typeof PublicCourseSchema>
 
+// Bộ lọc nhiều lựa chọn (checkbox ở cột lọc) giữ dạng chuỗi "1,2" như trên URL, gửi thẳng cho backend
+const idList = z.string().regex(/^\d+(,\d+)*$/)
+const LEVEL = Object.values(CourseLevel).join('|')
+const levelList = z.string().regex(new RegExp(`^(${LEVEL})(,(${LEVEL}))*$`))
+
 export const GetCoursesQuery = PaginationQuery.extend({
   search: z.string().trim().max(200).optional(),
-  level: z.enum(CourseLevel).optional(),
-  categoryId: z.coerce.number().int().positive().optional(),
+  level: levelList.optional(),
+  categoryId: idList.optional(),
+  instructorId: idList.optional(),
+  // Mức sao: điểm trung bình làm tròn, vd "5,4"
+  rating: z.string().regex(/^[1-5](,[1-5])*$/).optional(),
   price: z.enum(['free', 'paid']).optional(),
   sort: z.enum(['newest', 'popular', 'price_asc', 'price_desc']).default('newest')
 }).strict()
@@ -59,12 +67,35 @@ export const PublicCourseDetailRes = z.object({
     totalLectures: z.number(),
     totalDurationSec: z.number(),
     rating: RatingSummarySchema,
-    isEnrolled: z.boolean().nullable()
+    isEnrolled: z.boolean().nullable(),
+    // Tab Instructor: số khóa đã xuất bản + tổng lượt ghi danh của giảng viên
+    instructor: z.object({
+      id: z.number(),
+      name: z.string(),
+      avatar: z.string().nullable(),
+      courseCount: z.number(),
+      studentCount: z.number()
+    })
   }),
   message: z.string()
 })
 
 export type PublicCourseDetailResType = z.infer<typeof PublicCourseDetailRes>
+
+// GET /courses/filters: lựa chọn + số khóa cho cột lọc của trang danh sách
+export const CourseFiltersRes = z.object({
+  data: z.object({
+    categories: z.array(z.object({ id: z.number(), name: z.string(), count: z.number() })),
+    instructors: z.array(z.object({ id: z.number(), name: z.string(), count: z.number() })),
+    price: z.object({ all: z.number(), free: z.number(), paid: z.number() }),
+    ratings: z.array(z.object({ stars: z.number(), count: z.number() })),
+    levels: z.array(z.object({ level: z.enum(CourseLevel), count: z.number() }))
+  }),
+  message: z.string()
+})
+
+export type CourseFiltersResType = z.infer<typeof CourseFiltersRes>
+export type CourseFiltersType = CourseFiltersResType['data']
 
 export const InstructorCourseSchema = z.object({
   id: z.number(),

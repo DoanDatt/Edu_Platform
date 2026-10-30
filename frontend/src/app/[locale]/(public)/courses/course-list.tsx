@@ -1,5 +1,6 @@
 import courseApiRequest from '@/apiRequests/course'
 import CourseCard from './course-card'
+import CourseRow from './course-row'
 import { Button } from '@/components/ui/button'
 import { SearchX } from 'lucide-react'
 import { GetCoursesQuery } from '@/schemaValidations/course.schema'
@@ -7,30 +8,28 @@ import PaginationLinks from '@/components/pagination-links'
 import { Link } from '@/i18n/navigation'
 import { getTranslations } from 'next-intl/server'
 
-const PAGE_SIZE = 12
+const PAGE_SIZE = 10
 type SearchParams = Record<string, string | string[] | undefined>
 // Hàm này gặp mảng thì trả về phần tử đầu, gặp chuỗi hoặc undefined thì trả về nguyên giá trị đó
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value)
 
+// Các tham số bộ lọc đọc từ URL (cột lọc + ô tìm kiếm + sort). view (lưới / danh sách) chỉ là cách hiển thị
+const QUERY_KEYS = ['search', 'page', 'categoryId', 'instructorId', 'level', 'price', 'rating', 'sort'] as const
+
 export default async function CourseList({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  // raw.page có thể là: undefined | '2' | 'abc' | ['1', '2'] (khi URL là ?page=1&page=2)
   const t = await getTranslations('Courses')
   const raw = await searchParams
-  const parsed = GetCoursesQuery.safeParse({
-    search: first(raw.search),
-    page: first(raw.page),
-    categoryId: first(raw.categoryId),
-    level: first(raw.level),
-    price: first(raw.price),
-    sort: first(raw.sort)
-  })
+  // URL người dùng gõ tay có thể sai (?page=abc, ?level=XYZ) → safeParse, sai thì coi như không lọc
+  const parsed = GetCoursesQuery.safeParse(Object.fromEntries(QUERY_KEYS.map((key) => [key, first(raw[key])])))
   const query = parsed.success ? parsed.data : undefined
+  const view = first(raw.view) === 'grid' ? 'grid' : 'list'
+
   let result
   try {
     result = (await courseApiRequest.list({ ...query, limit: PAGE_SIZE })).payload
   } catch {
     return (
-      <p className='rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive'>
+      <p className='rounded-[20px] border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive'>
         {t('loadError')}
       </p>
     )
@@ -47,7 +46,7 @@ export default async function CourseList({ searchParams }: { searchParams: Promi
         </span>
         <p className='mt-2 font-semibold'>{t('emptyTitle')}</p>
         <p className='max-w-sm text-sm text-muted-foreground'>{t('emptyDescription')}</p>
-        <Button asChild variant='outline' className='mt-3'>
+        <Button asChild variant='bordered' size='pill' className='mt-3'>
           <Link href='/courses'>{t('viewAll')}</Link>
         </Button>
       </div>
@@ -55,14 +54,21 @@ export default async function CourseList({ searchParams }: { searchParams: Promi
   }
 
   return (
-    <div className='flex flex-col gap-6'>
-      <p className='text-sm text-muted-foreground'>{t('found', { count: totalItems })}</p>
-      <div className='grid gap-[30px] pt-4 sm:grid-cols-2 lg:grid-cols-3'>
-        {courses.map((course) => (
-          <CourseCard key={course.id} course={course} />
-        ))}
-      </div>
-      {/* ===== Phân trang (chưa hoạt động): đang ở trang 1 / 2 ===== */}
+    <div className='flex flex-col gap-[30px]'>
+      <p className='-mt-2 text-base text-muted-foreground'>{t('found', { count: totalItems })}</p>
+      {view === 'grid' ? (
+        <div className='grid gap-[30px] sm:grid-cols-2 xl:grid-cols-3'>
+          {courses.map((course) => (
+            <CourseCard key={course.id} course={course} />
+          ))}
+        </div>
+      ) : (
+        <div className='flex flex-col gap-[30px]'>
+          {courses.map((course) => (
+            <CourseRow key={course.id} course={course} />
+          ))}
+        </div>
+      )}
       <PaginationLinks pathname='/courses' page={result.page} totalPages={result.totalPages} searchParams={raw} />
     </div>
   )

@@ -31,6 +31,7 @@ type FooterKey = Parameters<ReturnType<typeof useTranslations<'Footer'>>>[0]
 
 // Cột "Hỗ trợ" ở footer (EduPress: GET HELP)
 const helpLinks: { label: FooterKey; href: string }[] = [
+  { label: 'contactLink', href: '/contact' },
   { label: 'faq', href: '/about#hoi-dap' },
   { label: 'latestArticles', href: '/blog' },
   { label: 'about', href: '/about' },

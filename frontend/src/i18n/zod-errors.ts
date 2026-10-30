@@ -12,7 +12,10 @@ const zodMessageKeys = {
   'Mật khẩu xác nhận không khớp': 'passwordMismatch',
   'Vui lòng nhập mật khẩu': 'passwordRequired',
   'Số sao từ 1 đến 5': 'ratingRange',
-  'Mã OTP gồm 6 chữ số': 'otpFormat'
+  'Mã OTP gồm 6 chữ số': 'otpFormat',
+  'Vui lòng nhập bình luận': 'commentRequired',
+  'Vui lòng nhập nội dung': 'messageRequired',
+  'Vui lòng nhập email': 'emailRequired'
 } as const
 
 const isKnownMessage = (message: string): message is keyof typeof zodMessageKeys => message in zodMessageKeys

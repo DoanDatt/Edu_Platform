@@ -56,6 +56,7 @@ const aboutColumns: { title: MenuKey; links: MenuLinkDef[] }[] = [
     title: 'support',
     links: [
       { label: 'faq', href: '/about#hoi-dap', badge: 'badgeFaq' },
+      { label: 'contact', href: '/contact' },
       { label: 'buyGuide', href: '/blog/huong-dan-mua-khoa-hoc' },
       { label: 'progressGuide', href: '/blog/tien-do-hoc-xem-du-90-phan-tram' },
       { label: 'signUp', href: '/register', badge: 'badgeFree' }

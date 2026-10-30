@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
+import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 
 export type SearchParams = Record<string, string | string[] | undefined>
@@ -43,14 +44,26 @@ export default function PaginationLinks({
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
 
   return (
-    <nav aria-label={t('pagination')} className='flex items-center justify-center gap-1'>
-      <Button asChild variant={'outline'} size={'icon'} className={page <= 1 ? 'pointer-events-none opacity-50' : ''}>
+    // Kiểu phân trang của EduPress: ô tròn 40px, trang đang xem nền đen chữ trắng, mũi tên 2 đầu viền xám
+    <nav aria-label={t('pagination')} className='flex items-center justify-center gap-2.5'>
+      <Button
+        asChild
+        variant={'outline'}
+        size={'icon'}
+        className={cn('size-10 rounded-full', page <= 1 && 'pointer-events-none opacity-50')}
+      >
         <Link href={hrefFor(page - 1)} aria-label={t('previousPage')}>
           <ChevronLeft />
         </Link>
       </Button>
       {pages.map((n) => (
-        <Button key={n} asChild variant={n === page ? 'default' : 'outline'} size={'icon'}>
+        <Button
+          key={n}
+          asChild
+          variant={n === page ? 'default' : 'ghost'}
+          size={'icon'}
+          className={cn('size-10 rounded-full text-base', n === page && 'bg-foreground text-background hover:bg-foreground/85')}
+        >
           <Link href={hrefFor(n)} aria-current={n === page ? 'page' : undefined}>
             {n}
           </Link>
@@ -60,7 +73,7 @@ export default function PaginationLinks({
         asChild
         variant={'outline'}
         size={'icon'}
-        className={page >= totalPages ? 'pointer-events-none opacity-50' : ''}
+        className={cn('size-10 rounded-full', page >= totalPages && 'pointer-events-none opacity-50')}
       >
         <Link href={hrefFor(page + 1)} aria-label={t('nextPage')}>
           <ChevronRight />

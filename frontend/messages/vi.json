@@ -67,7 +67,8 @@
     "exploreNow": "Khám phá ngay",
     "explore": "Khám phá",
     "byTopic": "Theo chủ đề",
-    "courseCount": "{count} khóa"
+    "courseCount": "{count} khóa",
+    "contact": "Liên hệ"
   },
   "Blog": {
     "metaTitle": "Blog",
@@ -113,7 +114,8 @@
     "contactText": "Có câu hỏi về khóa học hay muốn góp ý? Gửi email cho mình, mình sẽ trả lời sớm nhất.",
     "email": "Email",
     "sourceCode": "Mã nguồn trên GitHub",
-    "backToTop": "Lên đầu trang"
+    "backToTop": "Lên đầu trang",
+    "contactLink": "Liên hệ"
   },
   "Nav": {
     "home": "Trang chủ",
@@ -309,7 +311,10 @@
     "passwordMismatch": "Mật khẩu xác nhận không khớp",
     "passwordRequired": "Vui lòng nhập mật khẩu",
     "ratingRange": "Số sao từ 1 đến 5",
-    "otpFormat": "Mã OTP gồm 6 chữ số"
+    "otpFormat": "Mã OTP gồm 6 chữ số",
+    "commentRequired": "Vui lòng nhập bình luận",
+    "messageRequired": "Vui lòng nhập nội dung",
+    "emailRequired": "Vui lòng nhập email"
   },
   "Courses": {
     "metaTitle": "Khóa học",
@@ -350,7 +355,15 @@
     "students": "{count} học viên",
     "viewDetail": "Xem chi tiết",
     "byInstructor": "bởi <b>{name}</b>",
-    "viewMore": "Xem thêm"
+    "viewMore": "Xem thêm",
+    "allCourses": "Tất cả khóa học",
+    "filterCategory": "Danh mục",
+    "filterInstructors": "Giảng viên",
+    "filterReview": "Đánh giá",
+    "starsLabel": "{count} sao",
+    "gridView": "Xem dạng lưới",
+    "listView": "Xem dạng danh sách",
+    "filters": "Bộ lọc"
   },
   "CourseDetail": {
     "notFound": "Không tìm thấy khóa học",
@@ -385,7 +398,33 @@
     "enrollSuccess": "Ghi danh thành công",
     "buy": "Mua khóa học · {price}",
     "enrollFree": "Ghi danh miễn phí",
-    "byInstructorLine": "bởi <b>{name}</b>"
+    "byInstructorLine": "bởi <b>{name}</b>",
+    "tabOverview": "Tổng quan",
+    "tabCurriculum": "Nội dung",
+    "tabInstructor": "Giảng viên",
+    "tabFaqs": "Hỏi đáp",
+    "tabReviews": "Đánh giá",
+    "instructorBio": "{name} đang giảng dạy trên EduPlatform, xây dựng các khóa học thực hành đưa bạn từ kiến thức nền tảng tới dự án thực tế qua từng bài học ngắn.",
+    "instructorBioMore": "Mỗi khóa học được chia thành nhiều chương với các bài video ngắn, bạn học theo tốc độ của mình và xem lại bất kỳ bài nào khi cần.",
+    "courseCount": "{count} khóa học",
+    "faqItems": {
+      "access": {
+        "question": "Tôi được học khóa này trong bao lâu?",
+        "answer": "Trọn đời. Sau khi ghi danh (hoặc mua khóa có phí) bạn xem lại mọi bài học bao nhiêu lần cũng được."
+      },
+      "certificate": {
+        "question": "Học xong có chứng chỉ không?",
+        "answer": "Hiện chưa có. Tiến độ của bạn được lưu theo từng bài; chứng chỉ sẽ có trong bản cập nhật sau."
+      },
+      "refund": {
+        "question": "Nếu khóa học không phù hợp với tôi thì sao?",
+        "answer": "Hãy xem thử các bài miễn phí và đọc đánh giá trước khi mua. Gặp vấn đề thanh toán, liên hệ với chúng tôi để được hỗ trợ."
+      },
+      "support": {
+        "question": "Gặp khó khăn khi học thì hỏi ai?",
+        "answer": "Để lại bình luận bên dưới khóa học hoặc gửi tin nhắn ở trang Liên hệ, giảng viên và đội ngũ sẽ phản hồi."
+      }
+    }
   },
   "Review": {
     "confirmDelete": "Xóa đánh giá của bạn cho khóa học này?",
@@ -477,5 +516,32 @@
       "reviews": "Đánh giá thật từ học viên đã ghi danh",
       "payment": "Thanh toán qua MoMo, PayPal hoặc chuyển khoản"
     }
+  },
+  "Comments": {
+    "title": "{count, plural, =0 {Bình luận} other {# bình luận}}",
+    "empty": "Chưa có bình luận nào. Hãy là người đầu tiên!",
+    "leaveTitle": "Để lại bình luận",
+    "notPublished": "Email của bạn sẽ không được hiển thị công khai. Các ô có dấu * là bắt buộc",
+    "name": "Họ tên",
+    "email": "Email",
+    "comment": "Bình luận",
+    "remember": "Lưu tên và email trên trình duyệt này cho lần bình luận sau",
+    "submit": "Gửi bình luận",
+    "sent": "Đã gửi bình luận",
+    "pagination": "Trang bình luận",
+    "previous": "Trang trước",
+    "next": "Trang sau"
+  },
+  "Contact": {
+    "metaTitle": "Liên hệ",
+    "title": "Liên hệ",
+    "heading": "Cần liên hệ trực tiếp?",
+    "description": "Có câu hỏi về khóa học, thanh toán hay muốn trở thành giảng viên? Hãy gửi tin nhắn, mình sẽ phản hồi qua email sớm nhất.",
+    "locationLabel": "Địa điểm",
+    "location": "TP. Hồ Chí Minh, Việt Nam",
+    "emailLabel": "Email",
+    "mapTitle": "Bản đồ TP. Hồ Chí Minh",
+    "formTitle": "Gửi tin nhắn",
+    "sent": "Đã gửi tin nhắn. Mình sẽ phản hồi qua email sớm."
   }
 }
