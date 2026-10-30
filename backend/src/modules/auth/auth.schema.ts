@@ -45,10 +45,21 @@ export const ForgotPasswordBodySchema = z
 
 export type ForgotPasswordBodyType = z.infer<typeof ForgotPasswordBodySchema>
 
+const OtpCodeSchema = z.string().regex(/^\d{6}$/, 'Mã OTP gồm 6 chữ số')
+
+export const VerifyOtpBodySchema = z
+  .object({
+    email: z.email('Email không hợp lệ'),
+    code: OtpCodeSchema,
+  })
+  .strict()
+
+export type VerifyOtpBodyType = z.infer<typeof VerifyOtpBodySchema>
+
 export const ResetPasswordBodySchema = z
   .object({
     email: z.email('Email không hợp lệ'),
-    code: z.string().regex(/^\d{6}$/, 'Mã OTP gồm 6 chữ số'),
+    code: OtpCodeSchema,
     newPassword: z.string().min(8, 'Mật khẩu tối thiểu 8 kí tự').max(100),
     confirmPassword: z.string(),
   })

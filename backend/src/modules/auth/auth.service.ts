@@ -19,6 +19,7 @@ import {
   LoginBodyType,
   RegisterBodyType,
   ResetPasswordBodyType,
+  VerifyOtpBodyType,
 } from './auth.schema'
 
 // db: mặc định là prisma thường; truyền tx khi cần chạy trong transaction (xem refreshToken).
@@ -213,13 +214,12 @@ export const forgotPassword = async ({ email }: ForgotPasswordBodyType) => {
   }
 }
 
-// Bước 2: nhập mã OTP + mật khẩu mới
-export const resetPassword = async ({ email, code, newPassword }: ResetPasswordBodyType) => {
-  // Cùng 1 câu lỗi cho mọi trường hợp sai (không có mã, hết hạn, sai mã...) để không lộ thông tin
-  const invalidCode = new HttpError(422, 'Dữ liệu không hợp lệ', [
-    { field: 'code', message: 'Mã OTP không đúng hoặc đã hết hạn' },
-  ])
+// Cùng 1 câu lỗi cho mọi trường hợp sai (không có mã, hết hạn, sai mã...) để không lộ thông tin
+const invalidOtpError = () =>
+  new HttpError(422, 'Dữ liệu không hợp lệ', [{ field: 'code', message: 'Mã OTP không đúng hoặc đã hết hạn' }])
 
+// Dùng chung cho bước 2 và 3. Đúng thì KHÔNG xóa mã: bước 3 còn kiểm tra lại lần nữa
+const assertValidOtp = async (email: string, code: string) => {
   const record = await prisma.verificationCode.findUnique({ where: { email } })
   if (
     !record ||
@@ -227,18 +227,28 @@ export const resetPassword = async ({ email, code, newPassword }: ResetPasswordB
     record.expiresAt < new Date() ||
     record.attempts >= OTP_MAX_ATTEMPTS
   ) {
-    throw invalidCode
+    throw invalidOtpError()
   }
 
   if (!isOtpMatch(code, record.code)) {
     // Sai → tăng số lần thử. Đủ 5 lần thì mã vô hiệu, phải xin mã mới
     await prisma.verificationCode.update({ where: { email }, data: { attempts: { increment: 1 } } })
-    throw invalidCode
+    throw invalidOtpError()
   }
+}
+
+// Bước 2: chỉ kiểm tra mã. Đúng thì frontend mới cho sang bước nhập mật khẩu mới
+export const verifyOtp = async ({ email, code }: VerifyOtpBodyType) => {
+  await assertValidOtp(email, code)
+}
+
+// Bước 3: mã OTP + mật khẩu mới. Kiểm tra mã lại lần nữa vì ai cũng gọi thẳng API này được, bỏ qua bước 2
+export const resetPassword = async ({ email, code, newPassword }: ResetPasswordBodyType) => {
+  await assertValidOtp(email, code)
 
   const user = await prisma.user.findFirst({ where: { email, deletedAt: null } })
   if (!user) {
-    throw invalidCode
+    throw invalidOtpError()
   }
 
   const hashedPassword = await hashPassword(newPassword)

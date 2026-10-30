@@ -133,6 +133,34 @@ describe('Quên mật khẩu', () => {
     await api().post('/auth/reset-password').send(body(code)).expect(422)
   })
 
+  it('verify-otp: mã đúng thì 200, mã vẫn dùng tiếp được để đặt lại mật khẩu', async () => {
+    const user = await registerStudent()
+    await api().post('/auth/forgot-password').send({ email: user.email }).expect(200)
+    const code = otpOf(user.email)!
+    const wrong = String((Number(code) + 1) % 1_000_000).padStart(6, '0')
+
+    await api().post('/auth/verify-otp').send({ email: user.email, code: wrong }).expect(422)
+    await api().post('/auth/verify-otp').send({ email: user.email, code }).expect(200)
+    // Kiểm tra mã không xóa mã: bước đổi mật khẩu vẫn dùng đúng mã đó
+    await api()
+      .post('/auth/reset-password')
+      .send({ email: user.email, code, newPassword: 'Xyz@12345', confirmPassword: 'Xyz@12345' })
+      .expect(200)
+    await api().post('/auth/verify-otp').send({ email: user.email, code }).expect(422)
+  })
+
+  it('verify-otp: lần sai được cộng dồn, đủ 5 lần thì mã bị hủy', async () => {
+    const user = await registerStudent()
+    await api().post('/auth/forgot-password').send({ email: user.email }).expect(200)
+    const code = otpOf(user.email)!
+    const wrong = String((Number(code) + 1) % 1_000_000).padStart(6, '0')
+
+    for (let i = 0; i < 5; i++) {
+      await api().post('/auth/verify-otp').send({ email: user.email, code: wrong }).expect(422)
+    }
+    await api().post('/auth/verify-otp').send({ email: user.email, code }).expect(422)
+  })
+
   it('xin lại mã trong 60 giây thì không gửi email mới', async () => {
     const user = await registerStudent()
     await api().post('/auth/forgot-password').send({ email: user.email }).expect(200)

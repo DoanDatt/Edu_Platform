@@ -101,9 +101,10 @@ Ràng buộc đăng ký: `password` 8–100 ký tự, `confirmPassword` phải t
 | Method | Path | Body | Ghi chú |
 |---|---|---|---|
 | POST | `/auth/forgot-password` | `{ email }` | Gửi mã OTP 6 số, hiệu lực **10 phút**. **Luôn trả 200 cùng một câu**, dù email có tồn tại hay không (không cho dò email). Gửi lại trong vòng 60 giây sẽ không có email mới. 503 nếu hệ thống email đang lỗi |
-| POST | `/auth/reset-password` | `{ email, code, newPassword, confirmPassword }` | `code` là 6 chữ số. Sai / hết hạn / đã dùng → 422 (`field: code`). Sai **5 lần** thì mã bị hủy, phải xin mã mới. Thành công: mọi thiết bị bị đăng xuất, cần đăng nhập lại |
+| POST | `/auth/verify-otp` | `{ email, code }` | Chỉ **kiểm tra** mã, không đổi mật khẩu, không xóa mã. Đúng → 200. Sai / hết hạn → 422 (`field: code`), lần sai được cộng chung vào giới hạn 5 lần |
+| POST | `/auth/reset-password` | `{ email, code, newPassword, confirmPassword }` | `code` là 6 chữ số (gửi lại đúng mã đã kiểm tra ở bước trước). Sai / hết hạn / đã dùng → 422 (`field: code`). Sai **5 lần** thì mã bị hủy, phải xin mã mới. Thành công: mọi thiết bị bị đăng xuất, cần đăng nhập lại |
 
-Luồng frontend: trang "Quên mật khẩu" (nhập email) → trang "Nhập mã" (OTP + mật khẩu mới) → về trang đăng nhập.
+Luồng frontend: trang "Quên mật khẩu" (nhập email) → trang "Nhập mã" (`verify-otp`, đúng mới qua bước sau) → nhập mật khẩu mới (`reset-password` kèm mã) → về trang đăng nhập. Nếu ở bước cuối nhận 422 `field: code` (mã hết hạn trong lúc đang gõ) thì cho người dùng quay về xin mã mới.
 
 Lúc dev, email **không gửi ra ngoài thật** mà vào Mailpit: mở `http://localhost:8025` để xem mã OTP.
 

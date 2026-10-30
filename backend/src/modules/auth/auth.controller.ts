@@ -6,6 +6,7 @@ import {
   RefreshTokenBodyType,
   RegisterBodyType,
   ResetPasswordBodyType,
+  VerifyOtpBodyType,
 } from './auth.schema'
 import * as authService from './auth.service'
 
@@ -49,6 +50,11 @@ export const forgotPassword = async (req: Request, res: Response) => {
   await authService.forgotPassword(req.body as ForgotPasswordBodyType)
   // Luôn cùng 1 câu trả lời, dù email có tồn tại hay không
   res.json({ message: 'Nếu email đã đăng ký, mã OTP đã được gửi. Mã có hiệu lực trong 10 phút' })
+}
+
+export const verifyOtp = async (req: Request, res: Response) => {
+  await authService.verifyOtp(req.body as VerifyOtpBodyType)
+  res.json({ message: 'Mã OTP hợp lệ' })
 }
 
 export const resetPassword = async (req: Request, res: Response) => {
