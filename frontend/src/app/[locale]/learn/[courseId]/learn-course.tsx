@@ -176,7 +176,7 @@ export default function LearnCourse({ courseId }: { courseId: number }) {
                       aria-label='Đã xem video'
                     >
                       <div
-                        className='h-full rounded-full bg-linear-to-r from-sky-400 to-primary transition-all'
+                        className='h-full rounded-full bg-primary transition-all'
                         style={{ width: `${watchedPercent}%` }}
                       />
                     </div>

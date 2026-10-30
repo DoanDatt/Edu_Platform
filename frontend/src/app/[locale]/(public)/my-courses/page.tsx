@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function MyCoursesPage() {
   return (
     <div className='flex flex-col gap-6'>
-      <PageBanner eyebrow='Góc học tập' title='Khóa học của tôi' description='Tiếp tục học từ chỗ bạn dừng lại.' />
+      <PageBanner title='Khóa học của tôi' description='Tiếp tục học từ chỗ bạn dừng lại.' />
       <MyCourses />
     </div>
   )

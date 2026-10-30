@@ -384,7 +384,8 @@
     "goToCourse": "Vào học",
     "enrollSuccess": "Ghi danh thành công",
     "buy": "Mua khóa học · {price}",
-    "enrollFree": "Ghi danh miễn phí"
+    "enrollFree": "Ghi danh miễn phí",
+    "byInstructorLine": "bởi <b>{name}</b>"
   },
   "Review": {
     "confirmDelete": "Xóa đánh giá của bạn cho khóa học này?",

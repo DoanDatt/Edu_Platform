@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function ForgotPasswordPage() {
   const t = useTranslations('ForgotPassword')
   return (
-    <AuthShell title={t('shellTitle')} description={t('shellDescription')}>
+    <AuthShell pageTitle={t('title')} title={t('shellTitle')} description={t('shellDescription')}>
       <ForgotPasswordFlow />
     </AuthShell>
   )

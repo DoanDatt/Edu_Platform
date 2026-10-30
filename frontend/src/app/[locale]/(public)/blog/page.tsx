@@ -19,7 +19,7 @@ export default function BlogPage({ searchParams }: PageProps<'/[locale]/blog'>) 
 
   return (
     <div className='flex flex-col gap-8'>
-      <PageBanner eyebrow={t('eyebrow')} title={t('title')} description={t('description')} />
+      <PageBanner title={t('title')} description={t('description')} breadcrumbLabel='Blog' />
       {/* searchParams là dữ liệu lúc chạy → đọc trong component con bọc Suspense */}
       <Suspense>
         <BlogList searchParams={searchParams} />
@@ -62,7 +62,7 @@ async function BlogList({ searchParams }: { searchParams: PageProps<'/[locale]/b
           </Link>
         ))}
       </nav>
-      <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+      <div className='grid gap-[30px] pt-4 sm:grid-cols-2 lg:grid-cols-3'>
         {posts.map((post) => (
           <BlogCard key={post.slug} post={post} />
         ))}

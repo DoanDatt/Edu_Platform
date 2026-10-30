@@ -48,7 +48,7 @@ export default function MyCourses() {
   // 3. Chưa ghi danh khóa nào
   if (enrollments.length === 0) {
     return (
-      <div className='flex flex-col items-center gap-2 rounded-3xl border border-dashed bg-card px-4 py-16 text-center'>
+      <div className='flex flex-col items-center gap-2 rounded-[20px] border border-dashed bg-card px-4 py-16 text-center'>
         <span className='flex size-16 items-center justify-center rounded-2xl bg-primary/10'>
           <BookOpen className='size-8 text-primary' />
         </span>
@@ -148,7 +148,7 @@ export default function MyCourses() {
   )
 }
 
-// Thanh tiến độ: nền nhạt, phần đã học là dải gradient xanh (hoàn thành: xanh lá).
+// Thanh tiến độ: nền nhạt, phần đã học màu cam (hoàn thành: xanh lá).
 // role / aria-*: trình đọc màn hình đọc được "67%"
 function ProgressBar({ percent, label, className }: { percent: number; label: string; className?: string }) {
   return (
@@ -161,10 +161,7 @@ function ProgressBar({ percent, label, className }: { percent: number; label: st
       aria-label={label}
     >
       <div
-        className={cn(
-          'h-full rounded-full',
-          percent === 100 ? 'bg-emerald-500' : 'bg-linear-to-r from-sky-400 to-primary'
-        )}
+        className={cn('h-full rounded-full', percent === 100 ? 'bg-emerald-500' : 'bg-primary')}
         style={{ width: `${percent}%` }}
       />
     </div>
@@ -178,7 +175,7 @@ function SpotlightCard({ enrollment }: { enrollment: MyEnrollmentType }) {
   const isStarted = progress.percent > 0
 
   return (
-    <section className='grid overflow-hidden rounded-3xl border bg-card shadow-sm md:grid-cols-[minmax(0,2fr)_3fr]'>
+    <section className='grid overflow-hidden rounded-[20px] border bg-card shadow-sm md:grid-cols-[minmax(0,2fr)_3fr]'>
       {/* Máy tính: ảnh bìa cao bằng cột thông tin bên cạnh (h-full). Điện thoại: giữ tỉ lệ 16:9 */}
       <Link href={href} className='group block'>
         <CourseCover course={course} sizes='(min-width: 768px) 40vw, 100vw' className='md:h-full' />
@@ -272,7 +269,7 @@ function MyCoursesSkeleton() {
           <Skeleton key={index} className='h-20 rounded-2xl' />
         ))}
       </div>
-      <Skeleton className='h-64 rounded-3xl' />
+      <Skeleton className='h-64 rounded-[20px]' />
       <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
         {Array.from({ length: 3 }, (_, index) => (
           <div key={index} className='flex flex-col overflow-hidden rounded-2xl border bg-card'>

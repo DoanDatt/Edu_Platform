@@ -1,32 +1,38 @@
-import Waves from '@/components/waves'
 import { BlogPost, formatBlogDate, getBlogCategoryName } from '@/content/blog'
 import { Link } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
-import { ArrowRight, CalendarDays, Clock } from 'lucide-react'
+import { CalendarDays, Clock } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 
-// Ảnh bìa bài viết tự vẽ: gradient theo bài + sóng + icon lớn mờ (bài viết chưa có ảnh riêng)
+// Ảnh bìa bài viết tự vẽ (bài viết chưa có ảnh riêng) theo phong cách EduPress:
+// nền màu nhạt theo bài (cùng bộ màu với banner EduPress), icon lớn màu cam ở giữa
 export function BlogCover({ post, size = 'md' }: { post: BlogPost; size?: 'md' | 'lg' }) {
   const { Icon } = post
   return (
     <div
       className={cn(
-        'relative flex items-center justify-center overflow-hidden bg-linear-to-br text-white',
+        'relative flex items-center justify-center overflow-hidden bg-linear-to-br',
         post.gradient,
-        size === 'lg' ? 'aspect-21/9' : 'aspect-video'
+        size === 'lg' ? 'aspect-21/9' : 'aspect-[410/250]'
       )}
     >
-      <div aria-hidden className='absolute -top-1/3 -right-1/4 size-2/3 rounded-full bg-white/20 blur-2xl' />
-      <Waves />
       <Icon
         aria-hidden
-        className={cn('relative text-white/90 drop-shadow-lg', size === 'lg' ? 'size-24' : 'size-16')}
+        className='absolute -right-6 -bottom-8 size-40 -rotate-12 text-[#ff782d]/15'
+        strokeWidth={1.5}
+      />
+      <Icon
+        aria-hidden
+        className={cn('relative text-[#ff782d]', size === 'lg' ? 'size-24' : 'size-16')}
+        strokeWidth={1.5}
       />
     </div>
   )
 }
 
-// Thẻ 1 bài viết (trang /blog): ảnh bìa lọt lòng, chuyên mục, tiêu đề, tóm tắt, ngày + thời gian đọc
+// Thẻ 1 bài viết (trang /blog) theo kiểu thẻ EduPress (cùng khung với thẻ khóa học):
+// viền xám bo 20px, ảnh trên, nhãn chuyên mục nền đen ở góc ảnh, tiêu đề, tóm tắt, ngày + thời gian đọc.
+// Rê chuột: thẻ nhô lên, có bóng, tiêu đề chuyển cam
 export default function BlogCard({ post }: { post: BlogPost }) {
   const t = useTranslations('Blog')
   const locale = useLocale()
@@ -34,34 +40,25 @@ export default function BlogCard({ post }: { post: BlogPost }) {
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className='group flex flex-col rounded-3xl border bg-card p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10'
+      className='group flex flex-col overflow-hidden rounded-[20px] border bg-card transition-all duration-300 hover:-translate-y-4 hover:shadow-[0_4px_10px_rgba(0,0,0,0.1)]'
     >
-      <div className='overflow-hidden rounded-2xl'>
-        <div className='transition-transform duration-500 group-hover:scale-105'>
-          <BlogCover post={post} />
-        </div>
-      </div>
-      <div className='flex flex-1 flex-col gap-2.5 px-1.5 pt-4 pb-1'>
-        <span className='w-fit rounded-full bg-highlight/10 px-2.5 py-0.5 text-xs font-semibold text-highlight'>
+      <div className='relative'>
+        <BlogCover post={post} />
+        <span className='absolute top-5 left-5 rounded-lg bg-black px-3 py-2 text-base leading-normal font-medium text-white'>
           {getBlogCategoryName(post.category, locale)}
         </span>
-        <h3 className='line-clamp-2 font-heading text-lg leading-snug font-semibold transition-colors group-hover:text-primary'>
-          {post.title}
-        </h3>
-        <p className='line-clamp-3 text-sm text-muted-foreground'>{post.excerpt}</p>
-        <div className='mt-auto flex items-center justify-between gap-3 border-t pt-3 text-xs text-muted-foreground'>
-          <span className='flex items-center gap-3'>
-            <span className='flex items-center gap-1'>
-              <CalendarDays className='size-3.5' />
-              {formatBlogDate(post.publishedAt, locale)}
-            </span>
-            <span className='flex items-center gap-1'>
-              <Clock className='size-3.5' />
-              {t('minRead', { minutes: post.readingMinutes })}
-            </span>
+      </div>
+      <div className='flex flex-1 flex-col gap-3 p-5'>
+        <h3 className='line-clamp-2 text-xl leading-[1.2] transition-colors group-hover:text-primary'>{post.title}</h3>
+        <p className='line-clamp-3 text-base leading-normal text-muted-foreground'>{post.excerpt}</p>
+        <div className='mt-auto flex flex-wrap items-center gap-x-6 gap-y-2 border-t pt-4 text-base leading-normal text-muted-foreground'>
+          <span className='flex items-center gap-2'>
+            <CalendarDays className='size-4 text-primary' />
+            {formatBlogDate(post.publishedAt, locale)}
           </span>
-          <span className='flex items-center gap-1 text-sm font-medium text-primary'>
-            {t('read')} <ArrowRight className='size-4 transition-transform group-hover:translate-x-0.5' />
+          <span className='flex items-center gap-2'>
+            <Clock className='size-4 text-primary' />
+            {t('minRead', { minutes: post.readingMinutes })}
           </span>
         </div>
       </div>

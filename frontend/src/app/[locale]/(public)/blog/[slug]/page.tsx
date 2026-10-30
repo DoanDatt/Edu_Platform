@@ -1,12 +1,13 @@
 import { Button } from '@/components/ui/button'
 import { BlogBlock, blogSlugs, formatBlogDate, getBlogCategoryName, getBlogPost, getBlogPosts } from '@/content/blog'
-import { ArrowLeft, ArrowRight, CalendarDays, Clock, Lightbulb } from 'lucide-react'
+import { ArrowRight, CalendarDays, Clock, Lightbulb } from 'lucide-react'
 import type { Metadata } from 'next'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import BlogCard, { BlogCover } from '../blog-card'
 import { Link } from '@/i18n/navigation'
+import BreadcrumbBar from '@/components/breadcrumb-bar'
 
 // Bài viết nằm sẵn trong code → dựng sẵn mọi trang lúc build
 export const generateStaticParams = () => blogSlugs.map((slug) => ({ slug }))
@@ -39,21 +40,17 @@ async function BlogPostContent({ params }: { params: PageProps<'/[locale]/blog/[
 
   return (
     <div className='flex flex-col gap-14'>
-      <article className='mx-auto flex w-full max-w-3xl flex-col gap-6'>
-        <Link
-          href='/blog'
-          className='flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground'
-        >
-          <ArrowLeft className='size-4' /> {t('allPosts')}
-        </Link>
+      <BreadcrumbBar items={[{ label: t('allPosts'), href: '/blog' }, { label: post.title }]} />
+      <article className='mx-auto -mt-4 flex w-full max-w-3xl flex-col gap-6'>
         <div className='flex flex-col gap-4'>
+          {/* Nhãn chuyên mục nền đen như nhãn danh mục trên thẻ khóa học EduPress */}
           <Link
             href={`/blog?category=${post.category}`}
-            className='w-fit rounded-full bg-highlight/10 px-3 py-1 text-xs font-semibold text-highlight'
+            className='w-fit rounded-lg bg-black px-3 py-2 text-base leading-normal font-medium text-white dark:bg-[#555]'
           >
             {getBlogCategoryName(post.category, locale)}
           </Link>
-          <h1 className='text-3xl leading-tight font-bold text-balance md:text-4xl'>{post.title}</h1>
+          <h1 className='text-[32px] leading-[1.2] text-balance md:text-[40px]'>{post.title}</h1>
           <p className='text-lg text-muted-foreground'>{post.excerpt}</p>
           <div className='flex items-center gap-4 text-sm text-muted-foreground'>
             <span className='flex items-center gap-1.5'>
@@ -64,7 +61,7 @@ async function BlogPostContent({ params }: { params: PageProps<'/[locale]/blog/[
             </span>
           </div>
         </div>
-        <div className='overflow-hidden rounded-3xl'>
+        <div className='overflow-hidden rounded-[20px]'>
           <BlogCover post={post} size='lg' />
         </div>
         <div className='flex flex-col gap-5 text-[17px] leading-relaxed'>
@@ -108,18 +105,14 @@ function Block({ block }: { block: BlogBlock }) {
       )
     case 'tip':
       return (
-        <aside className='flex gap-3 rounded-2xl border border-primary/20 bg-accent/60 p-5'>
+        <aside className='flex gap-3 rounded-[20px] bg-secondary p-5'>
           <Lightbulb className='mt-0.5 size-5 shrink-0 text-primary' />
           <p className='text-base'>{block.text}</p>
         </aside>
       )
     case 'cta':
       return (
-        <Button
-          asChild
-          size='lg'
-          className='mt-2 h-12 w-fit rounded-full bg-linear-to-r from-sky-500 to-blue-600 px-7 text-base shadow-lg shadow-sky-500/25 hover:opacity-95'
-        >
+        <Button asChild size='pill' className='mt-2 w-fit'>
           <Link href={block.href}>
             {block.label} <ArrowRight />
           </Link>

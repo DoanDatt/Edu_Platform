@@ -82,7 +82,7 @@ export default function MyOrders() {
           Không tải được lịch sử mua hàng. Vui lòng thử lại sau.
         </p>
       ) : result.data.length === 0 ? (
-        <div className='flex flex-col items-center gap-2 rounded-3xl border border-dashed bg-card px-4 py-16 text-center'>
+        <div className='flex flex-col items-center gap-2 rounded-[20px] border border-dashed bg-card px-4 py-16 text-center'>
           <span className='flex size-16 items-center justify-center rounded-2xl bg-primary/10'>
             <ReceiptText className='size-8 text-primary' />
           </span>

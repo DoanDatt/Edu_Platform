@@ -28,7 +28,7 @@ type BlogPostSource = {
   publishedAt: string // YYYY-MM-DD
   readingMinutes: number
   Icon: LucideIcon // icon lớn trên ảnh bìa tự vẽ
-  gradient: string // nền ảnh bìa (viết đủ tên class để Tailwind sinh CSS)
+  gradient: string // nền ảnh bìa: dải màu nhạt kiểu banner EduPress (viết đủ tên class để Tailwind sinh CSS)
 } & Record<Locale, BlogPostText>
 
 // Bài viết đã chọn sẵn 1 ngôn ngữ: component chỉ cần post.title, post.content...
@@ -41,7 +41,7 @@ const blogPostSources: BlogPostSource[] = [
     publishedAt: '2026-10-28',
     readingMinutes: 6,
     Icon: Code,
-    gradient: 'from-sky-400 via-sky-500 to-blue-700',
+    gradient: 'from-[#fff5be] to-[#d0f7ea]',
     vi: {
       title: 'Lộ trình tự học Frontend cho người mới bắt đầu',
       excerpt:
@@ -153,7 +153,7 @@ const blogPostSources: BlogPostSource[] = [
     publishedAt: '2026-10-25',
     readingMinutes: 4,
     Icon: Target,
-    gradient: 'from-teal-400 via-cyan-500 to-cyan-700',
+    gradient: 'from-[#b4f5e0] to-[#ffc6b8]',
     vi: {
       title: '5 cách học online hiệu quả, không bỏ dở giữa chừng',
       excerpt: 'Học online dễ bắt đầu nhưng khó đi đến cuối. Năm thói quen nhỏ giúp bạn giữ nhịp và học xong khóa học.',
@@ -242,7 +242,7 @@ const blogPostSources: BlogPostSource[] = [
     publishedAt: '2026-10-29',
     readingMinutes: 3,
     Icon: CreditCard,
-    gradient: 'from-indigo-400 via-indigo-500 to-violet-700',
+    gradient: 'from-[#feb6b6] to-[#b7e1ff]',
     vi: {
       title: 'Hướng dẫn mua khóa học và thanh toán trên EduPlatform',
       excerpt:
@@ -318,7 +318,7 @@ const blogPostSources: BlogPostSource[] = [
     publishedAt: '2026-10-29',
     readingMinutes: 3,
     Icon: BookOpenCheck,
-    gradient: 'from-blue-500 via-blue-700 to-indigo-900',
+    gradient: 'from-[#ffe4c4] to-[#ffd1e0]',
     vi: {
       title: 'Tiến độ học hoạt động thế nào: vì sao cần xem đủ 90% video',
       excerpt: 'Bài học được tính hoàn thành khi bạn xem đủ 90% video. Tìm hiểu cách tính, cách xem tiếp từ chỗ dừng.',
@@ -385,7 +385,7 @@ const blogPostSources: BlogPostSource[] = [
     publishedAt: '2026-10-20',
     readingMinutes: 5,
     Icon: GitBranch,
-    gradient: 'from-cyan-400 via-sky-500 to-blue-600',
+    gradient: 'from-[#e0f2ff] to-[#fff5be]',
     vi: {
       title: 'Git và GitHub cho người mới: những lệnh cần biết đầu tiên',
       excerpt: 'Git giúp bạn lưu lại lịch sử thay đổi của code. Bảy lệnh cơ bản đủ dùng cho dự án cá nhân đầu tiên.',

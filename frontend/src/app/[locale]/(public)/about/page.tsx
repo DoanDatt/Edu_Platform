@@ -2,7 +2,6 @@ import { LogoMark } from '@/components/logo'
 import PageBanner from '@/components/page-banner'
 import SectionHeading from '@/components/section-heading'
 import { Button } from '@/components/ui/button'
-import Waves from '@/components/waves'
 import { Link } from '@/i18n/navigation'
 import {
   ArrowRight,
@@ -22,7 +21,7 @@ import type { Metadata } from 'next'
 import { useTranslations } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
 import { Suspense } from 'react'
-import { features } from '../about-section'
+import { features } from './features'
 import CtaSection from '../cta-section'
 import StatsStrip, { StatsStripSkeleton } from '../stats-strip'
 
@@ -55,22 +54,16 @@ const faqs = ['access', 'payment', 'transferPending', 'completion', 'becomeInstr
 export default function AboutPage() {
   const t = useTranslations('About')
   const tFeature = useTranslations('Features')
+  const tNav = useTranslations('Nav')
 
   return (
-    <div className='flex flex-col gap-20'>
-      <div className='flex flex-col'>
-        <PageBanner
-          eyebrow={t('eyebrow')}
-          title={t('title')}
-          description={t('description')}
-          className='pb-24 md:pb-28'
-        />
-        {/* Số liệu thật chồng lên đáy banner, giống trang chủ */}
-        <div className='relative z-10 -mt-14 px-4 md:px-8'>
-          <Suspense fallback={<StatsStripSkeleton />}>
-            <StatsStrip />
-          </Suspense>
-        </div>
+    <div className='flex flex-col gap-16 lg:gap-[90px]'>
+      <div className='flex flex-col gap-10'>
+        <PageBanner title={t('title')} description={t('description')} breadcrumbLabel={tNav('about')} />
+        {/* Số liệu thật: cùng 4 ô như trang chủ */}
+        <Suspense fallback={<StatsStripSkeleton />}>
+          <StatsStrip />
+        </Suspense>
       </div>
 
       <section id='cau-chuyen' className='grid scroll-mt-32 items-center gap-12 lg:grid-cols-[1.1fr_1fr]'>
@@ -81,8 +74,8 @@ export default function AboutPage() {
         </div>
         <div className='grid gap-4'>
           {values.map(({ Icon, key }) => (
-            <div key={key} className='flex gap-4 rounded-2xl border bg-card p-5 shadow-sm'>
-              <span className='flex size-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-sky-400 to-blue-600 text-white shadow-md shadow-sky-500/25'>
+            <div key={key} className='flex gap-4 rounded-[20px] border bg-card p-5'>
+              <span className='flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary'>
                 <Icon className='size-6' />
               </span>
               <div className='flex flex-col gap-1'>
@@ -104,12 +97,14 @@ export default function AboutPage() {
           {features.map(({ Icon, key }) => (
             <div
               key={key}
-              className='flex flex-col gap-4 rounded-3xl border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10'
+              className='group flex flex-col gap-4 rounded-[20px] border bg-card p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_4px_10px_rgba(0,0,0,0.1)]'
             >
               <span className='flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary'>
                 <Icon className='size-6' />
               </span>
-              <h3 className='font-heading text-lg font-semibold'>{tFeature(`${key}.title`)}</h3>
+              <h3 className='text-xl leading-[1.2] transition-colors group-hover:text-primary'>
+                {tFeature(`${key}.title`)}
+              </h3>
               <p className='text-sm leading-relaxed text-muted-foreground'>{tFeature(`${key}.description`)}</p>
             </div>
           ))}
@@ -126,7 +121,7 @@ export default function AboutPage() {
           />
           {steps.map(({ Icon, key }, index) => (
             <li key={key} className='relative flex flex-col items-center gap-3 text-center'>
-              <span className='relative flex size-16 items-center justify-center rounded-full border-4 border-background bg-linear-to-br from-sky-400 to-blue-600 text-white shadow-lg shadow-sky-500/30'>
+              <span className='relative flex size-16 items-center justify-center rounded-full border-4 border-background bg-primary text-white'>
                 <Icon className='size-7' />
                 <span className='absolute -top-1 -right-1 flex size-6 items-center justify-center rounded-full bg-highlight text-xs font-bold text-white'>
                   {index + 1}
@@ -143,27 +138,26 @@ export default function AboutPage() {
 
       <section
         id='giang-vien'
-        className='relative grid scroll-mt-32 items-center gap-8 overflow-hidden rounded-3xl bg-linear-to-br from-sky-500 via-sky-600 to-blue-800 p-8 text-white md:p-12 lg:grid-cols-[1fr_auto]'
+        className='grid scroll-mt-32 items-center gap-8 rounded-[20px] bg-secondary p-8 md:p-12 lg:grid-cols-[1fr_auto]'
       >
-        <div aria-hidden className='absolute -top-20 -right-10 size-72 rounded-full bg-white/15 blur-3xl' />
-        <Waves className='h-1/3' animated />
-        <div className='relative flex flex-col gap-4'>
-          <span className='text-xs font-semibold tracking-widest text-white/80 uppercase'>
+        {/* Khối kêu gọi kiểu banner EduPress: nền xám nhạt, nhãn in hoa, tiêu đề 32px, nút cam */}
+        <div className='flex flex-col gap-4'>
+          <span className='font-heading text-base leading-[1.2] font-semibold text-muted-foreground uppercase'>
             {t('instructorEyebrow')}
           </span>
-          <h2 className='max-w-xl text-3xl leading-tight font-bold text-balance'>{t('instructorTitle')}</h2>
-          <ul className='grid gap-2 text-white/90 sm:grid-cols-2'>
+          <h2 className='max-w-xl text-[26px] leading-[1.2] text-balance md:text-[32px]'>{t('instructorTitle')}</h2>
+          <ul className='grid gap-2 text-lg sm:grid-cols-2'>
             {instructorPoints.map((key) => (
               <li key={key} className='flex items-center gap-2'>
-                <CheckCircle2 className='size-4 shrink-0' /> {t(`instructorPoints.${key}`)}
+                <CheckCircle2 className='size-4 shrink-0 text-highlight' /> {t(`instructorPoints.${key}`)}
               </li>
             ))}
           </ul>
-          <p className='text-sm text-white/75'>{t('instructorNote')}</p>
+          <p className='text-muted-foreground'>{t('instructorNote')}</p>
         </div>
-        <div className='relative flex flex-col items-start gap-4 lg:items-center'>
-          <LogoMark className='hidden size-24 rounded-[1.75rem] bg-none bg-white/15 shadow-none lg:flex [&_svg]:size-14' />
-          <Button asChild size='lg' className='rounded-full bg-white px-6 text-sky-700 hover:bg-white/90'>
+        <div className='flex flex-col items-start gap-4 lg:items-center'>
+          <LogoMark className='hidden size-24 rounded-[1.75rem] lg:flex [&_svg]:size-14' />
+          <Button asChild size='pill'>
             <Link href='/instructor'>
               {t('instructorCta')} <ArrowRight />
             </Link>
@@ -188,9 +182,9 @@ export default function AboutPage() {
           {faqs.map((key) => (
             <details
               key={key}
-              className='group rounded-2xl border bg-card px-5 shadow-sm transition-colors open:border-primary/30'
+              className='group rounded-[20px] border bg-card px-6 transition-colors open:border-primary'
             >
-              <summary className='flex cursor-pointer list-none items-center justify-between gap-4 py-4 font-semibold [&::-webkit-details-marker]:hidden'>
+              <summary className='flex cursor-pointer list-none items-center justify-between gap-4 py-5 font-heading text-lg font-semibold group-open:text-primary [&::-webkit-details-marker]:hidden'>
                 {t(`faqItems.${key}.question`)}
                 <ChevronDown className='size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180 group-open:text-primary' />
               </summary>

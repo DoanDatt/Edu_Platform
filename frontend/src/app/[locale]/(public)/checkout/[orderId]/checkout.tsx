@@ -147,7 +147,7 @@ export default function Checkout({ orderId }: { orderId: number }) {
 
       {/* Máy tính: cách thanh toán bên trái, tóm tắt đơn bên phải. Điện thoại: tóm tắt đơn lên trước (order-first) */}
       <div className='grid gap-6 lg:grid-cols-[1fr_380px]'>
-        <section className='flex flex-col gap-4 rounded-3xl border bg-card p-5 md:p-6'>
+        <section className='flex flex-col gap-4 rounded-[20px] border bg-card p-5 md:p-6'>
           {transfer ? (
             <SepayTransfer transfer={transfer} onBack={() => setTransfer(null)} />
           ) : (
@@ -230,7 +230,7 @@ export default function Checkout({ orderId }: { orderId: number }) {
         </section>
 
         {/* ===== Tóm tắt đơn ===== */}
-        <aside className='order-first flex h-fit flex-col gap-4 rounded-3xl border bg-card p-5 lg:order-0'>
+        <aside className='order-first flex h-fit flex-col gap-4 rounded-[20px] border bg-card p-5 lg:order-0'>
           <CourseCover course={order.course} sizes='380px' className='rounded-2xl' />
           <h2 className='font-heading text-lg font-semibold'>{order.course.title}</h2>
           <dl className='flex flex-col gap-2 border-t pt-4 text-sm'>
@@ -357,7 +357,7 @@ export function StatusCard({
   children?: React.ReactNode
 }) {
   return (
-    <div className='mx-auto flex w-full max-w-lg flex-col items-center gap-3 rounded-3xl border bg-card px-6 py-12 text-center'>
+    <div className='mx-auto flex w-full max-w-lg flex-col items-center gap-3 rounded-[20px] border bg-card px-6 py-12 text-center'>
       <span
         className={cn(
           'flex size-16 items-center justify-center rounded-2xl',
@@ -386,8 +386,8 @@ export function CheckoutSkeleton() {
     <div className='flex flex-col gap-6'>
       <Skeleton className='h-10 w-48' />
       <div className='grid gap-6 lg:grid-cols-[1fr_380px]'>
-        <Skeleton className='h-96 rounded-3xl' />
-        <Skeleton className='h-96 rounded-3xl' />
+        <Skeleton className='h-96 rounded-[20px]' />
+        <Skeleton className='h-96 rounded-[20px]' />
       </div>
     </div>
   )

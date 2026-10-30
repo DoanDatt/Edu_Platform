@@ -12,11 +12,7 @@ export const metadata: Metadata = {
 export default function MyOrdersPage() {
   return (
     <div className='flex flex-col gap-6'>
-      <PageBanner
-        eyebrow='Tài khoản'
-        title='Lịch sử mua hàng'
-        description='Các khóa học bạn đã mua và đơn đang chờ thanh toán.'
-      />
+      <PageBanner title='Lịch sử mua hàng' description='Các khóa học bạn đã mua và đơn đang chờ thanh toán.' />
       <Suspense fallback={<MyOrdersSkeleton />}>
         <MyOrders />
       </Suspense>

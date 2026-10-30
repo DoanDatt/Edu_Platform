@@ -33,7 +33,7 @@ import { useRouter } from '@/i18n/navigation'
 
 // Icon + màu theo loại thông báo: nhìn là biết tin tốt (xanh) hay tin xấu (đỏ)
 const typeStyles: Record<keyof typeof NotificationType, { Icon: LucideIcon; className: string }> = {
-  COURSE_SUBMITTED: { Icon: Send, className: 'bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400' },
+  COURSE_SUBMITTED: { Icon: Send, className: 'bg-primary/10 text-primary' },
   COURSE_APPROVED: {
     Icon: CheckCircle2,
     className: 'bg-green-100 text-green-600 dark:bg-green-500/15 dark:text-green-400'

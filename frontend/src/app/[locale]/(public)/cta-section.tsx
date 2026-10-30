@@ -1,15 +1,13 @@
 'use client'
 
 import { useAppContext } from '@/components/app-provider'
-import FullBleed from '@/components/full-bleed'
 import { Button } from '@/components/ui/button'
-import Waves from '@/components/waves'
-import { ArrowRight } from 'lucide-react'
+import { GraduationCap } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
 import { useTranslations } from 'next-intl'
 
-// Khối kêu gọi cuối trang chủ: dải xanh TRÀN NGANG có sóng, cùng phong cách banner đầu trang
-// → trang mở và đóng bằng cùng 1 "giọng" màu thương hiệu.
+// Khối kêu gọi theo bố cục banner CTA của EduPress (node 1:1405): khung bo 20px trong khung 1290px,
+// bên trái icon học viên 120px + tiêu đề, bên phải 2 nút (viền + cam).
 // Client Component để đổi nút theo trạng thái đăng nhập (token ở localStorage, server không biết):
 //   chưa đăng nhập → "Đăng ký miễn phí";  đã đăng nhập → "Khóa học của tôi"
 export default function CtaSection() {
@@ -17,34 +15,24 @@ export default function CtaSection() {
   const { isAuth } = useAppContext()
 
   return (
-    <FullBleed
-      // -mb: bù đúng pb của <main> (layout) → dải nối liền footer, không có khoảng trắng ở giữa
-      className='-mb-16 bg-linear-to-br from-sky-400 via-sky-500 to-blue-600 py-16 text-white md:-mb-20 md:py-20 dark:from-sky-600 dark:via-sky-700 dark:to-blue-800'
-      innerClassName='flex flex-col items-center gap-4 pb-8 text-center'
-      decoration={
-        <>
-          <div aria-hidden className='absolute -top-24 left-[10%] size-80 rounded-full bg-white/20 blur-3xl' />
-          <Waves className='h-1/3' animated />
-        </>
-      }
-    >
-      <h2 className='max-w-2xl text-3xl leading-tight font-bold text-balance md:text-4xl'>{t('title')}</h2>
-      <p className='max-w-2xl text-white/90 md:text-lg'>{t('description')}</p>
-      <div className='mt-2 flex flex-wrap justify-center gap-3'>
-        <Button asChild size='lg' className='rounded-full bg-white px-6 text-sky-700 hover:bg-white/90'>
+    <section className='flex flex-col items-start gap-8 rounded-[20px] bg-[linear-gradient(110.5deg,#fff5be_0%,#d0f7ea_97.7%)] px-6 py-10 md:px-[50px] lg:flex-row lg:items-center lg:justify-between lg:py-[65px] dark:bg-[linear-gradient(110.5deg,#3a3420_0%,#1d3a33_97.7%)]'>
+      <div className='flex items-center gap-6 md:gap-8'>
+        <span className='flex size-20 shrink-0 items-center justify-center rounded-full bg-white/70 text-primary md:size-[120px] dark:bg-black/20'>
+          <GraduationCap className='size-10 md:size-16' strokeWidth={1.5} />
+        </span>
+        <div className='flex max-w-xl flex-col gap-2'>
+          <h2 className='text-xl leading-[1.2] md:text-2xl'>{t('title')}</h2>
+          <p className='text-lg leading-normal text-muted-foreground'>{t('description')}</p>
+        </div>
+      </div>
+      <div className='flex flex-wrap gap-5'>
+        <Button asChild variant='bordered' size='pill'>
+          <Link href='/courses'>{t('explore')}</Link>
+        </Button>
+        <Button asChild size='pill'>
           {isAuth ? <Link href='/my-courses'>{t('myCourses')}</Link> : <Link href='/register'>{t('register')}</Link>}
         </Button>
-        <Button
-          asChild
-          size='lg'
-          variant='outline'
-          className='rounded-full border-white/70 bg-transparent px-6 text-white hover:bg-white/10 hover:text-white'
-        >
-          <Link href='/courses'>
-            {t('explore')} <ArrowRight />
-          </Link>
-        </Button>
       </div>
-    </FullBleed>
+    </section>
   )
 }

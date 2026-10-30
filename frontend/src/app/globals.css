@@ -63,39 +63,6 @@
   }
 }
 
-/* Animation riêng (class animate-wave, animate-wave-slow, animate-float).
-   Dùng kèm motion-safe: → người bật "giảm chuyển động" trong hệ điều hành sẽ không thấy chuyển động */
-@theme {
-  --animate-wave: wave-drift 14s linear infinite;
-  --animate-wave-slow: wave-drift 24s linear infinite;
-  --animate-float: float 6s ease-in-out infinite;
-  /* Băng chạy ngang (lời nhận xét dưới banner): cùng cơ chế với sóng — dải gồm 2 bản giống hệt nhau,
-     trượt sang trái 1 nửa rồi lặp lại liền mạch. Thời gian thật đặt bằng style theo số thẻ */
-  --animate-marquee: wave-drift 60s linear infinite;
-
-  /* Lớp sóng rộng gấp đôi khung, gồm 2 đoạn sóng giống hệt nhau: trượt sang trái đúng 1 nửa
-     thì đoạn 2 nằm đúng chỗ đoạn 1 lúc đầu → lặp lại liền mạch, không thấy chỗ nối */
-  @keyframes wave-drift {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
-
-  /* Dùng thuộc tính translate (không phải transform) để không đè lên rotate-* của Tailwind */
-  @keyframes float {
-    0%,
-    100% {
-      translate: 0 0;
-    }
-    50% {
-      translate: 0 -10px;
-    }
-  }
-}
-
 /* Bộ màu theo thiết kế EduPress (Figma → trang Guide): nền trắng, chữ đen, cam là màu thương hiệu.
    Mã hex lấy đúng biến trong Figma: Primary #FF782D · Black #000 · Dark_gray #555 · Grey #9D9D9D
    · Light_grey #EAEAEA (viền) · White_grey #F5F5F5 (nền khối phụ: breadcrumb, footer, thẻ số liệu) */

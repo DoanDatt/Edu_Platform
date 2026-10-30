@@ -33,7 +33,7 @@ const ROLE_ORDER: RoleType[] = ['STUDENT', 'INSTRUCTOR', 'ADMIN']
 
 // Icon + màu nền icon cho từng ô. Viết đủ tên class để Tailwind tạo được CSS (không ghép chuỗi)
 const roleStyles: Record<RoleType, { Icon: LucideIcon; className: string }> = {
-  STUDENT: { Icon: GraduationCap, className: 'bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400' },
+  STUDENT: { Icon: GraduationCap, className: 'bg-primary/10 text-primary' },
   INSTRUCTOR: {
     Icon: Presentation,
     className: 'bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400'

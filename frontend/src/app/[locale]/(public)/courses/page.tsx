@@ -26,7 +26,7 @@ async function CoursesPage({ searchParams }: PageProps<'/[locale]/courses'>) {
   return (
     <div className='flex flex-col gap-6'>
       {/* ===== Tiêu đề ===== */}
-      <PageBanner eyebrow={t('eyebrow')} title={t('title')} description={t('description')} />
+      <PageBanner title={t('title')} description={t('description')} />
 
       {/* ===== Bộ lọc (chưa hoạt động) ===== */}
       <Suspense fallback={<div className='h-10' />}>

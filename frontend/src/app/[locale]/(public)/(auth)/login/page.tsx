@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function LoginPage() {
   const t = useTranslations('Auth')
   return (
-    <AuthShell title={t('loginShellTitle')} description={t('loginShellDescription')}>
+    <AuthShell pageTitle={t('login')} title={t('loginShellTitle')} description={t('loginShellDescription')}>
       <LoginForm />
     </AuthShell>
   )

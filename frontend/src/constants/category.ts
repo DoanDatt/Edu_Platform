@@ -2,22 +2,18 @@ import { BarChart3, Code, LayoutGrid, LucideIcon, Megaphone, Palette } from 'luc
 
 // DB không lưu icon / màu cho danh mục → tự gán theo tên.
 // Danh mục mới (admin thêm sau) không có trong bảng → icon LayoutGrid + màu chọn theo id.
-// Mọi màu đều nằm trong DẢI MÀU BIỂN (xanh da trời → xanh ngọc → chàm): vẫn phân biệt được danh mục
-// mà cả trang không bị "cầu vồng", đồng bộ với màu thương hiệu
+// Màu nền ảnh bìa tự vẽ: các dải màu NHẠT lấy từ chính banner của EduPress (vàng → xanh ngọc ở hero,
+// hồng → xanh nhạt ở banner theme, xanh ngọc → cam đào ở banner add-on) → chữ đen đọc rõ, hợp tông cam
 const categoryStyles: Record<string, { Icon: LucideIcon; gradient: string }> = {
-  'Lập trình Web': { Icon: Code, gradient: 'from-sky-400 via-sky-500 to-blue-700' },
-  'Thiết kế': { Icon: Palette, gradient: 'from-indigo-400 via-indigo-500 to-violet-700' },
-  Marketing: { Icon: Megaphone, gradient: 'from-teal-400 via-cyan-500 to-cyan-700' },
-  'Khoa học dữ liệu': { Icon: BarChart3, gradient: 'from-blue-500 via-blue-700 to-indigo-900' }
+  'Lập trình Web': { Icon: Code, gradient: 'from-[#fff5be] to-[#d0f7ea]' },
+  'Thiết kế': { Icon: Palette, gradient: 'from-[#feb6b6] to-[#b7e1ff]' },
+  Marketing: { Icon: Megaphone, gradient: 'from-[#b4f5e0] to-[#ffc6b8]' },
+  'Khoa học dữ liệu': { Icon: BarChart3, gradient: 'from-[#ffe4c4] to-[#ffd1e0]' }
 }
 
 // Màu dự phòng cho danh mục lạ. Viết ĐỦ tên class (không ghép chuỗi kiểu `from-${color}-500`):
 // Tailwind chỉ tạo CSS cho class nó đọc thấy nguyên văn trong code
-const fallbackGradients = [
-  'from-cyan-400 via-sky-500 to-blue-600',
-  'from-emerald-400 via-teal-500 to-cyan-700',
-  'from-slate-500 via-slate-600 to-slate-800'
-]
+const fallbackGradients = ['from-[#e0f2ff] to-[#fff5be]', 'from-[#d0f7ea] to-[#e3e0ff]', 'from-[#f5f5f5] to-[#ffe4c4]']
 
 // Icon cam của EduPress (tải từ Figma, public/edupress/icons) cho ô danh mục ở trang chủ.
 // Danh mục lạ → lần lượt các icon còn lại của Figma theo id

@@ -17,7 +17,13 @@ export default function HeroBanner() {
     <section className='relative left-1/2 -mt-6 w-screen -translate-x-1/2 overflow-hidden bg-[linear-gradient(110.5deg,#fff5be_0%,#d0f7ea_97.7%)] md:-mt-8 dark:bg-[linear-gradient(110.5deg,#3a3420_0%,#1d3a33_97.7%)]'>
       {/* ===== Hình trang trí bám mép màn hình (ẩn trên điện thoại cho gọn) ===== */}
       <div aria-hidden className='pointer-events-none absolute inset-0 hidden md:block'>
-        <Image src={asset('hero-blob-bottom-left.svg')} alt='' width={643} height={448} className='absolute top-[252px] -left-[5px]' />
+        <Image
+          src={asset('hero-blob-bottom-left.svg')}
+          alt=''
+          width={643}
+          height={448}
+          className='absolute top-[252px] -left-[5px]'
+        />
         {/* Nét vẽ trắng: nền sáng thì mờ sẵn, nền tối thì nổi quá → giảm độ đậm ở giao diện tối */}
         <Image
           src={asset('hero-doodle-left.svg')}
@@ -26,8 +32,20 @@ export default function HeroBanner() {
           height={354}
           className='absolute top-10 left-[87px] dark:opacity-25'
         />
-        <Image src={asset('hero-blob-top-right.svg')} alt='' width={481} height={219} className='absolute top-0 right-0' />
-        <Image src={asset('hero-blob-bottom-right.svg')} alt='' width={347} height={312} className='absolute top-[364px] -right-[91px]' />
+        <Image
+          src={asset('hero-blob-top-right.svg')}
+          alt=''
+          width={481}
+          height={219}
+          className='absolute top-0 right-0'
+        />
+        <Image
+          src={asset('hero-blob-bottom-right.svg')}
+          alt=''
+          width={347}
+          height={312}
+          className='absolute top-[364px] -right-[91px]'
+        />
       </div>
 
       {/* ===== Nội dung: khung 1290px, chiều cao 700px trên màn hình lớn ===== */}
@@ -54,8 +72,20 @@ export default function HeroBanner() {
               height={419}
               className='absolute top-[141px] left-[405px] h-[419px] w-[977px] max-w-none object-cover opacity-50 dark:opacity-15'
             />
-            <Image src={asset('hero-sparkle.svg')} alt='' width={66} height={76} className='absolute top-[21.5px] left-[893px]' />
-            <Image src={asset('hero-objects.svg')} alt='' width={95} height={82} className='absolute top-[7px] left-[1030px]' />
+            <Image
+              src={asset('hero-sparkle.svg')}
+              alt=''
+              width={66}
+              height={76}
+              className='absolute top-[21.5px] left-[893px]'
+            />
+            <Image
+              src={asset('hero-objects.svg')}
+              alt=''
+              width={95}
+              height={82}
+              className='absolute top-[7px] left-[1030px]'
+            />
             {/* Ảnh học viên: cao 1043px, đỉnh lệch -93px, phần dưới bị cắt bởi đáy banner (overflow-hidden) */}
             <Image
               src={asset('hero-student.png')}

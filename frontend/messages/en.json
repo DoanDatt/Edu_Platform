@@ -384,7 +384,8 @@
     "goToCourse": "Go to course",
     "enrollSuccess": "Enrolled successfully",
     "buy": "Buy course · {price}",
-    "enrollFree": "Enroll for free"
+    "enrollFree": "Enroll for free",
+    "byInstructorLine": "by <b>{name}</b>"
   },
   "Review": {
     "confirmDelete": "Delete your review for this course?",

@@ -41,7 +41,7 @@ export default async function CourseList({ searchParams }: { searchParams: Promi
   // Không có khóa nào (thường do bộ lọc quá hẹp): khung viền nét đứt + icon + gợi ý
   if (courses.length === 0) {
     return (
-      <div className='flex flex-col items-center gap-2 rounded-xl border border-dashed px-4 py-16 text-center'>
+      <div className='flex flex-col items-center gap-2 rounded-[20px] border border-dashed px-4 py-16 text-center'>
         <span className='flex size-14 items-center justify-center rounded-full bg-muted'>
           <SearchX className='size-7 text-muted-foreground' />
         </span>
@@ -57,7 +57,7 @@ export default async function CourseList({ searchParams }: { searchParams: Promi
   return (
     <div className='flex flex-col gap-6'>
       <p className='text-sm text-muted-foreground'>{t('found', { count: totalItems })}</p>
-      <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+      <div className='grid gap-[30px] pt-4 sm:grid-cols-2 lg:grid-cols-3'>
         {courses.map((course) => (
           <CourseCard key={course.id} course={course} />
         ))}
