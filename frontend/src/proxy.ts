@@ -96,5 +96,11 @@ export function proxy(request: NextRequest) {
 // Chạy với MỌI trang (next-intl cần xử lý ngôn ngữ ở cả trang công khai),
 // trừ /api (Route Handler), /_next, /_vercel và file tĩnh có dấu chấm (favicon.ico, ảnh...)
 export const config = {
-  matcher: '/((?!api|_next|_vercel|.*\\..*).*)'
+  matcher: [
+    // Mọi trang, trừ /api, /_next, /_vercel và file tĩnh có dấu chấm (favicon.ico, ảnh...)
+    '/((?!api|_next|_vercel|.*\\..*).*)',
+    // Slug khóa học có dấu chấm ('ten-khoa-i.15') nên dòng trên bỏ sót → khai báo riêng.
+    // ([\\w-]+)? : có hoặc không có tiền tố ngôn ngữ (/en/courses/..., /courses/...)
+    '/([\\w-]+)?/courses/(.+)'
+  ]
 }
