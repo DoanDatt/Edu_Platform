@@ -323,7 +323,8 @@
     "invalidPhone": "Invalid phone number",
     "passwordMismatch": "Passwords do not match",
     "passwordRequired": "Please enter your password",
-    "ratingRange": "Rating must be between 1 and 5 stars"
+    "ratingRange": "Rating must be between 1 and 5 stars",
+    "otpFormat": "The code must be 6 digits"
   },
   "Courses": {
     "metaTitle": "Courses",
@@ -435,6 +436,7 @@
     "confirmPassword": "Confirm password",
     "hidePassword": "Hide password",
     "showPassword": "Show password",
+    "forgotPassword": "Forgot password?",
     "name": "Full name",
     "namePlaceholder": "John Smith",
     "phone": "Phone number",
@@ -442,6 +444,31 @@
     "haveAccount": "Already have an account?",
     "loggingOut": "Logging out...",
     "refreshing": "Refreshing your session..."
+  },
+  "ForgotPassword": {
+    "title": "Forgot password",
+    "shellTitle": "Get back into your account",
+    "shellDescription": "All you need is your registered email. You will have a new password in a few minutes.",
+    "step": "Step {current} of {total}",
+    "emailTitle": "Forgot password",
+    "emailDescription": "Enter your registered email and we will send you a 6-digit verification code.",
+    "sendCode": "Send code",
+    "codeSent": "Verification code sent, please check your email",
+    "otpTitle": "Enter verification code",
+    "otpDescription": "If {email} is registered, a 6-digit code has been sent to it. The code is valid for 10 minutes.",
+    "otpLabel": "Verification code",
+    "verify": "Verify",
+    "resend": "Resend code",
+    "resendIn": "Resend code in {seconds}s",
+    "changeEmail": "Change email",
+    "passwordTitle": "Set a new password",
+    "passwordDescription": "Create a new password for {email}.",
+    "newPassword": "New password",
+    "submit": "Change password",
+    "resetSuccess": "Password changed, please log in again",
+    "codeExpired": "The verification code has expired, please request a new one",
+    "rememberPassword": "Remember your password?",
+    "backToLogin": "Log in"
   },
   "StarInput": {
     "label": "Rating",

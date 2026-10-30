@@ -1,5 +1,6 @@
 import http from '@/lib/http'
 import {
+  ForgotPasswordBodyType,
   LoginBodyResType,
   LoginBodyType,
   LogoutBodyType,
@@ -7,7 +8,9 @@ import {
   RefreshTokenBodyResType,
   RefreshTokenBodyType,
   RegisterBodyResType,
-  RegisterBodyType
+  RegisterBodyType,
+  ResetPasswordBodyType,
+  VerifyOtpBodyType
 } from '@/schemaValidations/auth.schema'
 import { MessageResType } from '@/schemaValidations/common.schema'
 
@@ -50,7 +53,11 @@ export const authApiRequest = {
     } finally {
       this.refreshTokenRequest = null
     }
-  }
+  },
+  // Quên mật khẩu: gọi thẳng backend, không cần Route Handler vì không có cookie nào phải đặt
+  forgotPassword: (body: ForgotPasswordBodyType) => http.post<MessageResType>('/auth/forgot-password', body),
+  verifyOtp: (body: VerifyOtpBodyType) => http.post<MessageResType>('/auth/verify-otp', body),
+  resetPassword: (body: ResetPasswordBodyType) => http.post<MessageResType>('/auth/reset-password', body)
 }
 
 export default authApiRequest

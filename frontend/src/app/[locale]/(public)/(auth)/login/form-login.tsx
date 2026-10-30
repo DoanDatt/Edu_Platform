@@ -92,7 +92,15 @@ export default function LoginForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor='login-password'>{t('password')}</FieldLabel>
+                  <div className='flex items-center justify-between'>
+                    <FieldLabel htmlFor='login-password'>{t('password')}</FieldLabel>
+                    <Link
+                      href='/forgot-password'
+                      className='text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline'
+                    >
+                      {t('forgotPassword')}
+                    </Link>
+                  </div>
                   <div className='relative'>
                     <Input
                       {...field}

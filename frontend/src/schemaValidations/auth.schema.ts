@@ -93,3 +93,39 @@ export const MeRes = z.object({
 })
 
 export type MeResType = z.infer<typeof MeRes>
+
+const OtpCodeSchema = z.string().regex(/^\d{6}$/, 'Mã OTP gồm 6 chữ số')
+
+export const ForgotPasswordBodySchema = z
+  .object({
+    email: z.email('Email không hợp lệ')
+  })
+  .strict()
+
+export type ForgotPasswordBodyType = z.infer<typeof ForgotPasswordBodySchema>
+
+export const VerifyOtpBodySchema = z.object({
+  email: z.email('Email không hợp lệ'),
+  code: OtpCodeSchema
+})
+export type VerifyOtpBodyType = z.infer<typeof VerifyOtpBodySchema>
+
+// Form bước 2 chỉ có ô mã, email lấy từ bước 1
+export const VerifyOtpFormSchema = VerifyOtpBodySchema.pick({ code: true })
+export type VerifyOtpFormType = z.infer<typeof VerifyOtpFormSchema>
+
+// Form bước 3 chỉ có 2 ô, email + code lấy ra từ state các bước trước
+
+export const ResetPasswordFormSchema = z
+  .object({
+    newPassword: z.string().min(8, 'Mật khẩu tối thiểu 8 kí tự').max(100),
+    confirmPassword: z.string()
+  })
+  .strict()
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword']
+  })
+
+export type ResetPasswordFormType = z.infer<typeof ResetPasswordFormSchema>
+export type ResetPasswordBodyType = ResetPasswordFormType & { email: string; code: string }

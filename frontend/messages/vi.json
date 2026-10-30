@@ -323,7 +323,8 @@
     "invalidPhone": "Số điện thoại không hợp lệ",
     "passwordMismatch": "Mật khẩu xác nhận không khớp",
     "passwordRequired": "Vui lòng nhập mật khẩu",
-    "ratingRange": "Số sao từ 1 đến 5"
+    "ratingRange": "Số sao từ 1 đến 5",
+    "otpFormat": "Mã OTP gồm 6 chữ số"
   },
   "Courses": {
     "metaTitle": "Khóa học",
@@ -435,6 +436,7 @@
     "confirmPassword": "Nhập lại mật khẩu",
     "hidePassword": "Ẩn mật khẩu",
     "showPassword": "Hiện mật khẩu",
+    "forgotPassword": "Quên mật khẩu?",
     "name": "Họ tên",
     "namePlaceholder": "Nguyễn Văn A",
     "phone": "Số điện thoại",
@@ -442,6 +444,31 @@
     "haveAccount": "Đã có tài khoản?",
     "loggingOut": "Đang đăng xuất...",
     "refreshing": "Đang làm mới phiên đăng nhập..."
+  },
+  "ForgotPassword": {
+    "title": "Quên mật khẩu",
+    "shellTitle": "Lấy lại quyền truy cập",
+    "shellDescription": "Chỉ cần email đã đăng ký, bạn sẽ đặt lại mật khẩu trong vài phút.",
+    "step": "Bước {current}/{total}",
+    "emailTitle": "Quên mật khẩu",
+    "emailDescription": "Nhập email đã đăng ký, chúng tôi sẽ gửi cho bạn mã xác minh 6 số.",
+    "sendCode": "Gửi mã xác minh",
+    "codeSent": "Đã gửi mã xác minh, vui lòng kiểm tra email",
+    "otpTitle": "Nhập mã xác minh",
+    "otpDescription": "Nếu {email} đã đăng ký, mã 6 số đã được gửi tới email đó. Mã có hiệu lực trong 10 phút.",
+    "otpLabel": "Mã xác minh",
+    "verify": "Xác minh",
+    "resend": "Gửi lại mã",
+    "resendIn": "Gửi lại mã sau {seconds}s",
+    "changeEmail": "Đổi email",
+    "passwordTitle": "Đặt mật khẩu mới",
+    "passwordDescription": "Tạo mật khẩu mới cho tài khoản {email}.",
+    "newPassword": "Mật khẩu mới",
+    "submit": "Đổi mật khẩu",
+    "resetSuccess": "Đổi mật khẩu thành công, vui lòng đăng nhập lại",
+    "codeExpired": "Mã xác minh đã hết hạn, vui lòng lấy mã mới",
+    "rememberPassword": "Nhớ ra mật khẩu?",
+    "backToLogin": "Đăng nhập"
   },
   "StarInput": {
     "label": "Số sao",

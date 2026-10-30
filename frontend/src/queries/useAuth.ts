@@ -22,6 +22,25 @@ export const useLogoutMutation = () => {
   })
 }
 
+// Quên mật khẩu: gửi mã → kiểm tra mã → đặt mật khẩu mới
+export const useForgotPasswordMutation = () => {
+  return useMutation({
+    mutationFn: authApiRequest.forgotPassword
+  })
+}
+
+export const useVerifyOtpMutation = () => {
+  return useMutation({
+    mutationFn: authApiRequest.verifyOtp
+  })
+}
+
+export const useResetPasswordMutation = () => {
+  return useMutation({
+    mutationFn: authApiRequest.resetPassword
+  })
+}
+
 // useQuery: dùng cho API đọc dữ liệu (GET), tự cache theo queryKey.
 // Nhiều component cùng gọi useMeQuery() thì chỉ gửi 1 request
 export const useMeQuery = ({ enabled = true }: { enabled?: boolean } = {}) => {
