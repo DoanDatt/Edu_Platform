@@ -25,6 +25,7 @@ const useInvalidateCoursesAndStats = () => {
   }
 }
 
+// lấy toàn bộ danh sách khóa học của giảng viên
 export const useInstructorCourseQuery = (query?: Partial<GetMyCoursesQueryType>) => {
   return useQuery({
     queryKey: ['courses', 'mine', query],
@@ -32,7 +33,7 @@ export const useInstructorCourseQuery = (query?: Partial<GetMyCoursesQueryType>)
     placeholderData: keepPreviousData // chuyển trang: giữ dữ liệu trang cũ trong lúc tải, bảng không nháy trống
   })
 }
-
+// lấy 1 khóa học của giảng viên
 export const useInstructorCourseDetailQuery = (id: number) => {
   return useQuery({
     queryKey: ['courses', 'mine', id],
@@ -40,7 +41,7 @@ export const useInstructorCourseDetailQuery = (id: number) => {
     retry: retryUnlessNotFound
   })
 }
-
+// tạo khóa học dành cho giảng viên
 export const useCreateCourseMutation = () => {
   const invalidate = useInvalidateCoursesAndStats()
   return useMutation({
