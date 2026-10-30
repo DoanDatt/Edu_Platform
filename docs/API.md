@@ -190,11 +190,15 @@ Query (đều không bắt buộc):
 | Param | Ví dụ | Ý nghĩa |
 |---|---|---|
 | `search` | `react` | Tìm trong tên và mô tả ngắn, không phân biệt hoa thường |
-| `categoryId` | `2` | Lọc theo danh mục |
-| `level` | `BEGINNER` | Lọc theo trình độ |
+| `categoryId` | `2` hoặc `1,2` | Lọc theo danh mục (nhiều giá trị: thuộc 1 trong các danh mục) |
+| `instructorId` | `3` hoặc `3,4` | Lọc theo giảng viên |
+| `level` | `BEGINNER` hoặc `BEGINNER,ADVANCED` | Lọc theo trình độ |
 | `price` | `free` / `paid` | Miễn phí / có phí |
+| `rating` | `5` hoặc `5,4` | Mức sao = điểm trung bình làm tròn (4.6 → 5). Khóa chưa có đánh giá không thuộc mức nào |
 | `sort` | `newest` (mặc định), `popular`, `price_asc`, `price_desc` | Sắp xếp |
 | `page`, `limit` | | Phân trang |
+
+Nhiều giá trị viết `a,b` hoặc lặp tham số (`?level=A&level=B`). Trong 1 bộ lọc là HOẶC, giữa các bộ lọc là VÀ.
 
 Mỗi phần tử trong `data`:
 ```json
@@ -215,6 +219,19 @@ Mỗi phần tử trong `data`:
 }
 ```
 
+### `GET /courses/filters`: cột lọc của trang danh sách
+
+Các lựa chọn kèm số khóa đã xuất bản (đếm trên tất cả khóa, không phụ thuộc bộ lọc đang chọn):
+```json
+{
+  "categories": [{ "id": 1, "name": "Lập trình Web", "count": 7 }],
+  "instructors": [{ "id": 3, "name": "Nguyễn Văn An", "count": 10 }],
+  "price": { "all": 18, "free": 7, "paid": 11 },
+  "ratings": [{ "stars": 5, "count": 7 }, { "stars": 4, "count": 0 }],
+  "levels": [{ "level": "ALL_LEVELS", "count": 2 }]
+}
+```
+
 ### `GET /courses/:courseId`: trang chi tiết
 
 Công khai. **Nếu gửi kèm token** thì có thêm thông tin `isEnrolled`.
@@ -224,7 +241,7 @@ Công khai. **Nếu gửi kèm token** thì có thêm thông tin `isEnrolled`.
   "id": 1, "title": "...", "subtitle": "...", "description": "...", "thumbnail": "...",
   "price": 0, "level": "BEGINNER", "language": "vi", "publishedAt": "...",
   "category": { "id": 1, "name": "..." },
-  "instructor": { "id": 3, "name": "...", "avatar": null },
+  "instructor": { "id": 3, "name": "...", "avatar": null, "courseCount": 10, "studentCount": 25 },
   "sections": [
     {
       "id": 1, "title": "Giới thiệu",
@@ -243,7 +260,21 @@ Công khai. **Nếu gửi kèm token** thì có thêm thông tin `isEnrolled`.
 ```
 - `videoUrl` **chỉ có** ở bài xem thử (`isPreview: true`). Các bài còn lại phải ghi danh rồi lấy qua `GET /lectures/:lectureId`.
 - `isEnrolled`: `null` = khách chưa đăng nhập; `true` = đã ghi danh, hiện nút **Vào học**; `false` = hiện nút **Ghi danh**.
+- `instructor.courseCount` / `studentCount`: số khóa đã xuất bản và tổng lượt ghi danh của giảng viên (tab Instructor).
 - Khóa chưa xuất bản → **404**.
+
+### Bình luận dưới trang chi tiết
+
+| Method | Path | Body / Query | Ghi chú |
+|---|---|---|---|
+| GET | `/courses/:courseId/comments` | `?page&limit` | Công khai, mới nhất trước. Mỗi phần tử: `{ id, name, content, createdAt, user }` (`user`: `{ id, avatar }` hoặc `null`). **Không trả email** |
+| POST | `/courses/:courseId/comments` | `{ name?, email?, content }` | Khách: bắt buộc `name` + `email` (thiếu → 422 đúng field). Có token: tên + email lấy từ tài khoản. Giới hạn 10 lần / 15 phút |
+
+Khác đánh giá (`/reviews`): không cần ghi danh, không chấm sao. Khóa chưa xuất bản → 404.
+
+### `POST /contact`: form liên hệ
+
+Body `{ name, email, message }` (message tối đa 5000 ký tự). Công khai, giới hạn 5 tin / giờ. Lưu vào bảng `ContactMessage` rồi gửi email báo admin (`ADMIN_EMAIL`); email lỗi không làm hỏng request.
 
 ---
 

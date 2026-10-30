@@ -21,6 +21,12 @@ export const getPublicCourses = async (req: Request, res: Response) => {
   res.json({ message: 'Lấy danh sách khóa học thành công', ...result })
 }
 
+// Các lựa chọn + số khóa cho cột lọc của trang danh sách
+export const getCourseFilters = async (req: Request, res: Response) => {
+  const filters = await courseService.getCourseFilters()
+  res.json({ message: 'Lấy bộ lọc khóa học thành công', data: filters })
+}
+
 export const getPublicCourseById = async (req: Request, res: Response) => {
   const { courseId } = req.params as unknown as CourseParamsType
   // req.user chỉ có khi người xem gửi token hợp lệ (optionalAuth)

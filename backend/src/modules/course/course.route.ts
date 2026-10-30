@@ -1,5 +1,8 @@
 import { Router } from 'express'
 import * as courseController from './course.controller'
+import * as commentController from '../comment/comment.controller'
+import { CreateCommentBodySchema, GetCommentsQuerySchema } from '../comment/comment.schema'
+import { commentLimiter } from '../../middleware/rate-limit.middleware'
 import { optionalAuth, requireAuth, requirePermission } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate.middleware'
 import {
@@ -19,6 +22,8 @@ const courseRouter = Router()
 
 // ----- Công khai: danh sách khóa đã xuất bản (tìm kiếm, lọc, sắp xếp) -----
 courseRouter.get('/', validateQuery(GetCoursesQuerySchema), courseController.getPublicCourses)
+// Cột lọc: lựa chọn + số khóa. Khai báo TRƯỚC "/:courseId" (không thì "filters" bị hiểu là courseId)
+courseRouter.get('/filters', courseController.getCourseFilters)
 
 // ----- Giảng viên: khoá học của tôi -----
 // ⚠️ Các route "/mine..." PHẢI khai báo TRƯỚC route "/:courseId" (xem giải thích bên dưới)
@@ -103,6 +108,23 @@ courseRouter.get(
   optionalAuth,
   validateParams(CourseParamsSchema),
   courseController.getPublicCourseById,
+)
+
+// ----- Công khai: bình luận dưới trang chi tiết (form "Leave A Comment") -----
+// Không gắn requirePermission: khách cũng xem / gửi được. optionalAuth: đang đăng nhập thì lấy tên + email từ tài khoản
+courseRouter.get(
+  '/:courseId/comments',
+  validateParams(CourseParamsSchema),
+  validateQuery(GetCommentsQuerySchema),
+  commentController.getComments,
+)
+courseRouter.post(
+  '/:courseId/comments',
+  commentLimiter,
+  optionalAuth,
+  validateParams(CourseParamsSchema),
+  validateBody(CreateCommentBodySchema),
+  commentController.createComment,
 )
 
 // ----- Luồng duyệt: DRAFT/REJECTED → PENDING → PUBLISHED/REJECTED -----

@@ -29,3 +29,9 @@ export const forgotPasswordLimiter = createLimiter(15, 5, 'Yêu cầu mã quá n
 
 // Nhập mã OTP: chặn đoán mã (mỗi mã còn tự hủy sau 5 lần sai)
 export const resetPasswordLimiter = createLimiter(15, 10, 'Thao tác quá nhiều lần, vui lòng thử lại sau 15 phút')
+
+// Bình luận khóa học (khách cũng gửi được): chặn spam bình luận
+export const commentLimiter = createLimiter(15, 10, 'Bạn bình luận quá nhiều, vui lòng thử lại sau ít phút')
+
+// Form liên hệ: mỗi tin gửi kèm 1 email cho admin → giới hạn chặt hơn
+export const contactLimiter = createLimiter(60, 5, 'Bạn đã gửi quá nhiều tin nhắn, vui lòng thử lại sau')

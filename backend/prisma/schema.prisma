@@ -53,6 +53,8 @@ model User {
   notifications     Notification[]
   // Đơn mua khóa học có phí
   orders            Order[]
+  // Bình luận dưới trang chi tiết khóa học (khi đang đăng nhập)
+  courseComments    CourseComment[]
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -177,6 +179,8 @@ model Course {
   enrollments Enrollment[]
   reviews     Review[]
   orders      Order[]
+  // Bình luận công khai dưới trang chi tiết (khác đánh giá: không cần ghi danh, không chấm sao)
+  comments    CourseComment[]
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -412,6 +416,38 @@ model PaymentLog {
 
   @@unique([method, externalId])
   @@index([orderId])
+}
+
+// Bình luận dưới trang chi tiết khóa học (form "Leave a comment" của EduPress).
+// Khách cũng bình luận được: nhập tên + email. Đang đăng nhập thì gắn userId (tên / email lấy từ tài khoản).
+// Email chỉ để liên hệ, KHÔNG trả ra API công khai
+model CourseComment {
+  id       Int    @id @default(autoincrement())
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  userId   Int?
+  user     User?  @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  name    String @db.VarChar(100)
+  email   String @db.VarChar(200)
+  content String @db.VarChar(2000)
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([courseId, createdAt])
+}
+
+// Tin nhắn gửi từ trang Liên hệ. Lưu lại để không mất khi email lỗi; admin nhận thêm 1 email báo
+model ContactMessage {
+  id      Int    @id @default(autoincrement())
+  name    String @db.VarChar(100)
+  email   String @db.VarChar(200)
+  message String @db.VarChar(5000)
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 enum OrderStatus {

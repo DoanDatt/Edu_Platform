@@ -1,4 +1,4 @@
-import { CourseStatus, NotificationType } from '../../generated/prisma/enums'
+import { CourseLevel, CourseStatus, NotificationType } from '../../generated/prisma/enums'
 import { Prisma } from '../../generated/prisma/client'
 import prisma from '../../lib/prisma'
 import { HttpError } from '../../utils/error'
@@ -201,20 +201,43 @@ const countLecturesByCourse = async (courseIds: number[]) => {
   return result
 }
 
+// Mức sao của từng khóa đã xuất bản có đánh giá: điểm trung bình làm tròn (4.6 → 5, 4.4 → 4).
+// Dùng cho bộ lọc "Review" (lọc + đếm số khóa mỗi mức). Khóa chưa có đánh giá không có trong Map
+const getStarBuckets = async () => {
+  const groups = await prisma.review.groupBy({
+    by: ['courseId'],
+    where: { course: publicCourseWhere },
+    _avg: { rating: true },
+  })
+  return new Map(groups.map((group) => [group.courseId, Math.round(group._avg.rating ?? 0)]))
+}
+
 export const getPublicCourses = async ({
   page,
   limit,
   search,
   categoryId,
+  instructorId,
   level,
   price,
+  rating,
   sort,
 }: GetCoursesQueryType) => {
-  // Lọc động: điều kiện nào không gửi thì để undefined → Prisma bỏ qua
+  // Lọc theo số sao: tìm trước các khóa có mức sao nằm trong danh sách → lọc theo id
+  let ratedCourseIds: number[] | undefined
+  if (rating?.length) {
+    const buckets = await getStarBuckets()
+    ratedCourseIds = [...buckets].filter(([, stars]) => rating.includes(stars)).map(([courseId]) => courseId)
+  }
+
+  // Lọc động: điều kiện nào không gửi thì để undefined → Prisma bỏ qua.
+  // Danh sách (checkbox): { in: [...] } = thuộc 1 trong các giá trị đã chọn
   const where: Prisma.CourseWhereInput = {
     ...publicCourseWhere,
-    categoryId,
-    level,
+    id: ratedCourseIds ? { in: ratedCourseIds } : undefined,
+    categoryId: categoryId?.length ? { in: categoryId } : undefined,
+    instructorId: instructorId?.length ? { in: instructorId } : undefined,
+    level: level?.length ? { in: level } : undefined,
     price: price === 'free' ? 0 : price === 'paid' ? { gt: 0 } : undefined,
     // Tìm trong tên HOẶC mô tả ngắn, không phân biệt hoa thường
     OR: search
@@ -243,6 +266,47 @@ export const getPublicCourses = async ({
     rating: ratings.get(course.id) ?? { averageRating: 0, totalReviews: 0 },
   }))
   return { data, totalItems, page, limit, totalPages: Math.ceil(totalItems / limit) }
+}
+
+// Cột lọc của trang danh sách (EduPress: Category, Instructors, Price, Review, Level): mỗi lựa chọn kèm số khóa.
+// Đếm trên TẤT CẢ khóa đã xuất bản (không phụ thuộc bộ lọc đang chọn) → con số không nhảy khi bấm checkbox
+export const getCourseFilters = async () => {
+  const [categoryGroups, instructorGroups, levelGroups, freeCount, totalCount, buckets] = await Promise.all([
+    prisma.course.groupBy({ by: ['categoryId'], where: publicCourseWhere, _count: { _all: true } }),
+    prisma.course.groupBy({ by: ['instructorId'], where: publicCourseWhere, _count: { _all: true } }),
+    prisma.course.groupBy({ by: ['level'], where: publicCourseWhere, _count: { _all: true } }),
+    prisma.course.count({ where: { ...publicCourseWhere, price: 0 } }),
+    prisma.course.count({ where: publicCourseWhere }),
+    getStarBuckets(),
+  ])
+
+  const [categories, instructors] = await Promise.all([
+    prisma.category.findMany({
+      where: { id: { in: categoryGroups.map((g) => g.categoryId) } },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    }),
+    prisma.user.findMany({
+      where: { id: { in: instructorGroups.map((g) => g.instructorId) } },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    }),
+  ])
+  const categoryCount = new Map(categoryGroups.map((g) => [g.categoryId, g._count._all]))
+  const instructorCount = new Map(instructorGroups.map((g) => [g.instructorId, g._count._all]))
+  const levelCount = new Map(levelGroups.map((g) => [g.level, g._count._all]))
+
+  const starCount = new Map<number, number>()
+  for (const stars of buckets.values()) starCount.set(stars, (starCount.get(stars) ?? 0) + 1)
+
+  return {
+    categories: categories.map((c) => ({ ...c, count: categoryCount.get(c.id) ?? 0 })),
+    instructors: instructors.map((u) => ({ ...u, count: instructorCount.get(u.id) ?? 0 })),
+    price: { all: totalCount, free: freeCount, paid: totalCount - freeCount },
+    ratings: [5, 4, 3, 2, 1].map((stars) => ({ stars, count: starCount.get(stars) ?? 0 })),
+    // Đủ 4 mức theo thứ tự cố định (mức chưa có khóa nào → 0) để giao diện không bị xáo
+    levels: Object.values(CourseLevel).map((level) => ({ level, count: levelCount.get(level) ?? 0 })),
+  }
 }
 
 // Trang chi tiết công khai. userId có giá trị khi người xem đã đăng nhập (optionalAuth)
@@ -277,6 +341,13 @@ export const getPublicCourseById = async (courseId: number, userId?: number) => 
     userId ? isEnrolled(userId, courseId) : Promise.resolve(false),
   ])
 
+  // Tab "Instructor": số khóa đã xuất bản + tổng lượt ghi danh của giảng viên (số thật, không lưu sẵn)
+  const instructorWhere = { ...publicCourseWhere, instructorId: course.instructor.id }
+  const [instructorCourses, instructorStudents] = await Promise.all([
+    prisma.course.count({ where: instructorWhere }),
+    prisma.enrollment.count({ where: { course: instructorWhere } }),
+  ])
+
   // Tổng số bài + tổng thời lượng để hiện "12 bài giảng • 3 giờ 20 phút"
   let totalLectures = 0
   let totalDurationSec = 0
@@ -293,6 +364,7 @@ export const getPublicCourseById = async (courseId: number, userId?: number) => 
   const { _count, ...rest } = course
   return {
     ...rest,
+    instructor: { ...rest.instructor, courseCount: instructorCourses, studentCount: instructorStudents },
     sections,
     studentCount: _count.enrollments,
     totalLectures,

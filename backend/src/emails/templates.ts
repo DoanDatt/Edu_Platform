@@ -87,3 +87,15 @@ export const courseRejectedEmail = (
     text: `Khóa học "${courseTitle}" ${what}. Lý do: ${reason}. Bạn có thể chỉnh sửa rồi gửi duyệt lại.`,
   }
 }
+
+// Báo admin có tin nhắn mới từ trang Liên hệ. Mọi nội dung đều do người lạ nhập → escape hết.
+// white-space: pre-line để giữ xuống dòng trong tin nhắn
+export const contactMessageEmail = (name: string, email: string, message: string): EmailContent => ({
+  subject: `[EduPlatform] Tin nhắn liên hệ từ ${name}`,
+  html: layout(
+    'Tin nhắn liên hệ mới',
+    `<p><b>Người gửi:</b> ${escapeHtml(name)} &lt;${escapeHtml(email)}&gt;</p>
+     <p style="white-space: pre-line">${escapeHtml(message)}</p>`,
+  ),
+  text: `Người gửi: ${name} <${email}>\n\n${message}`,
+})

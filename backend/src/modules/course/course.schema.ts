@@ -38,13 +38,28 @@ export type UpdateCourseBodyType = z.infer<typeof UpdateCourseBodySchema>
 
 // ----- Công khai: danh sách khóa học đã xuất bản -----
 
-// ?search=react&categoryId=2&level=BEGINNER&price=free&sort=popular&page=1&limit=12
-// Mọi bộ lọc đều không bắt buộc: không gửi thì không lọc
+// Bộ lọc nhiều lựa chọn (checkbox ở cột lọc): nhận "1,2" hoặc lặp lại tham số ?categoryId=1&categoryId=2.
+// 1 giá trị đơn ("2") vẫn hợp lệ → link cũ /courses?categoryId=2 vẫn chạy
+// Kiểu khác (vd ?categoryId[a]=1 → object) giữ nguyên để Zod báo lỗi 422
+const toList = (value: unknown) => {
+  if (value === undefined || value === '') return undefined
+  const parts = typeof value === 'string' ? value.split(',') : Array.isArray(value) ? value : null
+  if (!parts) return value
+  return parts.map((item) => (typeof item === 'string' ? item.trim() : item)).filter((item) => item !== '')
+}
+
+const listOf = <T extends z.ZodType>(item: T) => z.preprocess(toList, z.array(item).max(50).optional())
+
+// ?search=react&categoryId=1,2&instructorId=3&level=BEGINNER,ADVANCED&price=free&rating=5,4&sort=popular&page=1&limit=12
+// Mọi bộ lọc đều không bắt buộc: không gửi thì không lọc. Trong 1 bộ lọc: HOẶC; giữa các bộ lọc: VÀ
 export const GetCoursesQuerySchema = PaginationQuerySchema.extend({
   search: z.string().trim().max(200).optional(),
-  categoryId: z.coerce.number().int().positive().optional(),
-  level: z.enum(CourseLevel).optional(),
+  categoryId: listOf(z.coerce.number().int().positive()),
+  instructorId: listOf(z.coerce.number().int().positive()),
+  level: listOf(z.enum(CourseLevel)),
   price: z.enum(['free', 'paid']).optional(),
+  // Số sao: điểm trung bình làm tròn (4.6 → 5). Khóa chưa có đánh giá không thuộc mức nào
+  rating: listOf(z.coerce.number().int().min(1).max(5)),
   // newest: mới xuất bản | popular: nhiều học viên | price_asc / price_desc: theo giá
   sort: z.enum(['newest', 'popular', 'price_asc', 'price_desc']).default('newest'),
 }).strict()

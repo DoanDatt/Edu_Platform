@@ -706,7 +706,14 @@
                 {
                   "key": "categoryId",
                   "value": "1",
-                  "disabled": true
+                  "disabled": true,
+                  "description": "1 giá trị hoặc nhiều: 1,2"
+                },
+                {
+                  "key": "instructorId",
+                  "value": "1,2",
+                  "disabled": true,
+                  "description": "Nhiều giá trị: a,b"
                 },
                 {
                   "key": "level",
@@ -717,6 +724,12 @@
                   "key": "price",
                   "value": "free",
                   "disabled": true
+                },
+                {
+                  "key": "rating",
+                  "value": "5,4",
+                  "disabled": true,
+                  "description": "Mức sao (điểm TB làm tròn)"
                 },
                 {
                   "key": "sort",
@@ -741,6 +754,26 @@
           }
         },
         {
+          "name": "Cột lọc (filters)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/courses/filters",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "courses",
+                "filters"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
           "name": "Chi tiết (kèm token → có isEnrolled)",
           "request": {
             "method": "GET",
@@ -754,6 +787,69 @@
                 "courses",
                 "{{courseId}}"
               ]
+            }
+          }
+        },
+        {
+          "name": "Bình luận: danh sách",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/courses/{{courseId}}/comments?",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "courses",
+                "{{courseId}}",
+                "comments"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "disabled": true
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Bình luận: gửi (khách)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Khách\",\n  \"email\": \"khach@example.com\",\n  \"content\": \"Khóa học rất dễ hiểu!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/courses/{{courseId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "courses",
+                "{{courseId}}",
+                "comments"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         }
@@ -2273,6 +2369,39 @@
                 "permissions",
                 "{{permissionId}}"
               ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Liên hệ",
+      "item": [
+        {
+          "name": "Gửi tin nhắn",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nguyễn Văn A\",\n  \"email\": \"a@example.com\",\n  \"message\": \"Cho mình hỏi về khóa học React.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/contact",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contact"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         }
