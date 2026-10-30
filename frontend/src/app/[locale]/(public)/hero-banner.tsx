@@ -1,157 +1,74 @@
-import courseApiRequest from '@/apiRequests/course'
-import FullBleed from '@/components/full-bleed'
-import { Skeleton } from '@/components/ui/skeleton'
-import Waves, { WavyUnderline } from '@/components/waves'
-import { ArrowRight, Search, Star, Users } from 'lucide-react'
-import Form from 'next/form'
-import { Suspense } from 'react'
-import CourseCard from './courses/course-card'
-import { getPathname, Link } from '@/i18n/navigation'
-import { useLocale, useTranslations } from 'next-intl'
-import { getTranslations } from 'next-intl/server'
+import { Button } from '@/components/ui/button'
+import { Link } from '@/i18n/navigation'
+import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 
-// Lối tắt dưới ô tìm kiếm: bộ lọc có sẵn của trang /courses
-const quickLinks = [
-  { label: 'quickFree', href: '/courses?price=free' },
-  { label: 'quickPopular', href: '/courses?sort=popular' },
-  { label: 'quickNewest', href: '/courses?sort=newest' }
-] as const
+// Hero theo Figma EduPress (node 1:1277): nền gradient vàng → xanh ngọc cao 700px tràn ngang,
+// chữ bên trái trong khung 1290px, ảnh học viên + chữ "ONLINE SCHOOL" mờ bên phải, hình trang trí ở các mép.
+// Toạ độ lấy từ Figma (khung 1920px). Hình sát MÉP màn hình bám theo mép (left / right),
+// hình gắn với ảnh học viên bám theo khung nội dung → màn hình rộng hẹp khác nhau vẫn đúng vị trí tương đối
+const asset = (name: string) => `/edupress/home/${name}`
 
-// Banner đầu trang chủ, TRÀN HẾT chiều ngang, nền sáng (xanh biển rất nhạt + vầng màu mờ), đáy là sóng cong.
-//   Trái: tiêu đề lớn chữ đậm, 1 cụm chữ tô gradient + gạch sóng san hô, mô tả, ô tìm kiếm, lối tắt
-//   Phải: thẻ khóa học THẬT đông học viên nhất đang "nổi", kèm 2 nhãn số liệu thật của khóa đó
-// -mt-6 / md:-mt-8: bù padding trên của <main> → banner dính sát header.
-// Chữ + ô tìm kiếm hiện ngay (không chờ API); riêng thẻ khóa học nằm trong Suspense
 export default function HeroBanner() {
   const t = useTranslations('Hero')
-  const locale = useLocale()
 
   return (
-    <FullBleed
-      className='-mt-6 bg-linear-to-br from-sky-50 via-white to-blue-100/70 md:-mt-8 dark:from-slate-900 dark:via-slate-950 dark:to-sky-950'
-      innerClassName='grid items-center gap-12 pt-14 pb-36 md:pt-20 md:pb-44 lg:grid-cols-[1.1fr_1fr]'
-      decoration={
-        <>
-          {/* Các vầng màu mờ: nền có chiều sâu mà không rối */}
-          <div aria-hidden className='absolute -top-32 -left-24 size-[28rem] rounded-full bg-sky-300/30 blur-3xl' />
-          <div
-            aria-hidden
-            className='absolute top-1/3 right-[-6rem] size-[26rem] rounded-full bg-blue-300/25 blur-3xl'
-          />
-          <div aria-hidden className='absolute bottom-24 left-1/3 size-64 rounded-full bg-orange-200/30 blur-3xl' />
-          {/* Sóng cùng màu nền trang → đáy banner cong mềm, "chảy" vào phần bên dưới */}
-          <Waves className='h-28 [&_path]:fill-background' animated />
-        </>
-      }
-    >
-      <div className='flex flex-col items-start gap-6'>
-        <span className='flex items-center gap-2 rounded-full border bg-card/80 px-3.5 py-1.5 text-sm font-medium shadow-sm backdrop-blur'>
-          <span aria-hidden className='size-2 rounded-full bg-emerald-500 shadow-[0_0_0_4px] shadow-emerald-500/20' />
-          {t('badge')}
-        </span>
-        <h2 className='text-4xl leading-[1.15] font-bold tracking-tight md:text-6xl'>
-          {t('titleStart')}
-          <br />
-          {/* Cụm chữ nhấn: chữ tô gradient xanh + gạch sóng màu san hô bên dưới */}
-          <span className='relative inline-block bg-linear-to-r from-sky-500 to-blue-700 bg-clip-text text-transparent'>
-            {t('titleHighlight')}
-            <WavyUnderline className='absolute -bottom-2 left-0 text-highlight' />
-          </span>{' '}
-          {t('titleEnd')}
-        </h2>
-        <p className='max-w-xl text-lg text-muted-foreground'>{t('description')}</p>
+    // -mt-6 md:-mt-8: bù khoảng đệm trên của <main> → banner nằm sát header như Figma
+    <section className='relative left-1/2 -mt-6 w-screen -translate-x-1/2 overflow-hidden bg-[linear-gradient(110.5deg,#fff5be_0%,#d0f7ea_97.7%)] md:-mt-8 dark:bg-[linear-gradient(110.5deg,#3a3420_0%,#1d3a33_97.7%)]'>
+      {/* ===== Hình trang trí bám mép màn hình (ẩn trên điện thoại cho gọn) ===== */}
+      <div aria-hidden className='pointer-events-none absolute inset-0 hidden md:block'>
+        <Image src={asset('hero-blob-bottom-left.svg')} alt='' width={643} height={448} className='absolute top-[252px] -left-[5px]' />
+        {/* Nét vẽ trắng: nền sáng thì mờ sẵn, nền tối thì nổi quá → giảm độ đậm ở giao diện tối */}
+        <Image
+          src={asset('hero-doodle-left.svg')}
+          alt=''
+          width={440}
+          height={354}
+          className='absolute top-10 left-[87px] dark:opacity-25'
+        />
+        <Image src={asset('hero-blob-top-right.svg')} alt='' width={481} height={219} className='absolute top-0 right-0' />
+        <Image src={asset('hero-blob-bottom-right.svg')} alt='' width={347} height={312} className='absolute top-[364px] -right-[91px]' />
+      </div>
 
-        <Form
-          // Form của Next không tự gắn tiền tố ngôn ngữ như <Link> → tự tạo đường dẫn đúng ngôn ngữ
-          action={getPathname({ href: '/courses', locale })}
-          role='search'
-          className='flex w-full max-w-xl items-center gap-2 rounded-full border bg-card p-1.5 shadow-xl shadow-sky-900/10'
-        >
-          <Search className='ml-3 size-5 shrink-0 text-muted-foreground' />
-          <input
-            name='search'
-            type='search'
-            placeholder={t('searchPlaceholder')}
-            aria-label={t('searchLabel')}
-            className='h-11 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground'
-          />
-          <button
-            type='submit'
-            className='h-11 shrink-0 rounded-full bg-linear-to-r from-sky-500 to-blue-600 px-6 text-sm font-semibold text-white shadow-md shadow-sky-500/30 transition-opacity hover:opacity-90'
-          >
-            {t('search')}
-          </button>
-        </Form>
+      {/* ===== Nội dung: khung 1290px, chiều cao 700px trên màn hình lớn ===== */}
+      <div className='relative container-page flex min-h-[480px] items-center py-16 lg:h-[700px] lg:py-0'>
+        <div className='relative z-10 flex max-w-[520px] flex-col gap-6'>
+          {/* h1 thật của trang chủ (Figma: H1 Exo 48px) */}
+          <h1 className='text-[36px] leading-[1.2] capitalize md:text-5xl'>{t('title')}</h1>
+          <div className='flex flex-col gap-5'>
+            <p className='text-lg leading-normal text-muted-foreground'>{t('description')}</p>
+            <Button asChild size='pill' className='self-start'>
+              <Link href='/courses'>{t('cta')}</Link>
+            </Button>
+          </div>
+        </div>
 
-        <div className='flex flex-wrap items-center gap-2 text-sm'>
-          <span className='text-muted-foreground'>{t('suggestions')}</span>
-          {quickLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className='flex items-center gap-1 rounded-full border bg-card/70 px-3 py-1 transition-colors hover:border-primary/40 hover:text-primary'
-            >
-              {t(link.label)} <ArrowRight className='size-3.5' />
-            </Link>
-          ))}
+        {/* ===== Ảnh bên phải: toạ độ tính từ mép trái khung nội dung (Figma: khung bắt đầu ở x = 315) ===== */}
+        <div aria-hidden className='pointer-events-none absolute inset-y-0 left-0 hidden w-full lg:block'>
+          <div className='relative mx-auto h-full max-w-[1290px]'>
+            {/* "ONLINE SCHOOL" mờ phía sau: x 720 → 405 trong khung, 977 × 419, mờ 50% */}
+            <Image
+              src={asset('hero-online-school.png')}
+              alt=''
+              width={977}
+              height={419}
+              className='absolute top-[141px] left-[405px] h-[419px] w-[977px] max-w-none object-cover opacity-50 dark:opacity-15'
+            />
+            <Image src={asset('hero-sparkle.svg')} alt='' width={66} height={76} className='absolute top-[21.5px] left-[893px]' />
+            <Image src={asset('hero-objects.svg')} alt='' width={95} height={82} className='absolute top-[7px] left-[1030px]' />
+            {/* Ảnh học viên: cao 1043px, đỉnh lệch -93px, phần dưới bị cắt bởi đáy banner (overflow-hidden) */}
+            <Image
+              src={asset('hero-student.png')}
+              alt=''
+              width={696}
+              height={1043}
+              priority
+              sizes='696px'
+              className='absolute -top-[93px] left-[694px] h-[1043px] w-[696px] max-w-none object-cover'
+            />
+          </div>
         </div>
       </div>
-
-      {/* Bên phải (máy tính): thẻ khóa học thật đang nổi */}
-      <div className='relative mx-auto hidden w-full max-w-sm lg:block'>
-        {/* Vòng tròn gradient sau thẻ: tạo tiêu điểm cho cột phải */}
-        <div
-          aria-hidden
-          className='absolute top-1/2 left-1/2 size-[26rem] -translate-1/2 rounded-full bg-linear-to-br from-sky-300/60 via-sky-400/40 to-blue-500/50'
-        />
-        <div
-          aria-hidden
-          className='absolute top-1/2 left-1/2 size-[32rem] -translate-1/2 rounded-full border border-sky-400/30'
-        />
-        <Suspense fallback={<Skeleton className='relative h-[30rem] w-full rounded-3xl' />}>
-          <HeroCourse />
-        </Suspense>
-      </div>
-    </FullBleed>
-  )
-}
-
-// Khóa đông học viên nhất (lấy từ API, không bịa) + 2 nhãn số liệu của chính khóa đó.
-// 2 nhãn đặt phần lớn RA NGOÀI mép thẻ (-left-32 / -right-28): không đè lên chữ trong ảnh bìa và nội dung thẻ
-// Lỗi API / chưa có khóa nào → không hiện gì (cột phải chỉ còn vòng tròn trang trí)
-async function HeroCourse() {
-  const course = await courseApiRequest
-    .list({ sort: 'popular', limit: 1 })
-    .then((res) => res.payload.data[0])
-    .catch(() => undefined)
-  if (!course) return null
-  const t = await getTranslations('Hero')
-
-  return (
-    <div className='relative'>
-      <div className='rotate-2 motion-safe:animate-float'>
-        <CourseCard course={course} />
-      </div>
-      {course.rating.totalReviews > 0 && (
-        <span className='absolute top-1/3 -left-32 flex items-center gap-2 rounded-2xl border bg-card px-3.5 py-2.5 text-sm shadow-xl motion-safe:animate-float motion-safe:[animation-delay:-2s]'>
-          <span className='flex size-8 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-500/15'>
-            <Star className='size-4 fill-amber-400 text-amber-400' />
-          </span>
-          <span className='flex flex-col leading-tight'>
-            <span className='font-semibold'>{course.rating.averageRating}/5</span>
-            <span className='text-xs text-muted-foreground'>{t('reviews', { count: course.rating.totalReviews })}</span>
-          </span>
-        </span>
-      )}
-      <span className='absolute -right-28 bottom-16 flex items-center gap-2 rounded-2xl border bg-card px-3.5 py-2.5 text-sm shadow-xl motion-safe:animate-float motion-safe:[animation-delay:-4s]'>
-        <span className='flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary'>
-          <Users className='size-4' />
-        </span>
-        <span className='flex flex-col leading-tight'>
-          <span className='font-semibold'>{t('students', { count: course.studentCount })}</span>
-          <span className='text-xs text-muted-foreground'>{t('enrolled')}</span>
-        </span>
-      </span>
-    </div>
+    </section>
   )
 }

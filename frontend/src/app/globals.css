@@ -11,6 +11,7 @@
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-heading);
   --color-highlight: var(--highlight);
+  --color-grey: var(--grey);
   --color-highlight-foreground: var(--highlight-foreground);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -119,6 +120,8 @@
   /* highlight: màu nhấn thứ 2. EduPress dùng xanh lá cho chữ "Free" và giá giảm */
   --highlight: #55be24;
   --highlight-foreground: #ffffff;
+  /* Grey của Figma: viền nút phụ ("All Categories"), giá gạch ngang */
+  --grey: #9d9d9d;
   --destructive: #e5341d;
   --border: #eaeaea;
   --input: #d9d9d9;
@@ -158,6 +161,7 @@
   --accent-foreground: #ff8a47;
   --highlight: #6fd63c;
   --highlight-foreground: #121212;
+  --grey: #6b6b6b;
   --destructive: #ff6b57;
   --border: #2e2e2e;
   --input: #3a3a3a;

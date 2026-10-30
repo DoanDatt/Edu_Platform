@@ -147,31 +147,14 @@
     "unread": "Unread"
   },
   "Home": {
-    "h1": "EduPlatform: learn programming, design and marketing online",
-    "popularEyebrow": "Featured",
-    "popularTitle": "Most loved courses",
-    "popularDescription": "The courses with the most enrollments on EduPlatform",
-    "freeEyebrow": "Free",
-    "freeTitle": "Start without spending a cent",
-    "freeDescription": "Create an account and start learning right away",
-    "viewAllCourses": "View all courses"
+    "featuredTitle": "Featured Courses",
+    "featuredDescription": "The courses with the most students on EduPlatform",
+    "allCourses": "All courses"
   },
   "Hero": {
-    "badge": "An online learning platform made in Vietnam",
-    "titleStart": "Learn step by step,",
-    "titleHighlight": "go further",
-    "titleEnd": "every day",
-    "description": "Programming, design, marketing, data science. Learn at your own pace, track progress lesson by lesson, and read honest reviews from real students.",
-    "searchPlaceholder": "What do you want to learn today?",
-    "searchLabel": "Search courses",
-    "search": "Search",
-    "suggestions": "Try:",
-    "quickFree": "Free courses",
-    "quickPopular": "Most popular",
-    "quickNewest": "New releases",
-    "reviews": "{count, plural, one {# review} other {# reviews}}",
-    "students": "{count, plural, one {# student} other {# students}}",
-    "enrolled": "currently enrolled"
+    "title": "Build Skills With Online Courses",
+    "description": "Programming, design, marketing and data science. Learn at your own pace and track your progress lesson by lesson.",
+    "cta": "Explore courses"
   },
   "Stats": {
     "label": "Platform statistics",
@@ -182,14 +165,15 @@
   },
   "Testimonials": {
     "eyebrow": "Testimonials",
-    "title": "What students say about EduPlatform",
-    "description": "Real reviews from students who took the course",
+    "title": "Student Feedbacks",
+    "description": "What students say about EduPlatform",
     "studentOf": "Student of {course}"
   },
   "Categories": {
-    "eyebrow": "Categories",
-    "title": "Explore by topic",
-    "courseCount": "{count, plural, one {# course} other {# courses}}"
+    "title": "Top Categories",
+    "courseCount": "{count, plural, one {# course} other {# courses}}",
+    "description": "Explore our popular categories",
+    "viewAll": "All categories"
   },
   "Cta": {
     "title": "Ready to start your learning journey?",
@@ -364,7 +348,9 @@
     "noReviews": "No reviews yet",
     "lessons": "{count, plural, one {# lesson} other {# lessons}}",
     "students": "{count, plural, one {# student} other {# students}}",
-    "viewDetail": "View details"
+    "viewDetail": "View details",
+    "byInstructor": "by <b>{name}</b>",
+    "viewMore": "View more"
   },
   "CourseDetail": {
     "notFound": "Course not found",
@@ -479,5 +465,16 @@
     "average": "Average",
     "good": "Good",
     "excellent": "Excellent"
+  },
+  "GrowSkill": {
+    "title": "Grow your skills with EduPlatform",
+    "description": "Every course is reviewed before it goes live, and you only finish a lesson after watching most of it.",
+    "cta": "Explore courses",
+    "points": {
+      "watch": "Lessons complete after 90% real watch time",
+      "progress": "Progress tracked lesson by lesson",
+      "reviews": "Honest reviews from enrolled students",
+      "payment": "Pay with MoMo, PayPal or bank transfer"
+    }
   }
 }

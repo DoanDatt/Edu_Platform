@@ -1,16 +1,15 @@
 import categoryApiRequest from '@/apiRequests/category'
-import SectionHeading from '@/components/section-heading'
+import TopHeading from '@/components/top-heading'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getCategoryStyle } from '@/constants/category'
-import { cn } from '@/lib/utils'
-import Image from 'next/image'
+import { getCategoryIcon } from '@/constants/category'
 import { Link } from '@/i18n/navigation'
+import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
-// Ô danh mục dạng ảnh: ảnh nền + lớp phủ tối + tên và số khóa ở giữa.
-// Danh mục không có ảnh riêng → backend lấy ảnh bìa khóa đông học viên nhất (coverImage).
-// Chưa có khóa nào có ảnh → nền gradient theo danh mục + icon lớn mờ làm "ảnh".
-// Bấm 1 ô → /courses?categoryId=... Bộ lọc nằm trên URL nên trang /courses tự lọc sẵn
+// "Top Categories" theo Figma EduPress (node 1:1298): ô vuông 234px viền xám, icon cam 32px, tên + số khóa.
+// Rê chuột (Figma vẽ sẵn trạng thái hover ở ô thứ 2): ô nhô lên 16px, có bóng, tên chuyển cam.
+// flex-wrap + justify-center: ít danh mục thì các ô dồn vào giữa hàng như Figma, không để lỗ trống.
+// Bấm 1 ô → /courses?categoryId=... (bộ lọc nằm trên URL)
 export default async function CategorySection() {
   const categories = await categoryApiRequest
     .list({ limit: 100 })
@@ -21,57 +20,31 @@ export default async function CategorySection() {
   const t = await getTranslations('Categories')
 
   return (
-    <section className='flex flex-col gap-6'>
-      <SectionHeading eyebrow={t('eyebrow')} title={t('title')} />
-      {/* auto-fit: số cột tự theo số danh mục (mỗi ô rộng tối thiểu 13rem), cột thừa bị gộp lại
-          → 4 danh mục thì 4 ô chia đều cả hàng, không để trống ô cuối */}
-      <div className='grid grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-4'>
-        {categories.map((category) => {
-          // Icon + màu gradient theo danh mục: trùng màu với ảnh bìa tự vẽ của khóa trong danh mục đó
-          const { Icon, gradient } = getCategoryStyle(category)
-          return (
-            <Link
-              key={category.id}
-              href={`/courses?categoryId=${category.id}`}
-              className={cn(
-                'group relative flex aspect-5/2 items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br text-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20',
-                gradient
-              )}
-            >
-              {category.coverImage ? (
-                <Image
-                  src={category.coverImage}
-                  alt=''
-                  fill
-                  sizes='(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'
-                  className='scale-105 object-cover blur-[2px] transition-all duration-500 group-hover:scale-110 group-hover:blur-none'
-                />
-              ) : (
-                <Icon
-                  aria-hidden
-                  className='absolute -right-3 -bottom-4 size-28 -rotate-12 text-white/20 transition-transform duration-500 group-hover:scale-110'
-                />
-              )}
-              {/* Ảnh bìa khóa học thường có sẵn chữ → làm mờ nhẹ (blur) + phủ tối để tên danh mục không bị chữ trong ảnh đè.
-                  Rê chuột: ảnh nét lại, phủ ngả xanh thương hiệu */}
-              <span
-                aria-hidden
-                className={cn(
-                  'absolute inset-0 transition-colors duration-300',
-                  category.coverImage
-                    ? 'bg-slate-950/65 group-hover:bg-sky-950/55'
-                    : 'bg-slate-950/10 group-hover:bg-slate-950/0'
-                )}
-              />
-              <span className='relative flex flex-col items-center gap-1.5 px-4 text-center'>
-                <span className='font-heading text-lg leading-tight font-semibold drop-shadow-sm'>{category.name}</span>
-                <span className='rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium backdrop-blur-sm'>
-                  {t('courseCount', { count: category.courseCount })}
-                </span>
+    <section className='flex flex-col gap-[50px]'>
+      <TopHeading
+        title={t('title')}
+        description={t('description')}
+        action={{ label: t('viewAll'), href: '/courses' }}
+      />
+      {/* pt-4: chừa chỗ cho ô nhô lên 16px khi rê chuột, không bị dính vào tiêu đề */}
+      <div className='flex flex-wrap justify-center gap-[30px] pt-4'>
+        {categories.map((category) => (
+          <Link
+            key={category.id}
+            href={`/courses?categoryId=${category.id}`}
+            className='group flex aspect-square w-[calc(50%-15px)] flex-col items-center justify-center gap-6 rounded-[20px] border bg-card p-4 text-center transition-all duration-300 hover:-translate-y-4 hover:shadow-[0_4px_10px_rgba(0,0,0,0.1)] sm:w-[234px]'
+          >
+            <Image src={getCategoryIcon(category)} alt='' width={32} height={32} className='size-8' />
+            <span className='flex flex-col items-center gap-3'>
+              <span className='font-heading text-xl leading-[1.2] font-semibold capitalize transition-colors group-hover:text-primary'>
+                {category.name}
               </span>
-            </Link>
-          )
-        })}
+              <span className='text-lg leading-normal text-muted-foreground'>
+                {t('courseCount', { count: category.courseCount })}
+              </span>
+            </span>
+          </Link>
+        ))}
       </div>
     </section>
   )
@@ -79,11 +52,11 @@ export default async function CategorySection() {
 
 export function CategorySectionSkeleton() {
   return (
-    <div className='flex flex-col gap-6'>
-      <Skeleton className='h-16 w-64' />
-      <div className='grid grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-4'>
+    <div className='flex flex-col gap-[50px]'>
+      <Skeleton className='h-[77px] w-full max-w-sm' />
+      <div className='flex flex-wrap justify-center gap-[30px] pt-4'>
         {Array.from({ length: 4 }, (_, index) => (
-          <Skeleton key={index} className='aspect-5/2 rounded-2xl' />
+          <Skeleton key={index} className='aspect-square w-[calc(50%-15px)] rounded-[20px] sm:w-[234px]' />
         ))}
       </div>
     </div>

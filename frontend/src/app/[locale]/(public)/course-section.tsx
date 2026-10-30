@@ -1,32 +1,23 @@
 import courseApiRequest from '@/apiRequests/course'
-import FullBleed from '@/components/full-bleed'
-import SectionHeading from '@/components/section-heading'
-import { Button } from '@/components/ui/button'
+import TopHeading from '@/components/top-heading'
 import { Skeleton } from '@/components/ui/skeleton'
 import { GetCoursesQueryType } from '@/schemaValidations/course.schema'
-import { ArrowRight } from 'lucide-react'
 import CourseCard, { CourseCardSkeleton } from './courses/course-card'
-import { Link } from '@/i18n/navigation'
-import { getTranslations } from 'next-intl/server'
 
-// Một khối khóa học trên trang chủ: tiêu đề canh giữa + lưới CourseCard + nút "Xem tất cả" ở cuối.
-// Dùng lại cho nhiều khối, chỉ khác query (nổi bật, miễn phí...).
-// tinted: nền xanh nhạt TRÀN NGANG (xen kẽ khối nền trắng → trang có nhịp khi cuộn)
+// "Featured Courses" theo Figma EduPress (node 1:1316): tiêu đề bên trái + nút "All Courses" bên phải,
+// lưới 3 cột × 410px, cách nhau 30px. Dữ liệu thật: query truyền vào (vd khóa đông học viên nhất).
+// pt-4 ở lưới: chừa chỗ cho thẻ nhô lên 16px khi rê chuột.
 // Async Server Component gọi API → ở page.tsx phải bọc <Suspense>
 export default async function CourseSection({
-  eyebrow,
   title,
   description,
   query,
-  href,
-  tinted = false
+  action
 }: {
-  eyebrow: string // nhãn nhỏ màu san hô trên tiêu đề
   title: string
   description?: string
   query: Partial<GetCoursesQueryType>
-  href: string // link "Xem tất cả": trang /courses với đúng bộ lọc của khối này
-  tinted?: boolean
+  action: { label: string; href: string } // nút bên phải: trang /courses với đúng bộ lọc của khối này
 }) {
   // Lỗi API → coi như không có khóa nào: trang chủ KHÔNG được sập chỉ vì 1 khối
   const courses = await courseApiRequest
@@ -36,43 +27,25 @@ export default async function CourseSection({
 
   // Không có khóa nào → ẩn cả khối, không để lại tiêu đề trơ trọi
   if (courses.length === 0) return null
-  const t = await getTranslations('Home')
 
-  const content = (
-    <>
-      <SectionHeading eyebrow={eyebrow} title={title} description={description} />
-      <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+  return (
+    <section className='flex flex-col gap-[34px]'>
+      <TopHeading title={title} description={description} action={action} />
+      <div className='grid gap-[30px] pt-4 sm:grid-cols-2 lg:grid-cols-3'>
         {courses.map((course) => (
           <CourseCard key={course.id} course={course} />
         ))}
       </div>
-      <Button
-        asChild
-        size='lg'
-        className='mx-auto h-12 rounded-full bg-linear-to-r from-sky-500 to-blue-600 px-7 text-base shadow-lg shadow-sky-500/25 hover:opacity-95'
-      >
-        <Link href={href}>
-          {t('viewAllCourses')} <ArrowRight />
-        </Link>
-      </Button>
-    </>
-  )
-
-  return tinted ? (
-    <FullBleed className='bg-accent/60 py-16 md:py-20' innerClassName='flex flex-col gap-10'>
-      {content}
-    </FullBleed>
-  ) : (
-    <section className='flex flex-col gap-10'>{content}</section>
+    </section>
   )
 }
 
-// Fallback của Suspense: count = số thẻ giả (khối 8 khóa thì 8, khối 4 khóa thì 4)
+// Fallback của Suspense: count = số thẻ giả
 export function CourseSectionSkeleton({ count }: { count: number }) {
   return (
-    <div className='flex flex-col gap-10'>
-      <Skeleton className='mx-auto h-24 w-full max-w-md' />
-      <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+    <div className='flex flex-col gap-[34px]'>
+      <Skeleton className='h-[77px] w-full max-w-sm' />
+      <div className='grid gap-[30px] pt-4 sm:grid-cols-2 lg:grid-cols-3'>
         {Array.from({ length: count }, (_, index) => (
           <CourseCardSkeleton key={index} />
         ))}

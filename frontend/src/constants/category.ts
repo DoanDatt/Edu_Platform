@@ -19,6 +19,26 @@ const fallbackGradients = [
   'from-slate-500 via-slate-600 to-slate-800'
 ]
 
+// Icon cam của EduPress (tải từ Figma, public/edupress/icons) cho ô danh mục ở trang chủ.
+// Danh mục lạ → lần lượt các icon còn lại của Figma theo id
+const categoryIcons: Record<string, string> = {
+  'Lập trình Web': 'category-development.svg',
+  'Thiết kế': 'category-design.svg',
+  Marketing: 'category-marketing.svg',
+  'Khoa học dữ liệu': 'category-science.svg'
+}
+const fallbackIcons = [
+  'category-communication.svg',
+  'category-videography.svg',
+  'category-photography.svg',
+  'category-writing.svg',
+  'category-finance.svg',
+  'category-network.svg'
+]
+
+export const getCategoryIcon = (category: { id: number; name: string }) =>
+  `/edupress/icons/${categoryIcons[category.name] ?? fallbackIcons[category.id % fallbackIcons.length]}`
+
 export const getCategoryStyle = (category: { id: number; name: string }) =>
   categoryStyles[category.name] ?? {
     Icon: LayoutGrid,

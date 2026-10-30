@@ -147,31 +147,14 @@
     "unread": "Chưa đọc"
   },
   "Home": {
-    "h1": "EduPlatform: học lập trình, thiết kế, marketing trực tuyến",
-    "popularEyebrow": "Nổi bật",
-    "popularTitle": "Khóa học được yêu thích nhất",
-    "popularDescription": "Những khóa có nhiều học viên đăng ký nhất trên EduPlatform",
-    "freeEyebrow": "Miễn phí",
-    "freeTitle": "Bắt đầu mà không tốn đồng nào",
-    "freeDescription": "Đăng ký tài khoản là học được ngay",
-    "viewAllCourses": "Xem tất cả khóa học"
+    "featuredTitle": "Khóa học nổi bật",
+    "featuredDescription": "Những khóa học đông học viên nhất trên EduPlatform",
+    "allCourses": "Tất cả khóa học"
   },
   "Hero": {
-    "badge": "Nền tảng học trực tuyến cho người Việt",
-    "titleStart": "Học từng bước,",
-    "titleHighlight": "tiến xa",
-    "titleEnd": "mỗi ngày",
-    "description": "Lập trình, thiết kế, marketing, khoa học dữ liệu. Học theo tốc độ của bạn, theo dõi tiến độ từng bài, nhận đánh giá thật từ học viên đã học.",
-    "searchPlaceholder": "Bạn muốn học gì hôm nay?",
-    "searchLabel": "Tìm khóa học",
-    "search": "Tìm kiếm",
-    "suggestions": "Gợi ý:",
-    "quickFree": "Khóa miễn phí",
-    "quickPopular": "Học nhiều nhất",
-    "quickNewest": "Mới ra mắt",
-    "reviews": "{count} đánh giá",
-    "students": "{count} học viên",
-    "enrolled": "đang theo học"
+    "title": "Học Kỹ Năng Mới Với Khóa Học Trực Tuyến",
+    "description": "Lập trình, thiết kế, marketing, khoa học dữ liệu. Học theo tốc độ của bạn và theo dõi tiến độ từng bài.",
+    "cta": "Khám phá khóa học"
   },
   "Stats": {
     "label": "Số liệu nền tảng",
@@ -182,14 +165,15 @@
   },
   "Testimonials": {
     "eyebrow": "Cảm nhận",
-    "title": "Học viên nói gì về EduPlatform",
-    "description": "Đánh giá thật từ học viên đã học khóa đó",
+    "title": "Cảm nhận của học viên",
+    "description": "Học viên nói gì về EduPlatform",
     "studentOf": "Học viên khóa {course}"
   },
   "Categories": {
-    "eyebrow": "Danh mục",
-    "title": "Khám phá theo chủ đề",
-    "courseCount": "{count} khóa học"
+    "title": "Danh mục hàng đầu",
+    "courseCount": "{count} khóa học",
+    "description": "Khám phá các danh mục được yêu thích",
+    "viewAll": "Tất cả danh mục"
   },
   "Cta": {
     "title": "Sẵn sàng bắt đầu hành trình học?",
@@ -364,7 +348,9 @@
     "noReviews": "Chưa có đánh giá",
     "lessons": "{count} bài học",
     "students": "{count} học viên",
-    "viewDetail": "Xem chi tiết"
+    "viewDetail": "Xem chi tiết",
+    "byInstructor": "bởi <b>{name}</b>",
+    "viewMore": "Xem thêm"
   },
   "CourseDetail": {
     "notFound": "Không tìm thấy khóa học",
@@ -479,5 +465,16 @@
     "average": "Bình thường",
     "good": "Tốt",
     "excellent": "Rất tốt"
+  },
+  "GrowSkill": {
+    "title": "Nâng cao kỹ năng cùng EduPlatform",
+    "description": "Mỗi khóa học đều được duyệt trước khi mở bán, và bài học chỉ được tính là xong khi bạn đã thật sự xem gần hết.",
+    "cta": "Khám phá khóa học",
+    "points": {
+      "watch": "Xem đủ 90% video mới tính là học xong",
+      "progress": "Theo dõi tiến độ từng bài học",
+      "reviews": "Đánh giá thật từ học viên đã ghi danh",
+      "payment": "Thanh toán qua MoMo, PayPal hoặc chuyển khoản"
+    }
   }
 }

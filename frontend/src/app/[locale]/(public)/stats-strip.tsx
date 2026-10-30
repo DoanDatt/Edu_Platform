@@ -1,9 +1,10 @@
 import courseApiRequest from '@/apiRequests/course'
 import { Skeleton } from '@/components/ui/skeleton'
-import { BookOpen, LucideIcon, Star, UserRound, Users } from 'lucide-react'
 import { getLocale, getTranslations } from 'next-intl/server'
 
-// Dải số liệu ngay dưới banner: số THẬT, tính từ danh sách khóa học công khai (không bịa số cho đẹp).
+// 4 ô số liệu theo Figma EduPress ("Counter box", node 1:1355): nền xám nhạt, số cam 32px, nhãn 18px.
+// Số THẬT, tính từ danh sách khóa học công khai (không bịa số cho đẹp). Figma ghi "Satisfaction Rate 100%",
+// web chỉ có điểm đánh giá trung bình → ghi đúng là điểm trung bình.
 // Backend chưa có API thống kê công khai → lấy tối đa 100 khóa rồi tự cộng (đủ cho quy mô hiện tại)
 export default async function StatsStrip() {
   const result = await courseApiRequest
@@ -22,27 +23,24 @@ export default async function StatsStrip() {
   const ratingSum = courses.reduce((sum, c) => sum + c.rating.averageRating * c.rating.totalReviews, 0)
   const averageRating = totalReviews > 0 ? (ratingSum / totalReviews).toFixed(1) : null
 
-  const stats: { Icon: LucideIcon; value: string; label: string }[] = [
-    { Icon: BookOpen, value: formatNumber(result.totalItems), label: t('courses') },
-    { Icon: Users, value: formatNumber(enrollments), label: t('enrollments') },
-    { Icon: UserRound, value: formatNumber(instructors), label: t('instructors') },
-    ...(averageRating ? [{ Icon: Star, value: `${averageRating}/5`, label: t('averageRating') }] : [])
+  const stats = [
+    { value: formatNumber(enrollments), label: t('enrollments') },
+    { value: formatNumber(result.totalItems), label: t('courses') },
+    { value: formatNumber(instructors), label: t('instructors') },
+    ...(averageRating ? [{ value: `${averageRating}/5`, label: t('averageRating') }] : [])
   ]
 
   return (
-    <section
-      aria-label={t('label')}
-      className='grid grid-cols-2 gap-4 rounded-3xl border bg-card p-5 shadow-xl shadow-blue-900/10 md:grid-cols-4 md:p-6'
-    >
-      {stats.map(({ Icon, value, label }) => (
-        <div key={label} className='flex items-center gap-3'>
-          <span className='flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary'>
-            <Icon className='size-5' />
+    <section aria-label={t('label')} className='grid grid-cols-2 gap-4 md:gap-[30px] lg:grid-cols-4'>
+      {stats.map(({ value, label }) => (
+        <div
+          key={label}
+          className='flex flex-col items-center justify-center gap-4 rounded-[20px] bg-secondary px-4 py-8 text-center md:py-[50px]'
+        >
+          <span className='font-heading text-[28px] leading-[1.2] font-semibold text-primary md:text-[32px]'>
+            {value}
           </span>
-          <div className='flex flex-col'>
-            <span className='font-heading text-xl font-bold md:text-2xl'>{value}</span>
-            <span className='text-sm text-muted-foreground'>{label}</span>
-          </div>
+          <span className='text-lg leading-normal font-medium capitalize'>{label}</span>
         </div>
       ))}
     </section>
@@ -50,5 +48,11 @@ export default async function StatsStrip() {
 }
 
 export function StatsStripSkeleton() {
-  return <Skeleton className='h-24 rounded-3xl bg-card shadow-xl md:h-[5.5rem]' />
+  return (
+    <div className='grid grid-cols-2 gap-4 md:gap-[30px] lg:grid-cols-4'>
+      {Array.from({ length: 4 }, (_, index) => (
+        <Skeleton key={index} className='h-[181px] rounded-[20px]' />
+      ))}
+    </div>
+  )
 }
