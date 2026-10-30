@@ -84,7 +84,6 @@
     "notFound": "Post not found"
   },
   "Header": {
-    "learnFree": "Learn for free",
     "mainNav": "Main navigation",
     "openMenu": "Open menu",
     "navigationMenu": "Navigation menu",
@@ -102,17 +101,19 @@
   },
   "Footer": {
     "tagline": "Learn programming, design, marketing and data science at your own pace. Anytime, anywhere.",
-    "explore": "Explore",
-    "account": "Account",
     "allCourses": "All courses",
     "freeCourses": "Free courses",
-    "popularCourses": "Most popular",
-    "blog": "Blog",
     "about": "About us",
-    "login": "Log in",
-    "register": "Sign up",
-    "myCourses": "My courses",
-    "copyright": "© 2026 EduPlatform · A personal project, designed and built by Đoàn Công Đạt"
+    "copyright": "© 2026 EduPlatform · A personal project, designed and built by Đoàn Công Đạt",
+    "getHelp": "Get help",
+    "programs": "Topics",
+    "contactUs": "Contact",
+    "faq": "FAQ",
+    "latestArticles": "Latest articles",
+    "contactText": "Questions about a course or feedback to share? Send me an email and I will get back to you soon.",
+    "email": "Email",
+    "sourceCode": "Source code on GitHub",
+    "backToTop": "Back to top"
   },
   "Nav": {
     "home": "Home",

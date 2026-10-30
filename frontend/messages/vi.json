@@ -84,7 +84,6 @@
     "notFound": "Không tìm thấy bài viết"
   },
   "Header": {
-    "learnFree": "Học miễn phí",
     "mainNav": "Điều hướng chính",
     "openMenu": "Mở menu",
     "navigationMenu": "Menu điều hướng",
@@ -102,17 +101,19 @@
   },
   "Footer": {
     "tagline": "Học lập trình, thiết kế, marketing, khoa học dữ liệu theo tốc độ của riêng bạn. Mọi lúc, mọi nơi.",
-    "explore": "Khám phá",
-    "account": "Tài khoản",
     "allCourses": "Tất cả khóa học",
     "freeCourses": "Khóa miễn phí",
-    "popularCourses": "Học nhiều nhất",
-    "blog": "Blog",
     "about": "Giới thiệu",
-    "login": "Đăng nhập",
-    "register": "Đăng ký",
-    "myCourses": "Khóa của tôi",
-    "copyright": "© 2026 EduPlatform · Dự án cá nhân, thiết kế và phát triển bởi Đoàn Công Đạt"
+    "copyright": "© 2026 EduPlatform · Dự án cá nhân, thiết kế và phát triển bởi Đoàn Công Đạt",
+    "getHelp": "Hỗ trợ",
+    "programs": "Chủ đề",
+    "contactUs": "Liên hệ",
+    "faq": "Câu hỏi thường gặp",
+    "latestArticles": "Bài viết mới",
+    "contactText": "Có câu hỏi về khóa học hay muốn góp ý? Gửi email cho mình, mình sẽ trả lời sớm nhất.",
+    "email": "Email",
+    "sourceCode": "Mã nguồn trên GitHub",
+    "backToTop": "Lên đầu trang"
   },
   "Nav": {
     "home": "Trang chủ",

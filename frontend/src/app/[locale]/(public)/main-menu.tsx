@@ -2,7 +2,6 @@
 
 import { useAppContext } from '@/components/app-provider'
 import { LogoMark } from '@/components/logo'
-import Waves from '@/components/waves'
 import { BlogCategory, blogCategories, countBlogPosts, getBlogCategoryName, getBlogPosts } from '@/content/blog'
 import { RoleType, RoleValues } from '@/constants/type'
 import { Link, usePathname } from '@/i18n/navigation'
@@ -134,7 +133,7 @@ const translateLinks = (t: MenuT, links: MenuLinkDef[]): MenuLink[] =>
 // (header không bị tải lại khi chuyển trang trong Next, không bỏ focus thì menu cứ mở mãi)
 const closeMenu = () => (document.activeElement as HTMLElement | null)?.blur()
 
-// Tầng dưới của header (máy tính), các mục canh giữa. Rê chuột vào mục có mũi tên → tấm menu xổ xuống.
+// Menu giữa header (máy tính), kiểu EduPress: mục cao bằng header, mục đang chọn nền xám + chữ cam. Rê chuột vào mục có mũi tên → tấm menu xổ xuống.
 // Mở bằng CSS (group-hover + group-focus-within), không cần state: Tab bằng bàn phím cũng mở được, rời ra là đóng.
 //   "Khóa học": tấm lớn = dải banner (số liệu + ảnh bìa thật) + 2 cột (Khám phá · Theo chủ đề)
 //   "Dashboard": danh sách vai trò, rê vào vai trò → tấm thứ 2 bung sang phải (chưa đăng nhập: dẫn tới đăng nhập)
@@ -153,7 +152,7 @@ export default function MainMenu({ categories }: { categories: CategoryListItemT
   const sections = dashboardSections.filter((section) => (role ? section.roles.includes(role) : section.forGuest))
 
   return (
-    <ul className='flex items-center justify-center gap-2'>
+    <ul className='flex h-full items-stretch justify-center'>
       {menuItems.map((item) => {
         const active = isActive(item)
         // Tấm lớn (Khóa học, Blog, Giới thiệu): li KHÔNG relative → tấm định vị theo khung menu (relative ở layout),
@@ -166,8 +165,9 @@ export default function MainMenu({ categories }: { categories: CategoryListItemT
               aria-current={active ? 'page' : undefined}
               onClick={closeMenu}
               className={cn(
-                'flex h-12 items-center gap-1 px-4 text-[15px] font-medium transition-colors',
-                active ? 'text-primary' : 'text-foreground/80 group-hover:text-primary'
+                // Chữ Exo SemiBold 16px (H5 của EduPress), mỗi mục đệm ngang 20px
+                'flex h-full items-center gap-1 px-5 font-heading text-base font-semibold transition-colors',
+                active ? 'bg-muted text-primary' : 'text-foreground group-hover:text-primary'
               )}
             >
               {t(item.label)}
@@ -181,13 +181,13 @@ export default function MainMenu({ categories }: { categories: CategoryListItemT
               // nhưng khi đóng thì không bấm / Tab vào được
               <div
                 className={cn(
-                  'invisible absolute top-full z-50 translate-y-2 pt-1 opacity-0 transition-all duration-200 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100',
+                  'invisible absolute top-full z-50 translate-y-2 opacity-0 transition-all duration-200 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100',
                   // Tấm lớn: canh giữa thanh menu. Dashboard: canh trái dưới mục (tấm thứ 2 bung sang phải cần chỗ)
                   wide ? 'left-1/2 -translate-x-1/2' : 'left-0'
                 )}
               >
                 {wide ? (
-                  <div className='overflow-hidden rounded-2xl border bg-popover text-popover-foreground shadow-2xl shadow-sky-900/15'>
+                  <div className='overflow-hidden rounded-2xl border bg-popover text-popover-foreground shadow-2xl shadow-black/10'>
                     {item.panel === 'courses' && <CoursesPanel categories={categories} />}
                     {item.panel === 'blog' && <BlogPanel />}
                     {item.panel === 'about' && <AboutPanel categories={categories} />}
@@ -211,7 +211,7 @@ function DashboardPanel({ sections, isGuest }: { sections: DashboardSection[]; i
   const t = useTranslations('Menu')
 
   return (
-    <ul className='w-64 rounded-2xl border bg-popover p-2 text-popover-foreground shadow-2xl shadow-sky-900/15'>
+    <ul className='w-64 rounded-2xl border bg-popover p-2 text-popover-foreground shadow-2xl shadow-black/10'>
       {sections.map(({ label, links, guestNote }) => (
         <li key={label} className='group/sub relative'>
           {/* Chỉ có chữ (không icon), mục đang rê nền nhạt + chữ màu xanh */}
@@ -224,7 +224,7 @@ function DashboardPanel({ sections, isGuest }: { sections: DashboardSection[]; i
           </Link>
           {/* Tấm con bung sang phải, ngang hàng với mục đang rê. pl-3: cầu nối vô hình để rê chuột sang không bị đóng */}
           <div className='invisible absolute top-0 left-full z-10 -translate-x-1 pl-3 opacity-0 transition-all duration-200 group-focus-within/sub:visible group-focus-within/sub:translate-x-0 group-focus-within/sub:opacity-100 group-hover/sub:visible group-hover/sub:translate-x-0 group-hover/sub:opacity-100'>
-            <div className='w-72 rounded-2xl border bg-popover p-5 shadow-2xl shadow-sky-900/15'>
+            <div className='w-72 rounded-2xl border bg-popover p-5 shadow-2xl shadow-black/10'>
               <MenuColumnList
                 column={{
                   title: t(label),
@@ -238,7 +238,7 @@ function DashboardPanel({ sections, isGuest }: { sections: DashboardSection[]; i
                     <Link
                       href='/login'
                       onClick={closeMenu}
-                      className='flex-1 rounded-full bg-linear-to-r from-sky-500 to-blue-600 py-2 text-center text-sm font-semibold text-white shadow-md shadow-sky-500/25 transition-opacity hover:opacity-90'
+                      className='flex-1 rounded-full bg-primary py-2 text-center text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90'
                     >
                       {t('login')}
                     </Link>
@@ -270,11 +270,10 @@ function AboutPanel({ categories }: { categories: CategoryListItemType[] }) {
       <Link
         href='/about'
         onClick={closeMenu}
-        className='group/brand relative flex flex-col gap-4 overflow-hidden rounded-2xl bg-linear-to-br from-sky-500 via-sky-600 to-blue-800 p-6 text-white'
+        className='group/brand relative flex flex-col gap-4 overflow-hidden rounded-2xl bg-neutral-950 p-6 text-white'
       >
-        <div aria-hidden className='absolute -top-12 -right-12 size-40 rounded-full bg-white/20 blur-2xl' />
-        <Waves className='h-1/3' animated />
-        <LogoMark className='relative size-12 rounded-2xl bg-none bg-white/20 shadow-none [&_svg]:size-7' />
+        <div aria-hidden className='absolute -top-12 -right-12 size-40 rounded-full bg-primary/40 blur-3xl' />
+        <LogoMark className='relative size-12 rounded-2xl bg-white/10 [&_svg]:size-7' />
         <div className='relative flex flex-col gap-1.5'>
           <p className='font-heading text-xl font-bold'>EduPlatform</p>
           <p className='text-sm text-white/85'>{t('aboutTagline')}</p>
@@ -285,7 +284,7 @@ function AboutPanel({ categories }: { categories: CategoryListItemType[] }) {
           )}
         </div>
         <span className='relative mt-auto flex items-center gap-1 text-sm font-semibold'>
-          {t('learnMore')} <ArrowRight className='size-4 transition-transform group-hover/brand:translate-x-1' />
+          <span className='text-primary'>{t('learnMore')}</span> <ArrowRight className='size-4 transition-transform group-hover/brand:translate-x-1' />
         </span>
       </Link>
       {aboutColumns.map((column) => (
@@ -318,19 +317,18 @@ function BlogPanel() {
         column={{ title: t('blogCategories'), links: [{ label: t('allPosts'), href: '/blog' }, ...categoryLinks] }}
       />
       <MenuColumnList column={{ title: t('latestPosts'), links: latestLinks }} />
-      {/* Thẻ quảng bá: gradient thương hiệu + sóng, dẫn tới khóa miễn phí */}
+      {/* Thẻ quảng bá: nền cam thương hiệu, dẫn tới khóa miễn phí */}
       <Link
         href='/courses?price=free'
         onClick={closeMenu}
-        className='group/promo relative flex flex-col justify-between overflow-hidden rounded-2xl bg-linear-to-br from-teal-400 via-cyan-500 to-blue-600 p-6 text-white'
+        className='group/promo relative flex flex-col justify-between overflow-hidden rounded-2xl bg-primary p-6 text-primary-foreground'
       >
-        <div aria-hidden className='absolute -top-10 -right-10 size-40 rounded-full bg-white/20 blur-2xl' />
-        <Waves className='h-1/3' animated />
+        <div aria-hidden className='absolute -top-10 -right-10 size-40 rounded-full bg-white/25 blur-2xl' />
         <div className='relative flex flex-col gap-2'>
           <p className='font-heading text-2xl leading-tight font-bold uppercase'>{t('promoTitle')}</p>
           <p className='text-sm text-white/90'>{t('promoText')}</p>
         </div>
-        <span className='relative mt-6 flex w-fit items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-sky-700 shadow-md'>
+        <span className='relative mt-6 flex w-fit items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-primary shadow-md'>
           {t('promoCta')} <ArrowRight className='size-4 transition-transform group-hover/promo:translate-x-0.5' />
         </span>
       </Link>
@@ -348,14 +346,13 @@ function CoursesPanel({ categories }: { categories: CategoryListItemType[] }) {
 
   return (
     <div className='w-208'>
-      {/* Dải banner: gradient thương hiệu + sóng, chữ trái, ảnh bìa phải */}
+      {/* Dải banner nền đen (giống đầu trang chi tiết khóa học của EduPress): chữ trái, ảnh bìa phải */}
       <Link
         href='/courses'
         onClick={closeMenu}
-        className='group/banner relative flex h-40 items-center justify-between overflow-hidden bg-linear-to-br from-sky-500 via-sky-600 to-blue-800 px-8 text-white'
+        className='group/banner relative flex h-40 items-center justify-between overflow-hidden bg-neutral-950 px-8 text-white'
       >
-        <div aria-hidden className='absolute -top-16 left-1/3 size-56 rounded-full bg-white/15 blur-2xl' />
-        <Waves className='h-1/3' />
+        <div aria-hidden className='absolute -top-16 left-1/3 size-56 rounded-full bg-primary/30 blur-3xl' />
         <div className='relative flex max-w-sm flex-col gap-1.5'>
           <p className='font-heading text-xl font-semibold'>{t('libraryTitle')}</p>
           <p className='text-sm text-white/85'>
@@ -363,12 +360,12 @@ function CoursesPanel({ categories }: { categories: CategoryListItemType[] }) {
               ? t('libraryText', { courses: totalCourses, topics: categories.length })
               : t('libraryFallback')}
           </p>
-          <span className='mt-1 flex items-center gap-1 text-sm font-semibold'>
+          <span className='mt-1 flex items-center gap-1 text-sm font-semibold text-primary'>
             {t('exploreNow')} <ArrowRight className='size-4 transition-transform group-hover/banner:translate-x-1' />
           </span>
         </div>
         {featuredImage && (
-          <div className='relative hidden h-32 w-56 -rotate-3 overflow-hidden rounded-xl border-4 border-white/30 shadow-2xl transition-transform duration-300 group-hover/banner:rotate-0 sm:block'>
+          <div className='relative hidden h-32 w-56 -rotate-3 overflow-hidden rounded-xl border-4 border-white/20 shadow-2xl transition-transform duration-300 group-hover/banner:rotate-0 sm:block'>
             <Image src={featuredImage} alt='' fill sizes='224px' className='object-cover' />
           </div>
         )}

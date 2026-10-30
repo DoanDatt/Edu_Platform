@@ -50,6 +50,18 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Khung nội dung của EduPress: rộng 1290px, canh giữa. Cộng thêm phần đệm 2 bên (1.5rem × 2) để
+   nội dung bên trong đúng 1290px trên màn hình lớn. Dùng chung cho header, main, footer, các dải tràn ngang (FullBleed) */
+@utility container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: calc(1290px + 3rem);
+  padding-inline: 1rem;
+  @media (width >= 48rem) {
+    padding-inline: 1.5rem;
+  }
+}
+
 /* Animation riêng (class animate-wave, animate-wave-slow, animate-float).
    Dùng kèm motion-safe: → người bật "giảm chuyển động" trong hệ điều hành sẽ không thấy chuyển động */
 @theme {
@@ -83,87 +95,86 @@
   }
 }
 
-/* Bộ màu "biển": các màu xám đều pha CHÚT XANH (hue 230–250) → cả giao diện liền màu với primary.
-   Chữ chính là xanh than đậm thay vì đen tuyền: mềm mắt hơn mà vẫn đủ tương phản */
+/* Bộ màu theo thiết kế EduPress (Figma → trang Guide): nền trắng, chữ đen, cam là màu thương hiệu.
+   Mã hex lấy đúng biến trong Figma: Primary #FF782D · Black #000 · Dark_gray #555 · Grey #9D9D9D
+   · Light_grey #EAEAEA (viền) · White_grey #F5F5F5 (nền khối phụ: breadcrumb, footer, thẻ số liệu) */
 :root {
-  --background: oklch(0.99 0.004 230);
-  --foreground: oklch(0.22 0.03 250);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.03 250);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.03 250);
-  /* Màu thương hiệu: xanh nước biển nhạt. Nút chính, link đang chọn, icon nhấn.
-     Không lấy xanh quá nhạt: chữ trắng trên nút sẽ khó đọc (độ sáng 0.62 vẫn đủ tương phản) */
-  --primary: oklch(0.62 0.15 235);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.96 0.014 230);
-  --secondary-foreground: oklch(0.25 0.03 250);
-  --muted: oklch(0.96 0.012 230);
-  --muted-foreground: oklch(0.52 0.03 245);
-  /* accent: nền khi rê chuột (menu, nút ghost) */
-  --accent: oklch(0.95 0.025 230);
-  --accent-foreground: oklch(0.25 0.03 250);
-  /* highlight: màu nhấn ẤM (cam san hô), cặp với xanh biển. Dùng ÍT: giá tiền, nhãn "Bán chạy",
-     gạch sóng dưới chữ trên banner. Độ sáng 0.58 để chữ san hô trên nền trắng vẫn đọc được */
-  --highlight: oklch(0.58 0.17 35);
-  --highlight-foreground: oklch(0.99 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.91 0.016 230);
-  --input: oklch(0.9 0.018 230);
-  --ring: oklch(0.75 0.12 230);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  /* Bo góc lớn hơn mặc định (0.625rem) cho cảm giác mềm, thân thiện: thẻ khóa học rounded-xl ≈ 17px */
-  --radius: 0.75rem;
-  --sidebar: oklch(0.98 0.006 230);
-  --sidebar-foreground: oklch(0.22 0.03 250);
-  --sidebar-primary: oklch(0.62 0.15 235);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.95 0.025 230);
-  --sidebar-accent-foreground: oklch(0.25 0.03 250);
-  --sidebar-border: oklch(0.91 0.016 230);
-  --sidebar-ring: oklch(0.75 0.12 230);
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  /* Màu thương hiệu: nút chính, link đang chọn, icon nhấn */
+  --primary: #ff782d;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #000000;
+  --muted: #f5f5f5;
+  /* Chữ phụ: Dark_gray. Không dùng Grey #9D9D9D cho chữ thường vì quá nhạt trên nền trắng */
+  --muted-foreground: #555555;
+  /* accent: nền khi rê chuột (menu, nút ghost). Giống menu EduPress: nền xám nhạt + chữ cam */
+  --accent: #f5f5f5;
+  --accent-foreground: #ff782d;
+  /* highlight: màu nhấn thứ 2. EduPress dùng xanh lá cho chữ "Free" và giá giảm */
+  --highlight: #55be24;
+  --highlight-foreground: #ffffff;
+  --destructive: #e5341d;
+  --border: #eaeaea;
+  --input: #d9d9d9;
+  --ring: #ff782d;
+  --chart-1: #ff782d;
+  --chart-2: #55be24;
+  --chart-3: #2d8bff;
+  --chart-4: #9d9d9d;
+  --chart-5: #000000;
+  /* Thẻ khóa học / danh mục của EduPress bo khoảng 20px: rounded-xl = radius × 1.4 ≈ 20px */
+  --radius: 0.875rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #ff782d;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #ff782d;
+  --sidebar-border: #eaeaea;
+  --sidebar-ring: #ff782d;
 }
 
-/* Nền tối là xanh than (biển đêm) thay vì xám đen */
+/* EduPress không có giao diện tối → tự suy ra: nền xám than trung tính, cam sáng hơn chút cho đủ tương phản */
 .dark {
-  --background: oklch(0.17 0.02 250);
-  --foreground: oklch(0.96 0.006 230);
-  --card: oklch(0.21 0.024 250);
-  --card-foreground: oklch(0.96 0.006 230);
-  --popover: oklch(0.21 0.024 250);
-  --popover-foreground: oklch(0.96 0.006 230);
-  /* Nền tối: xanh sáng hơn một chút để đủ tương phản */
-  --primary: oklch(0.7 0.14 230);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.26 0.026 250);
-  --secondary-foreground: oklch(0.96 0.006 230);
-  --muted: oklch(0.26 0.026 250);
-  --muted-foreground: oklch(0.72 0.022 240);
-  --accent: oklch(0.28 0.03 245);
-  --accent-foreground: oklch(0.96 0.006 230);
-  --highlight: oklch(0.74 0.14 40);
-  --highlight-foreground: oklch(0.2 0.03 250);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.6 0.12 230);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.21 0.024 250);
-  --sidebar-foreground: oklch(0.96 0.006 230);
-  --sidebar-primary: oklch(0.7 0.14 230);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.28 0.03 245);
-  --sidebar-accent-foreground: oklch(0.96 0.006 230);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.6 0.12 230);
+  --background: #121212;
+  --foreground: #f5f5f5;
+  --card: #1c1c1c;
+  --card-foreground: #f5f5f5;
+  --popover: #1c1c1c;
+  --popover-foreground: #f5f5f5;
+  --primary: #ff8a47;
+  --primary-foreground: #ffffff;
+  --secondary: #262626;
+  --secondary-foreground: #f5f5f5;
+  --muted: #1c1c1c;
+  --muted-foreground: #b3b3b3;
+  --accent: #262626;
+  --accent-foreground: #ff8a47;
+  --highlight: #6fd63c;
+  --highlight-foreground: #121212;
+  --destructive: #ff6b57;
+  --border: #2e2e2e;
+  --input: #3a3a3a;
+  --ring: #ff8a47;
+  --chart-1: #ff8a47;
+  --chart-2: #6fd63c;
+  --chart-3: #5aa5ff;
+  --chart-4: #8a8a8a;
+  --chart-5: #f5f5f5;
+  --sidebar: #1c1c1c;
+  --sidebar-foreground: #f5f5f5;
+  --sidebar-primary: #ff8a47;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #262626;
+  --sidebar-accent-foreground: #ff8a47;
+  --sidebar-border: #2e2e2e;
+  --sidebar-ring: #ff8a47;
 }
 
 @layer base {
@@ -176,10 +187,12 @@
   html {
     @apply font-sans;
   }
-  /* Tiêu đề dùng Lexend (font thiết kế cho dễ đọc, hợp web học), nội dung vẫn là Be Vietnam Pro */
+  /* Tiêu đề dùng Exo SemiBold như EduPress (H1 72 · H2 32 · H4 20 · H5 16, line-height 1.2) */
   h1,
   h2,
-  h3 {
-    @apply font-heading;
+  h3,
+  h4,
+  h5 {
+    @apply font-heading font-semibold;
   }
 }
