@@ -1,7 +1,6 @@
 import { Worker } from 'bullmq'
 import prisma from '../lib/prisma'
-import { mailer } from '../lib/mailer'
-import envConfig from '../config/env'
+import { mailProvider, sendMail } from '../lib/mailer'
 import { redisConnection } from './connection'
 import { EMAIL_QUEUE, EmailJobData } from './email.queue'
 import { CLEANUP_JOB, MAINTENANCE_QUEUE, scheduleMaintenanceJobs } from './maintenance.queue'
@@ -23,12 +22,8 @@ export const cleanupExpired = async () => {
 export const startWorkers = async () => {
   const emailWorker = new Worker<EmailJobData>(
     EMAIL_QUEUE,
-    async (job) => {
-      const { to, subject, html, text } = job.data
-      // Ném lỗi (SMTP sập...) → BullMQ tự thử lại theo attempts/backoff đã cấu hình ở queue
-      const info = await mailer.sendMail({ from: envConfig.MAIL_FROM, to, subject, html, text })
-      return { messageId: info.messageId }
-    },
+    // Ném lỗi (SMTP sập, Brevo lỗi...) → BullMQ tự thử lại theo attempts/backoff đã cấu hình ở queue
+    async (job) => sendMail(job.data),
     { connection: redisConnection, concurrency: 5 }, // gửi tối đa 5 email cùng lúc
   )
 
@@ -49,7 +44,7 @@ export const startWorkers = async () => {
   maintenanceWorker.on('failed', (job, error) => console.error(`[maintenance] ${job?.name} lỗi:`, error.message))
 
   await scheduleMaintenanceJobs()
-  console.log('Worker đang chạy: email, maintenance (dọn dữ liệu hết hạn lúc 3h sáng)')
+  console.log(`Worker đang chạy: email (gửi qua ${mailProvider}), maintenance (dọn dữ liệu hết hạn lúc 3h sáng)`)
 
   return async () => {
     await Promise.all([emailWorker.close(), maintenanceWorker.close()])

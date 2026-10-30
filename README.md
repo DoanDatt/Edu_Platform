@@ -75,7 +75,7 @@ Edu_Platform/
 | ORM | Prisma 7 | driver adapter `@prisma/adapter-pg`; preview `partialIndexes` |
 | Database | PostgreSQL 17 | Docker |
 | Hàng đợi | BullMQ + Redis 7 | gửi email có retry, job định kỳ |
-| Email | Nodemailer | dev: Mailpit (hộp thư giả, Docker) |
+| Email | Nodemailer + Brevo API | dev: Mailpit (hộp thư giả, Docker); deploy: Brevo qua HTTP vì Render chặn SMTP |
 | Upload | Multer | lưu trên ổ đĩa server, kiểm tra chữ ký file |
 | Validate | Zod 4 | `.env`, body, params, query |
 | Xác thực | JWT (`jsonwebtoken`) | access token 15 phút + refresh token 7 ngày, xoay vòng |

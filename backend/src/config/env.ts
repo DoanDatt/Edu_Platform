@@ -54,6 +54,9 @@ const configSchema = z.object({
     .transform((value) => value === 'true'),
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
+  // Brevo (gửi email qua HTTP API). Có key → dùng Brevo thay SMTP. Deploy trên Render bắt buộc
+  // vì Render chặn cổng SMTP. Địa chỉ trong MAIL_FROM phải là người gửi đã xác minh trên Brevo
+  BREVO_API_KEY: optionalString,
   MAIL_FROM: z.string().default('Edu Platform <no-reply@edu.local>'),
   // Địa chỉ frontend, dùng để tạo link trong email
   FRONTEND_URL: z.url().default('http://localhost:3000'),

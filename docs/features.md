@@ -38,7 +38,7 @@ Trạng thái ngày 28/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ Đăng xuất (xóa cookie, localStorage, refresh token trong DB)
 - ✅ Hồ sơ: sửa tên, số điện thoại, ảnh đại diện (upload Cloudinary, xem trước trước khi lưu)
 - ✅ Đổi mật khẩu: các thiết bị khác bị đăng xuất, thiết bị đang dùng nhận cặp token mới
-- ⬜ **Quên mật khẩu:** nhập email → mã OTP qua email → đặt mật khẩu mới (backend đã có; khi deploy cần dịch vụ gửi email qua HTTP vì Render chặn SMTP)
+- ✅ **Quên mật khẩu:** nhập email → mã OTP qua email → xác minh mã → đặt mật khẩu mới
 - ⬜ **Tài khoản bị admin khóa:** request tiếp theo nhận 403 → tự đăng xuất, báo lý do
 - 💡 Xác thực email khi đăng ký
 - 💡 Đăng nhập bằng Google
@@ -105,7 +105,7 @@ Trạng thái ngày 28/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ Bảo mật: helmet, giới hạn số request, mật khẩu băm bcrypt, OTP lưu dạng băm
 - ✅ 49 test (Vitest + Supertest), GitHub Actions CI, tài liệu API, bộ Postman
 - ✅ Deploy: Vercel (frontend), Render (backend), Neon (PostgreSQL), Render Key Value (Redis)
-- ⬜ Gửi email khi deploy qua dịch vụ HTTP (Resend, Brevo...) thay cho SMTP
+- 🚧 Gửi email khi deploy qua Brevo HTTP API (code xong, cần đặt `BREVO_API_KEY` + `MAIL_FROM` trên Render)
 - 💡 Ping định kỳ (UptimeRobot) để Render không ngủ, giảm thời gian chờ lần đầu mở web
 
 ---

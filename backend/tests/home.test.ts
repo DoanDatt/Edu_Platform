@@ -24,6 +24,15 @@ beforeAll(async () => {
   courseId = (await createPublishedCourse(instructor, admin, { categoryId })).courseId
 })
 
+// DB test không bị dọn giữa các lần chạy → danh mục tích lũy quá 100, danh mục vừa tạo có thể nằm ở trang sau
+const findCategory = async (id: number) => {
+  for (let page = 1; ; page++) {
+    const res = await api().get(`/categories?limit=100&page=${page}`).expect(200)
+    const category = res.body.data.find((c: { id: number }) => c.id === id)
+    if (category || page >= res.body.totalPages) return category
+  }
+}
+
 describe('Số liệu trang chủ', () => {
   it('danh sách khóa học có totalLectures', async () => {
     const res = await api().get(`/courses?categoryId=${categoryId}`).expect(200)
@@ -37,8 +46,7 @@ describe('Số liệu trang chủ', () => {
       .set(bearer(instructor.token))
       .send({ title: 'Khóa nháp', price: 0, categoryId })
       .expect(201)
-    const res = await api().get('/categories?limit=100').expect(200)
-    const category = res.body.data.find((c: { id: number }) => c.id === categoryId)
+    const category = await findCategory(categoryId)
     expect(category.courseCount).toBe(1)
     // Khóa trong danh mục chưa có ảnh bìa → chưa có ảnh nền
     expect(category.coverImage).toBeNull()
@@ -51,8 +59,7 @@ describe('Số liệu trang chủ', () => {
       .set(bearer(instructor.token))
       .send({ title: detail.body.data.title, price: 0, categoryId, thumbnail })
       .expect(200)
-    const updated = await api().get('/categories?limit=100').expect(200)
-    expect(updated.body.data.find((c: { id: number }) => c.id === categoryId).coverImage).toBe(thumbnail)
+    expect((await findCategory(categoryId)).coverImage).toBe(thumbnail)
   })
 
   it('đánh giá nổi bật: chỉ 4–5 sao, có nhận xét đủ dài, mỗi người 1 đánh giá', async () => {
