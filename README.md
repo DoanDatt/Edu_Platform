@@ -353,3 +353,11 @@ Remove-Item Env:DATABASE_URL; Remove-Item Env:ADMIN_PASSWORD
 - [ ] Xác thực email khi đăng ký
 - [ ] Hỏi đáp theo bài giảng, thông báo
 - [x] Deploy (Vercel + Render + Neon)
+
+## Ghi nguồn thiết kế
+
+Giao diện các trang công khai dựng theo bản thiết kế **EduPress – Free Education Template (Online Courses / E-Learning)** của **ThimPress** trên Figma Community. Hình minh họa ở trang chủ (ảnh học viên ở banner đầu trang, hình minh họa khối "Grow your skills", icon danh mục) lấy từ chính file thiết kế đó.
+
+- Tên thương hiệu, logo, nội dung và dữ liệu là của EduPlatform; không dùng logo / tên EduPress, ThimPress.
+- Hai banner quảng cáo sản phẩm của ThimPress trong bản thiết kế được giữ bố cục nhưng thay nội dung (thanh toán, mời làm giảng viên) và không dùng logo của hãng nào.
+- Ảnh chụp người thật trong file thiết kế có thể có giấy phép riêng của nhà cung cấp ảnh; nếu dùng cho mục đích thương mại cần kiểm tra lại hoặc thay ảnh.

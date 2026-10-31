@@ -3,17 +3,24 @@ import type { Metadata } from 'next'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
-import { Exo, Geist_Mono, Plus_Jakarta_Sans } from 'next/font/google'
+import { Exo, Geist_Mono, Jost, Plus_Jakarta_Sans } from 'next/font/google'
 import '../globals.css'
 import AppProvider from '@/components/app-provider'
 import ThemeProvider from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 
-// Chữ thường: EduPress dùng Jost nhưng Jost KHÔNG có bộ ký tự tiếng Việt (dấu ạ, ế, ữ... rơi sang font khác,
-// nhìn lệch). Plus Jakarta Sans cùng kiểu chữ hình học như Jost và có đủ tiếng Việt.
-// variable '--font-sans': globals.css dùng biến này cho class font-sans
+// Chữ thường theo ngôn ngữ (globals.css dùng biến --font-sans cho class font-sans, gán ở thẻ <html> bên dưới):
+//   /en → Jost, đúng font của EduPress
+//   /vi → Plus Jakarta Sans: Jost KHÔNG có bộ ký tự tiếng Việt (dấu ạ, ế, ữ... rơi sang font khác, nhìn lệch);
+//         Plus Jakarta Sans cùng kiểu chữ hình học như Jost và có đủ tiếng Việt
+const jost = Jost({
+  variable: '--font-jost',
+  subsets: ['latin'],
+  weight: ['400', '500', '600']
+})
+
 const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: '--font-sans',
+  variable: '--font-jakarta',
   subsets: ['vietnamese', 'latin'],
   weight: ['400', '500', '600', '700']
 })
@@ -56,7 +63,9 @@ export default async function RootLayout({ children, params }: LayoutProps<'/[lo
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`${plusJakartaSans.variable} ${exo.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${jost.variable} ${plusJakartaSans.variable} ${exo.variable} ${geistMono.variable} h-full antialiased`}
+      // Chọn font chữ thường theo ngôn ngữ (xem chú thích ở khai báo jost / plusJakartaSans)
+      style={{ '--font-sans': locale === 'en' ? 'var(--font-jost)' : 'var(--font-jakarta)' } as React.CSSProperties}
     >
       <body className='flex min-h-full flex-col'>
         {/* Mặc định giao diện SÁNG (giống đa số web học), người dùng vẫn bật tối bằng nút ở header */}

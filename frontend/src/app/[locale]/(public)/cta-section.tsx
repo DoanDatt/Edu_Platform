@@ -25,12 +25,14 @@ export default function CtaSection() {
           <p className='text-lg leading-normal text-muted-foreground'>{t('description')}</p>
         </div>
       </div>
+      {/* 2 nút như Figma: "I'm A Student" (viền) + "Become An Instructor" (cam).
+          Đã đăng nhập thì nút học viên dẫn tới khóa học của tôi thay vì trang đăng ký */}
       <div className='flex flex-wrap gap-5'>
         <Button asChild variant='bordered' size='pill'>
-          <Link href='/courses'>{t('explore')}</Link>
+          <Link href={isAuth ? '/my-courses' : '/register'}>{t('student')}</Link>
         </Button>
         <Button asChild size='pill'>
-          {isAuth ? <Link href='/my-courses'>{t('myCourses')}</Link> : <Link href='/register'>{t('register')}</Link>}
+          <Link href='/about#giang-vien'>{t('instructor')}</Link>
         </Button>
       </div>
     </section>

@@ -182,7 +182,9 @@
     "description": "Nhiều khóa học miễn phí và có phí đang chờ bạn. Học theo tốc độ của mình, theo dõi tiến độ từng bài.",
     "myCourses": "Khóa học của tôi",
     "register": "Đăng ký miễn phí",
-    "explore": "Khám phá khóa học"
+    "explore": "Khám phá khóa học",
+    "student": "Tôi là học viên",
+    "instructor": "Trở thành giảng viên"
   },
   "Features": {
     "video": {
@@ -543,5 +545,22 @@
     "mapTitle": "Bản đồ TP. Hồ Chí Minh",
     "formTitle": "Gửi tin nhắn",
     "sent": "Đã gửi tin nhắn. Mình sẽ phản hồi qua email sớm."
+  },
+  "PaymentBanner": {
+    "eyebrow": "Thanh toán linh hoạt",
+    "title": "Thanh toán theo cách của bạn",
+    "description": "Mua khóa học bằng MoMo, PayPal hoặc chuyển khoản qua mã QR. Khóa học mở ngay khi thanh toán được xác nhận.",
+    "cta": "Xem khóa học có phí"
+  },
+  "InstructorBanner": {
+    "eyebrow": "Trở thành giảng viên",
+    "title": "Chia sẻ kiến thức của bạn",
+    "description": "Tạo khóa học với bài giảng video, gửi duyệt và theo dõi tiến độ của học viên.",
+    "cta": "Bắt đầu giảng dạy"
+  },
+  "LatestArticles": {
+    "title": "Bài viết mới nhất",
+    "description": "Lộ trình học, mẹo học online và hướng dẫn sử dụng",
+    "viewAll": "Tất cả bài viết"
   }
 }

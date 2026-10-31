@@ -182,7 +182,9 @@
     "description": "Plenty of free and paid courses are waiting for you. Learn at your own pace and track every lesson.",
     "myCourses": "My courses",
     "register": "Sign up for free",
-    "explore": "Explore courses"
+    "explore": "Explore courses",
+    "student": "I’m a student",
+    "instructor": "Become an instructor"
   },
   "Features": {
     "video": {
@@ -543,5 +545,22 @@
     "mapTitle": "Map of Ho Chi Minh City",
     "formTitle": "Contact Us",
     "sent": "Message sent. I will reply by email soon."
+  },
+  "PaymentBanner": {
+    "eyebrow": "Flexible payments",
+    "title": "Pay Your Way On EduPlatform",
+    "description": "Pay for a course with MoMo, PayPal or a bank transfer by QR code. The course unlocks as soon as the payment is confirmed.",
+    "cta": "Explore paid courses"
+  },
+  "InstructorBanner": {
+    "eyebrow": "Become an instructor",
+    "title": "Share Your Knowledge With Students",
+    "description": "Build courses with video lessons, submit them for review and follow your students’ progress.",
+    "cta": "Start teaching"
+  },
+  "LatestArticles": {
+    "title": "Latest Articles",
+    "description": "Learning roadmaps, study tips and guides",
+    "viewAll": "All articles"
   }
 }
