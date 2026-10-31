@@ -124,7 +124,8 @@
     "teaching": "Teaching",
     "admin": "Admin",
     "blog": "Blog",
-    "about": "About us"
+    "about": "About us",
+    "contact": "Contact"
   },
   "Account": {
     "roles": {

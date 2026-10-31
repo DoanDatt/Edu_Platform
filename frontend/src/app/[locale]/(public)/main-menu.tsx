@@ -38,7 +38,9 @@ const menuItems: MenuItem[] = [
     panel: 'dashboard'
   },
   { label: 'blog', href: '/blog', match: ['/blog'], panel: 'blog' },
-  { label: 'about', href: '/about', match: ['/about'], panel: 'about' }
+  { label: 'about', href: '/about', match: ['/about'], panel: 'about' },
+  // Trang Liên hệ: link thẳng, không có tấm xổ xuống
+  { label: 'contact', href: '/contact', match: ['/contact'] }
 ]
 
 // Menu "Giới thiệu": link nhảy thẳng tới từng khối của trang /about (id của khối)

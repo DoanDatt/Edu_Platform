@@ -3,7 +3,7 @@
 import { useAppContext } from '@/components/app-provider'
 import { RoleType, RoleValues } from '@/constants/type'
 import { cn } from '@/lib/utils'
-import { BookOpen, GraduationCap, House, Info, LucideIcon, Newspaper, Presentation, ShieldCheck } from 'lucide-react'
+import { BookOpen, GraduationCap, House, Info, LucideIcon, Mail, Newspaper, Presentation, ShieldCheck } from 'lucide-react'
 import { Link, usePathname } from '@/i18n/navigation'
 import { useTranslations } from 'next-intl'
 
@@ -30,7 +30,8 @@ const menuItems: {
   { title: 'teaching', href: '/instructor', Icon: Presentation, role: [RoleValues.Instructor] },
   { title: 'admin', href: '/admin', Icon: ShieldCheck, role: [RoleValues.Admin] },
   { title: 'blog', href: '/blog', Icon: Newspaper },
-  { title: 'about', href: '/about', Icon: Info }
+  { title: 'about', href: '/about', Icon: Info },
+  { title: 'contact', href: '/contact', Icon: Mail }
 ]
 
 // Danh sách dọc trong menu trượt (điện thoại / tablet, dưới lg), icon bên trái chữ.
