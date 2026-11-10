@@ -1,5 +1,33 @@
 # Edu Platform
 
+## English summary
+
+**Edu Platform** is a Udemy-style online course marketplace with three roles: students buy courses and learn (a video lesson counts as complete only after 90% of it is watched), instructors build and publish video courses, and admins review and approve them.
+
+**Live demo: <https://edu-platform-8b8a.vercel.app>**. The free-tier API sleeps after 15 minutes without traffic, so the first load can take about 1 minute.
+
+| Role | Email | Password |
+|---|---|---|
+| Student | `hocvien1@edu.local` | `Demo@1234` |
+| Instructor | `giangvien1@edu.local` | `Demo@1234` |
+
+**Key decisions and tradeoffs**
+
+- **Local payments:** VietQR bank transfer (SePay) alongside PayPal, because many Vietnamese learners don't have an international card. Payment webhooks can arrive more than once, so each one is logged under a unique `(method, externalId)` and the order moves out of `PENDING` in one conditional update: a duplicate can't pay or enroll twice.
+- **Auth:** JWT in httpOnly cookies set through Next.js Route Handlers instead of localStorage. Safer against XSS, at the cost of more work for token refresh. Refresh tokens rotate and are single-use.
+- **Catalogue:** search, filters, sorting and pagination live in the URL and render with Server Components, so results are shareable and SEO-friendly. Vietnamese and English versions with next-intl.
+- **Course review flow:** `DRAFT → PENDING → PUBLISHED / REJECTED`, with status changes guarded by the previous status, so two admins approving at the same time can't conflict.
+- **Division of work:** I wrote the front end myself. The back end was built with Claude so I could focus on the front end; I designed the API contract, read and ran every change, and kept 95 automated tests plus GitHub Actions CI.
+- **Hosting:** free tiers (Vercel, Render, Neon) keep the cost at $0. The tradeoff is the cold start above.
+
+**Stack:** Next.js 16 (App Router), React 19, TypeScript, TanStack Query, React Hook Form, Zod, next-intl, shadcn/ui, Tailwind CSS · Express 5, Prisma, PostgreSQL, Redis + BullMQ, Cloudinary · Vitest + Supertest.
+
+*The detailed documentation below is in Vietnamese.*
+
+---
+
+## Tiếng Việt
+
 Nền tảng học trực tuyến kiểu Udemy, với 3 vai trò:
 
 - **Học viên (Student)**: tìm khóa học, ghi danh, học, theo dõi tiến độ và đánh giá.
@@ -27,15 +55,17 @@ Hoặc tự đăng ký tài khoản mới rồi ghi danh một khóa miễn phí
 
 ## Tình trạng
 
-Frontend đang làm theo [lộ trình](docs/frontend-roadmap.md):
+Frontend làm theo [lộ trình](docs/frontend-roadmap.md):
 
 | Phần | Trạng thái |
 |---|---|
-| Xác thực: đăng ký, đăng nhập, đăng xuất, tự làm mới access token, chặn route theo role | ✅ |
-| Trang công khai: danh sách (tìm kiếm, lọc, sắp xếp, phân trang trên URL), chi tiết khóa học, trang chủ | ✅ |
-| Ghi danh khóa miễn phí | ✅ |
-| Học viên: khóa học của tôi, trang học, đánh giá, hồ sơ | Đang làm |
-| Giảng viên, admin | Chưa làm (backend đã có đủ API) |
+| Xác thực: đăng ký, đăng nhập, đăng xuất, tự làm mới access token, chặn route theo role, quên mật khẩu | ✅ |
+| Trang công khai: danh sách (tìm kiếm, lọc, sắp xếp, phân trang trên URL), chi tiết khóa học, trang chủ, tiếng Việt / tiếng Anh | ✅ |
+| Mua khóa học: PayPal, chuyển khoản VietQR (SePay), trạng thái đơn cập nhật trực tiếp | ✅ |
+| Học viên: khóa học của tôi, trang học (xem đủ 90% video mới hoàn thành bài), đánh giá, hồ sơ | ✅ |
+| Giảng viên: soạn khóa học, chương, bài giảng (đổi thứ tự), upload video, gửi duyệt | ✅ |
+| Admin: duyệt / từ chối khóa học, quản lý người dùng, danh mục | ✅ |
+| Thông báo trong ứng dụng khi khóa được duyệt, bị từ chối hoặc được mua | ✅ |
 
 **Phân công:** frontend do mình tự viết, dùng Claude để review và giải thích. Backend (Express, Prisma, hàng đợi, test, CI) được xây dựng cùng Claude để mình tập trung vào frontend; mình đọc hiểu, chạy thử và kiểm tra lại toàn bộ.
 
@@ -76,11 +106,12 @@ Edu_Platform/
 | Database | PostgreSQL 17 | Docker |
 | Hàng đợi | BullMQ + Redis 7 | gửi email có retry, job định kỳ |
 | Email | Nodemailer + Brevo API | dev: Mailpit (hộp thư giả, Docker); deploy: Brevo qua HTTP vì Render chặn SMTP |
-| Upload | Multer | lưu trên ổ đĩa server, kiểm tra chữ ký file |
+| Thanh toán | PayPal, SePay (VietQR) | webhook ghi log với unique `(method, externalId)`, đổi trạng thái đơn bằng `updateMany` có điều kiện |
+| Upload | Multer + Cloudinary | có `CLOUDINARY_URL` thì đẩy lên Cloudinary, không có thì lưu ổ đĩa (dev); kiểm tra chữ ký file |
 | Validate | Zod 4 | `.env`, body, params, query |
 | Xác thực | JWT (`jsonwebtoken`) | access token 15 phút + refresh token 7 ngày, xoay vòng |
 | Bảo mật | helmet, express-rate-limit, bcrypt | |
-| Test | Vitest + Supertest | 44 test, database riêng |
+| Test | Vitest + Supertest | 95 test, database riêng |
 | Lint | oxlint | |
 
 ---
@@ -307,7 +338,7 @@ Remove-Item Env:DATABASE_URL; Remove-Item Env:ADMIN_PASSWORD
 
 **Frontend (Vercel):** Root Directory `frontend`, function region Singapore, biến `NEXT_PUBLIC_API_END_POINT` (link Render, không có `/` cuối) và `NEXT_PUBLIC_URL`. Biến `NEXT_PUBLIC_*` gắn vào lúc build: đổi xong phải Redeploy.
 
-**Giới hạn của gói miễn phí:** Render ngủ sau 15 phút, ổ đĩa bị xóa khi khởi động lại (upload chưa dùng được, cần chuyển sang Cloudinary), chặn cổng SMTP (email cần dịch vụ gửi qua HTTP API).
+**Giới hạn của gói miễn phí:** Render ngủ sau 15 phút, ổ đĩa bị xóa khi khởi động lại (nên upload phải dùng Cloudinary, đặt biến `CLOUDINARY_URL`), chặn cổng SMTP (email cần dịch vụ gửi qua HTTP API).
 
 ---
 
@@ -348,10 +379,11 @@ Remove-Item Env:DATABASE_URL; Remove-Item Env:ADMIN_PASSWORD
 - [x] Email qua hàng đợi BullMQ (retry), job dọn dữ liệu hết hạn
 - [x] Helmet, rate limit, log request, partial unique index
 - [x] Test tự động (Vitest + Supertest), CI GitHub Actions
-- [ ] Thanh toán (khóa có phí đang trả 402)
-- [ ] Upload lên cloud (S3 / Cloudinary) thay vì ổ đĩa server
+- [x] Thanh toán: PayPal, chuyển khoản VietQR (SePay), webhook gọi trùng không thanh toán / ghi danh hai lần
+- [x] Upload lên Cloudinary thay vì ổ đĩa server
+- [x] Bình luận trên trang khóa học, thông báo trong ứng dụng
+- [ ] Hỏi đáp theo từng bài giảng
 - [ ] Xác thực email khi đăng ký
-- [ ] Hỏi đáp theo bài giảng, thông báo
 - [x] Deploy (Vercel + Render + Neon)
 
 ## Ghi nguồn thiết kế
