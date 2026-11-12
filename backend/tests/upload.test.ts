@@ -66,6 +66,17 @@ describe('Upload', () => {
     expect(res.body.data.url).toMatch(/\/uploads\/videos\/.+\.mp4$/)
   })
 
+  it('xin cách upload video: học viên 403; giảng viên được, không có Cloudinary thì upload qua server', async () => {
+    await api().post('/uploads/video/signature').expect(401)
+    await api().post('/uploads/video/signature').set(bearer(student.token)).expect(403)
+    const res = await api().post('/uploads/video/signature').set(bearer(instructor.token)).expect(200)
+    expect(res.body.data).toEqual({
+      mode: 'server',
+      uploadUrl: expect.stringMatching(/\/uploads\/video$/),
+      maxBytes: 100 * 1024 * 1024,
+    })
+  })
+
   it('file không tồn tại → 404', async () => {
     await api().get('/uploads/images/khong-co.png').expect(404)
   })
