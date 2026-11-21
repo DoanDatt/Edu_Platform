@@ -1,0 +1,36 @@
+# Mỗi lần push / mở PR có sửa frontend: typecheck + lint + build thử (bắt lỗi trước khi Vercel build hỏng)
+name: Frontend CI
+
+on:
+  push:
+    paths: ['frontend/**', '.github/workflows/frontend.yml']
+  pull_request:
+    paths: ['frontend/**', '.github/workflows/frontend.yml']
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    # Build không cần backend thật: trang công khai bắt lỗi API (vd sitemap vẫn ra các trang tĩnh).
+    # Địa chỉ giả chỉ để qua bước kiểm tra biến môi trường trong src/config.ts
+    env:
+      NEXT_PUBLIC_API_END_POINT: http://127.0.0.1:9
+      NEXT_PUBLIC_URL: https://example.com
+      NEXT_TELEMETRY_DISABLED: 1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm run build
