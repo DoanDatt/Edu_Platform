@@ -31,6 +31,9 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - run: npm ci
+      # PageProps, LayoutProps... là kiểu Next tự sinh vào .next/types (lúc dev / build).
+      # CI checkout mới tinh chưa có .next → sinh trước, không thì tsc báo "Cannot find name 'PageProps'"
+      - run: npx next typegen
       - run: npx tsc --noEmit
       - run: npm run lint
       - run: npm run build
