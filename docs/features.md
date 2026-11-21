@@ -13,7 +13,7 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 | 2. Tài khoản | Đăng ký, đăng nhập, đăng xuất, giữ đăng nhập, hồ sơ, đổi mật khẩu, quên mật khẩu | Xử lý tài khoản bị khóa |
 | 3. Học viên | Ghi danh, mua khóa có phí, đơn hàng, khóa của tôi, trang học (xem đủ 90%), đánh giá | Giao diện làm quiz |
 | 4. Giảng viên | Dashboard (có doanh thu thật), soạn bài, gửi duyệt, học viên | Giao diện soạn quiz |
-| 5. Admin | Dashboard (có doanh thu thật), duyệt khóa học, danh mục, người dùng | Phân quyền |
+| 5. Admin | Dashboard (có doanh thu thật), duyệt khóa học, danh mục, người dùng, phân quyền | |
 | 6. Thông báo | Backend + chuông ở header | Realtime SSE |
 | 7. Giao diện và chất lượng | Sáng / tối, điện thoại, song ngữ Việt – Anh trang công khai, Next.js 16.4.3 | Giao diện EduPress từ bước 3, dịch dashboard, trang lỗi / 404, SEO, cache |
 | 8. Backend và hạ tầng | Gần như đủ, 83 test | Email khi deploy |
@@ -84,7 +84,8 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ **Doanh thu trên dashboard:** biểu đồ 30 ngày, khóa bán chạy, lấy từ đơn hàng thật
 - ✅ **Quản lý người dùng:** tìm kiếm, lọc vai trò / trạng thái trên URL, khóa / mở tài khoản, đổi vai trò (không tự khóa / tự đổi vai trò mình)
 - ✅ **Quản lý danh mục:** thêm / sửa trong hộp thoại, xóa (không xóa được danh mục còn khóa học)
-- ⬜ Phân quyền: xem vai trò, tick chọn permission (backend có API, chưa có trang); có thể thêm vai trò "admin xem thử" chỉ đọc cho nhà tuyển dụng
+- ✅ **Phân quyền `/admin/roles`:** danh sách vai trò, tạo / xóa vai trò, tick quyền theo nhóm (khóa học, bài giảng...), chọn cả nhóm; ADMIN chỉ xem, vai trò hệ thống không đổi tên / tắt / xóa
+- 💡 Vai trò "admin xem thử" chỉ đọc cho nhà tuyển dụng (giờ tạo được ngay trên trang Phân quyền)
 - 💡 Xóa đánh giá vi phạm (backend đã cho admin xóa)
 
 ## 6. Thông báo
