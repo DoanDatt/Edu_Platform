@@ -48,7 +48,8 @@ export default function AuthShell({
           </ul>
         </aside>
 
-        <div className='flex items-center justify-center p-6 py-10 md:p-10'>{children}</div>
+        {/* flex-col: thông báo (vd tài khoản bị khóa) xếp TRÊN form, không nằm cạnh */}
+        <div className='flex flex-col items-center justify-center gap-4 p-6 py-10 md:p-10'>{children}</div>
       </div>
     </div>
   )

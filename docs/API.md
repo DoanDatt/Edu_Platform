@@ -35,14 +35,18 @@ Query phân trang: `?page=1&limit=10`. `page` ≥ 1 (mặc định 1), `limit` t
 ```json
 { "message": "Dữ liệu không hợp lệ", "errors": [ { "field": "email", "message": "Email không hợp lệ" } ] }
 ```
-`errors` chỉ có ở lỗi **422**: hiện từng `message` dưới đúng ô input theo `field`. Các lỗi khác chỉ có `message`.
+`errors` chỉ có ở lỗi **422**: hiện từng `message` dưới đúng ô input theo `field`. Các lỗi khác chỉ có `message`, riêng vài lỗi cần xử lý riêng có thêm `code` (mã cố định, dựa vào đây thay vì so khớp `message`):
+
+| `code` | Khi nào | Frontend nên làm |
+|---|---|---|
+| `ACCOUNT_BLOCKED` | 403: tài khoản bị admin khóa (mọi request cần đăng nhập, và lúc đăng nhập) | Đăng xuất, báo lý do ở trang đăng nhập |
 
 | Mã | Ý nghĩa | Frontend nên làm |
 |---|---|---|
 | 400 | Body không phải JSON hợp lệ | Lỗi code phía frontend |
 | 401 | Chưa đăng nhập / access token sai hoặc hết hạn | Gọi refresh token (mục 2), thất bại thì chuyển về trang đăng nhập |
 | 402 | Khóa học có phí, chưa hỗ trợ thanh toán | Hiện thông báo "sắp ra mắt" |
-| 403 | Đã đăng nhập nhưng không có quyền / không phải chủ sở hữu | Hiện thông báo, ẩn nút tương ứng |
+| 403 | Đã đăng nhập nhưng không có quyền / không phải chủ sở hữu (có `code: "ACCOUNT_BLOCKED"` = tài khoản bị khóa) | Hiện thông báo, ẩn nút tương ứng; tài khoản bị khóa thì đăng xuất |
 | 404 | Không tìm thấy (hoặc chưa xuất bản) | Trang 404 |
 | 409 | Xung đột trạng thái: trùng, đã ghi danh, khóa đang chờ duyệt... | Hiện `message` |
 | 413 | File upload quá lớn | Báo người dùng chọn file nhỏ hơn |

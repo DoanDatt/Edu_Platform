@@ -475,7 +475,8 @@
     "noAccount": "Chưa có tài khoản?",
     "haveAccount": "Đã có tài khoản?",
     "loggingOut": "Đang đăng xuất...",
-    "refreshing": "Đang làm mới phiên đăng nhập..."
+    "refreshing": "Đang làm mới phiên đăng nhập...",
+    "accountBlocked": "Tài khoản của bạn đã bị khóa. Nếu bạn nghĩ đây là nhầm lẫn, vui lòng liên hệ quản trị viên."
   },
   "ForgotPassword": {
     "title": "Quên mật khẩu",
@@ -571,5 +572,18 @@
     "autoWithLevel": "Tự động ({height}p)",
     "quality": "Chất lượng",
     "chooseQuality": "Chọn chất lượng video"
+  },
+  "ErrorPage": {
+    "title": "Đã có lỗi xảy ra",
+    "description": "Trang này gặp sự cố khi hiển thị. Bạn thử tải lại, nếu vẫn lỗi thì quay về trang chủ.",
+    "retry": "Thử lại",
+    "home": "Về trang chủ",
+    "errorId": "Mã lỗi"
+  },
+  "NotFoundPage": {
+    "title": "Không tìm thấy trang",
+    "description": "Trang bạn tìm không tồn tại, đã bị xóa hoặc đường dẫn bị gõ sai.",
+    "home": "Về trang chủ",
+    "courses": "Xem khóa học"
   }
 }

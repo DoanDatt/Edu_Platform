@@ -10,12 +10,12 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 | Nhóm | Xong | Còn lại |
 |---|---|---|
 | 1. Khách (chưa đăng nhập) | Trang chủ, danh sách, chi tiết, tìm kiếm, Blog, Giới thiệu, xem thử video bài preview | |
-| 2. Tài khoản | Đăng ký, đăng nhập, đăng xuất, giữ đăng nhập, hồ sơ, đổi mật khẩu, quên mật khẩu | Xử lý tài khoản bị khóa |
+| 2. Tài khoản | Đăng ký, đăng nhập, đăng xuất, giữ đăng nhập, hồ sơ, đổi mật khẩu, quên mật khẩu, tài khoản bị khóa tự đăng xuất | |
 | 3. Học viên | Ghi danh, mua khóa có phí, đơn hàng, khóa của tôi, trang học (xem đủ 90%), đánh giá | Giao diện làm quiz |
 | 4. Giảng viên | Dashboard (có doanh thu thật), soạn bài, gửi duyệt, học viên | Giao diện soạn quiz |
 | 5. Admin | Dashboard (có doanh thu thật), duyệt khóa học, danh mục, người dùng | Phân quyền |
 | 6. Thông báo | Backend + chuông ở header | Realtime SSE |
-| 7. Giao diện và chất lượng | Sáng / tối, điện thoại, song ngữ Việt – Anh trang công khai, Next.js 16.4.3 | Giao diện EduPress từ bước 3, dịch dashboard, trang lỗi / 404, SEO, cache |
+| 7. Giao diện và chất lượng | Sáng / tối, điện thoại, song ngữ Việt – Anh trang công khai, Next.js 16.4.3 | Giao diện EduPress từ bước 3, dịch dashboard, loading.tsx, SEO, cache |
 | 8. Backend và hạ tầng | Gần như đủ, 83 test | Email khi deploy |
 
 ---
@@ -34,14 +34,14 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 
 ## 2. Tài khoản và xác thực
 
-- ✅ Đăng ký, đăng nhập: token lưu cookie httpOnly do Route Handler của Next.js đặt; trang đăng nhập / đăng ký chia đôi màn hình
+- ✅ Đăng ký, đăng nhập: token lưu cookie httpOnly do Route Handler của Next.js đặt (cho Server Component), kèm bản sao trong localStorage cho request phía trình duyệt; trang đăng nhập / đăng ký chia đôi màn hình
 - ✅ Giữ đăng nhập: tự làm mới access token, nhiều request hết hạn cùng lúc chỉ gọi refresh **1 lần**
 - ✅ Chặn trang theo đăng nhập và theo role trong `proxy.ts` (gồm `/my-orders`, `/checkout`); chỉ còn refresh token thì chuyển qua trang làm mới
 - ✅ Đăng xuất (xóa cookie, localStorage, refresh token trong DB)
 - ✅ Hồ sơ: sửa tên, số điện thoại, ảnh đại diện (upload Cloudinary, xem trước trước khi lưu)
 - ✅ Đổi mật khẩu: các thiết bị khác bị đăng xuất, thiết bị đang dùng nhận cặp token mới
 - ✅ **Quên mật khẩu 3 bước:** nhập email → nhận mã OTP qua email → xác minh mã → đặt mật khẩu mới
-- ⬜ **Tài khoản bị admin khóa:** request tiếp theo nhận 403 → tự đăng xuất, báo lý do
+- ✅ **Tài khoản bị admin khóa:** request tiếp theo nhận 403 kèm `code: "ACCOUNT_BLOCKED"` → tự đăng xuất, trang đăng nhập báo lý do (đăng nhập lại cũng báo trên form)
 - 💡 Xác thực email khi đăng ký
 - 💡 Đăng nhập bằng Google
 
@@ -102,7 +102,8 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ **Song ngữ Việt – Anh** bằng next-intl, ngôn ngữ nằm trên URL (`/en/...`, tiếng Việt không có tiền tố); đã dịch các trang công khai
 - ⬜ Dịch các trang dashboard (học viên, giảng viên, admin)
 - ✅ Nâng Next.js lên 16.4.3 (bản vá bảo mật)
-- ⬜ `loading.tsx`, `error.tsx`, `not-found.tsx` đẹp cho từng khu
+- ✅ `error.tsx`, `not-found.tsx` cho khu công khai (giữ header, footer) và khu dashboard, `global-error.tsx`; URL không tồn tại hiện 404 có giao diện, song ngữ
+- ⬜ `loading.tsx` cho từng khu
 - ⬜ SEO toàn trang: `sitemap.ts`, `robots.ts`
 - ⬜ **Cache trang công khai** (`'use cache'` + `revalidateTag` khi admin duyệt / gỡ) để tải nhanh hơn
 - ⬜ Kiểm tra Lighthouse (hiệu năng, khả năng truy cập) và sửa các điểm thấp
