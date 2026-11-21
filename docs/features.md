@@ -9,13 +9,13 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 
 | Nhóm | Xong | Còn lại |
 |---|---|---|
-| 1. Khách (chưa đăng nhập) | Trang chủ, danh sách, chi tiết, tìm kiếm, Blog, Giới thiệu | Xem thử video bài preview |
-| 2. Tài khoản | Đăng ký, đăng nhập, đăng xuất, giữ đăng nhập, hồ sơ, đổi mật khẩu, quên mật khẩu | Xử lý tài khoản bị khóa |
-| 3. Học viên | Ghi danh, mua khóa có phí, đơn hàng, khóa của tôi, trang học (xem đủ 90%), đánh giá | Giao diện làm quiz |
-| 4. Giảng viên | Dashboard (có doanh thu thật), soạn bài, gửi duyệt, học viên | Giao diện soạn quiz |
-| 5. Admin | Dashboard (có doanh thu thật), duyệt khóa học, danh mục, người dùng | Phân quyền |
+| 1. Khách (chưa đăng nhập) | Trang chủ, danh sách, chi tiết, tìm kiếm, Blog, Giới thiệu, xem thử video bài preview | |
+| 2. Tài khoản | Đăng ký, đăng nhập, đăng xuất, giữ đăng nhập, hồ sơ, đổi mật khẩu, quên mật khẩu, tài khoản bị khóa tự đăng xuất | |
+| 3. Học viên | Ghi danh, mua khóa có phí, đơn hàng, khóa của tôi, trang học (xem đủ 90%), làm quiz, đánh giá | |
+| 4. Giảng viên | Dashboard (có doanh thu thật), soạn bài, soạn quiz, gửi duyệt, học viên | |
+| 5. Admin | Dashboard (có doanh thu thật), duyệt khóa học, danh mục, người dùng, phân quyền | |
 | 6. Thông báo | Backend + chuông ở header | Realtime SSE |
-| 7. Giao diện và chất lượng | Sáng / tối, điện thoại, song ngữ Việt – Anh trang công khai, Next.js 16.4.3 | Giao diện EduPress từ bước 3, dịch dashboard, trang lỗi / 404, SEO, cache |
+| 7. Giao diện và chất lượng | Sáng / tối, điện thoại, song ngữ Việt – Anh trang công khai, Next.js 16.4.3 | Giao diện EduPress từ bước 3, dịch dashboard, loading.tsx, SEO, cache |
 | 8. Backend và hạ tầng | Gần như đủ, 83 test | Email khi deploy |
 
 ---
@@ -30,18 +30,18 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ **SEO trang chi tiết:** tiêu đề / mô tả / Open Graph theo từng khóa, URL dạng `ten-khoa-i.15`, link sai chữ tự chuyển về URL chuẩn
 - ✅ **Ảnh bìa tự vẽ** theo danh mục khi khóa chưa có ảnh
 - ✅ **Blog** (danh sách + bài viết) và **trang Giới thiệu**
-- ⬜ **Xem thử bài preview:** bấm bài có nhãn "Xem thử" để phát video ngay trên trang chi tiết (hiện mới có nhãn; backend đã trả link video của bài xem thử)
+- ✅ **Xem thử bài preview:** bấm bài có nhãn "Xem thử" → hộp thoại phát video ngay trên trang chi tiết (HLS + chọn chất lượng, dùng chung trình phát với trang học)
 
 ## 2. Tài khoản và xác thực
 
-- ✅ Đăng ký, đăng nhập: token lưu cookie httpOnly do Route Handler của Next.js đặt; trang đăng nhập / đăng ký chia đôi màn hình
+- ✅ Đăng ký, đăng nhập: token lưu cookie httpOnly do Route Handler của Next.js đặt (cho Server Component), kèm bản sao trong localStorage cho request phía trình duyệt; trang đăng nhập / đăng ký chia đôi màn hình
 - ✅ Giữ đăng nhập: tự làm mới access token, nhiều request hết hạn cùng lúc chỉ gọi refresh **1 lần**
 - ✅ Chặn trang theo đăng nhập và theo role trong `proxy.ts` (gồm `/my-orders`, `/checkout`); chỉ còn refresh token thì chuyển qua trang làm mới
 - ✅ Đăng xuất (xóa cookie, localStorage, refresh token trong DB)
 - ✅ Hồ sơ: sửa tên, số điện thoại, ảnh đại diện (upload Cloudinary, xem trước trước khi lưu)
 - ✅ Đổi mật khẩu: các thiết bị khác bị đăng xuất, thiết bị đang dùng nhận cặp token mới
 - ✅ **Quên mật khẩu 3 bước:** nhập email → nhận mã OTP qua email → xác minh mã → đặt mật khẩu mới
-- ⬜ **Tài khoản bị admin khóa:** request tiếp theo nhận 403 → tự đăng xuất, báo lý do
+- ✅ **Tài khoản bị admin khóa:** request tiếp theo nhận 403 kèm `code: "ACCOUNT_BLOCKED"` → tự đăng xuất, trang đăng nhập báo lý do (đăng nhập lại cũng báo trên form)
 - 💡 Xác thực email khi đăng ký
 - 💡 Đăng nhập bằng Google
 
@@ -57,7 +57,7 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ **Khóa học của tôi:** tổng kết, thẻ "Học tiếp", bộ lọc, thanh tiến độ, nút Bắt đầu / Tiếp tục / Xem lại
 - ✅ **Trang học:** video + nội dung bài, mục lục có dấu ✓, mở lại thì vào đúng bài đang học dở
 - ✅ **Xem đủ 90% video mới tính học xong:** trình phát đếm thời gian xem thật (tua không tính), lưu tiến độ lên server, chưa đủ thì hiện thanh "đã xem x%"
-- 🚧 **Quiz cuối bài:** backend xong (lấy đề, nộp bài, chấm điểm); chưa có giao diện làm bài
+- ✅ **Quiz cuối bài:** khối "Bài tập" dưới video: làm bài (phải trả lời đủ mới nộp), xem điểm, câu đúng / sai kèm đáp án và giải thích, làm lại; mục lục có icon bài tập (xanh khi đã đạt)
 - ✅ **Đánh giá:** viết / sửa / xóa (phải ghi danh mới được đánh giá)
 - 💡 Chứng chỉ hoàn thành khóa học (PDF)
 - 💡 Ghi chú cá nhân khi học từng bài
@@ -70,7 +70,7 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ **Khóa học của tôi:** bảng lọc theo trạng thái, phân trang, hiện lý do bị từ chối, menu thao tác
 - ✅ **Tạo / sửa khóa:** một form dùng chung, upload ảnh bìa, chọn danh mục / trình độ / ngôn ngữ, giá
 - ✅ **Soạn nội dung:** thêm / đổi tên / xóa / đổi thứ tự chương và bài, upload video (tự lấy thời lượng), nội dung bài, đánh dấu bài xem thử
-- 🚧 **Soạn quiz cho bài:** backend xong (tạo / sửa câu hỏi); chưa có giao diện
+- ✅ **Soạn quiz cho bài:** menu bài giảng → "Bài tập trắc nghiệm": tối đa 20 câu, 2–6 lựa chọn, chọn đáp án đúng, giải thích; xóa hết câu + lưu = bỏ bài tập
 - ✅ **Gửi duyệt** (cần ít nhất 1 bài), thông báo theo từng trạng thái (Nháp / Chờ duyệt / Bị từ chối / Đã xuất bản)
 - ✅ Xóa khóa Nháp / Bị từ chối
 - ✅ **Học viên của khóa:** danh sách + tiến độ từng người, phân trang
@@ -84,7 +84,8 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ **Doanh thu trên dashboard:** biểu đồ 30 ngày, khóa bán chạy, lấy từ đơn hàng thật
 - ✅ **Quản lý người dùng:** tìm kiếm, lọc vai trò / trạng thái trên URL, khóa / mở tài khoản, đổi vai trò (không tự khóa / tự đổi vai trò mình)
 - ✅ **Quản lý danh mục:** thêm / sửa trong hộp thoại, xóa (không xóa được danh mục còn khóa học)
-- ⬜ Phân quyền: xem vai trò, tick chọn permission (backend có API, chưa có trang); có thể thêm vai trò "admin xem thử" chỉ đọc cho nhà tuyển dụng
+- ✅ **Phân quyền `/admin/roles`:** danh sách vai trò, tạo / xóa vai trò, tick quyền theo nhóm (khóa học, bài giảng...), chọn cả nhóm; ADMIN chỉ xem, vai trò hệ thống không đổi tên / tắt / xóa
+- 💡 Vai trò "admin xem thử" chỉ đọc cho nhà tuyển dụng (giờ tạo được ngay trên trang Phân quyền)
 - 💡 Xóa đánh giá vi phạm (backend đã cho admin xóa)
 
 ## 6. Thông báo
@@ -102,7 +103,8 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ **Song ngữ Việt – Anh** bằng next-intl, ngôn ngữ nằm trên URL (`/en/...`, tiếng Việt không có tiền tố); đã dịch các trang công khai
 - ⬜ Dịch các trang dashboard (học viên, giảng viên, admin)
 - ✅ Nâng Next.js lên 16.4.3 (bản vá bảo mật)
-- ⬜ `loading.tsx`, `error.tsx`, `not-found.tsx` đẹp cho từng khu
+- ✅ `error.tsx`, `not-found.tsx` cho khu công khai (giữ header, footer) và khu dashboard, `global-error.tsx`; URL không tồn tại hiện 404 có giao diện, song ngữ
+- ⬜ `loading.tsx` cho từng khu
 - ⬜ SEO toàn trang: `sitemap.ts`, `robots.ts`
 - ⬜ **Cache trang công khai** (`'use cache'` + `revalidateTag` khi admin duyệt / gỡ) để tải nhanh hơn
 - ⬜ Kiểm tra Lighthouse (hiệu năng, khả năng truy cập) và sửa các điểm thấp
@@ -114,7 +116,8 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ Đơn hàng + thanh toán 3 cổng (MoMo, PayPal, SePay), thống kê doanh thu
 - ✅ Theo dõi thời gian xem video, quiz cuối bài
 - ✅ Hàng đợi email bằng BullMQ + Redis; dọn dữ liệu cũ hằng ngày
-- ✅ Upload ảnh / video lên Cloudinary (kiểm tra nội dung thật của file)
+- ✅ Upload ảnh / video lên Cloudinary (kiểm tra nội dung thật của file); video upload thẳng từ trình duyệt, phát bằng HLS
+- ✅ Dọn video thừa trên Cloudinary hằng ngày (`VIDEO_CLEANUP_ENABLED`, chờ 30 ngày, tự dừng nếu số video thừa bất thường)
 - ✅ Bảo mật: helmet, giới hạn số request, mật khẩu băm bcrypt, OTP lưu dạng băm
 - ✅ 83 test (Vitest + Supertest), GitHub Actions CI, tài liệu API, bộ Postman
 - ✅ Deploy: Vercel (frontend), Render (backend), Neon (PostgreSQL), Render Key Value (Redis)

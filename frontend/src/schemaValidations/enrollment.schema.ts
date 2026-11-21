@@ -77,7 +77,9 @@ export type MyEnrollmentListResType = z.infer<typeof MyEnrollmentListRes>
 // thêm completed (tôi đã học bài này chưa)
 //   .omit: BỎ trường   .extend: THÊM trường
 export const MyLectureSchema = PublicLectureSchema.omit({ videoUrl: true }).extend({
-  completed: z.boolean()
+  completed: z.boolean(),
+  hasQuiz: z.boolean(), // bài có bài tập trắc nghiệm
+  quizPassed: z.boolean() // đã làm đạt ít nhất 1 lần
 })
 export type MyLectureType = z.infer<typeof MyLectureSchema>
 

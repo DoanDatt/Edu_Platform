@@ -11,6 +11,7 @@ import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import LearnCurriculum from './learn-curriculum'
+import LectureQuiz from './lecture-quiz'
 import LectureVideo from './lecture-video'
 import { Link, useRouter } from '@/i18n/navigation'
 
@@ -134,6 +135,7 @@ export default function LearnCourse({ courseId }: { courseId: number }) {
               ) : lecture?.videoUrl ? (
                 // key = id bài: đổi bài thì React tạo trình phát MỚI (bộ đếm giây xem về 0, không phát tiếp video cũ)
                 <LectureVideo
+                  hlsUrl={lecture.hlsUrl}
                   key={current.id}
                   lectureId={current.id}
                   src={lecture.videoUrl}
@@ -232,6 +234,9 @@ export default function LearnCourse({ courseId }: { courseId: number }) {
                 <p className='whitespace-pre-line leading-relaxed text-muted-foreground'>{lecture.content}</p>
               </section>
             )}
+
+            {/* ===== Bài tập trắc nghiệm (nếu bài có). key: đổi bài → làm từ đầu ===== */}
+            {lecture?.hasQuiz && <LectureQuiz key={current.id} lectureId={current.id} />}
           </main>
 
           {/* ===== Mục lục ===== */}
