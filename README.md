@@ -309,6 +309,7 @@ npm test
 - Hàng đợi email được giả lập (không cần Redis), test đọc được email "đã gửi" để lấy mã OTP.
 - `tests/unit/`: hàm thuần. Các file còn lại: gọi API thật qua Supertest (auth, phân quyền, quản lý user, hồ sơ, toàn bộ vòng đời khóa học, upload).
 - CI (`.github/workflows/backend.yml`) chạy typecheck, lint và test mỗi lần push có sửa `backend/`.
+- CI (`.github/workflows/frontend.yml`) chạy typecheck, lint và `next build` mỗi lần push có sửa `frontend/` (build không cần backend thật).
 
 ---
 

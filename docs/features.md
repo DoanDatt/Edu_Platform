@@ -3,7 +3,7 @@
 Tổng hợp mọi chức năng để Edu Platform thành một dự án hoàn chỉnh, chia theo người dùng.
 Dùng để theo dõi tiến độ và làm nguồn khi cập nhật CV / README.
 
-Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm · 💡 ý tưởng thêm (làm hay không tùy chọn)
+Trạng thái ngày 21/11/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm · 💡 ý tưởng thêm (làm hay không tùy chọn)
 
 ## Tổng quan
 
@@ -15,8 +15,8 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 | 4. Giảng viên | Dashboard (có doanh thu thật), soạn bài, gửi duyệt, học viên | Giao diện soạn quiz |
 | 5. Admin | Dashboard (có doanh thu thật), duyệt khóa học, danh mục, người dùng | Phân quyền |
 | 6. Thông báo | Backend + chuông ở header | Realtime SSE |
-| 7. Giao diện và chất lượng | Sáng / tối, điện thoại, song ngữ Việt – Anh trang công khai, Next.js 16.4.3 | Giao diện EduPress từ bước 3, dịch dashboard, trang lỗi / 404, SEO, cache |
-| 8. Backend và hạ tầng | Gần như đủ, 83 test | Email khi deploy |
+| 7. Giao diện và chất lượng | Sáng / tối, điện thoại, song ngữ Việt – Anh trang công khai, Next.js 16.4.3 | Giao diện EduPress từ bước 3, dịch dashboard, trang lỗi / 404, cache |
+| 8. Backend và hạ tầng | Gần như đủ, 95 test, CI cho cả backend và frontend | Email khi deploy |
 
 ---
 
@@ -103,7 +103,7 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ⬜ Dịch các trang dashboard (học viên, giảng viên, admin)
 - ✅ Nâng Next.js lên 16.4.3 (bản vá bảo mật)
 - ⬜ `loading.tsx`, `error.tsx`, `not-found.tsx` đẹp cho từng khu
-- ⬜ SEO toàn trang: `sitemap.ts`, `robots.ts`
+- ✅ SEO toàn trang: `sitemap.ts` (trang công khai, mọi khóa học đã xuất bản, bài blog; kèm bản vi / en), `robots.ts` (chặn khu cần đăng nhập)
 - ⬜ **Cache trang công khai** (`'use cache'` + `revalidateTag` khi admin duyệt / gỡ) để tải nhanh hơn
 - ⬜ Kiểm tra Lighthouse (hiệu năng, khả năng truy cập) và sửa các điểm thấp
 - 💡 Test frontend (Vitest + Testing Library) cho vài component / hook quan trọng
@@ -116,7 +116,7 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ Hàng đợi email bằng BullMQ + Redis; dọn dữ liệu cũ hằng ngày
 - ✅ Upload ảnh / video lên Cloudinary (kiểm tra nội dung thật của file)
 - ✅ Bảo mật: helmet, giới hạn số request, mật khẩu băm bcrypt, OTP lưu dạng băm
-- ✅ 83 test (Vitest + Supertest), GitHub Actions CI, tài liệu API, bộ Postman
+- ✅ 95 test (Vitest + Supertest), GitHub Actions CI (backend: typecheck, lint, test; frontend: typecheck, lint, build), tài liệu API, bộ Postman
 - ✅ Deploy: Vercel (frontend), Render (backend), Neon (PostgreSQL), Render Key Value (Redis)
 - 🚧 Gửi email khi deploy qua Brevo HTTP API (code xong, cần đặt `BREVO_API_KEY` + `MAIL_FROM` trên Render)
 - 💡 Ping định kỳ (UptimeRobot) để Render không ngủ, giảm thời gian chờ lần đầu mở web
