@@ -65,7 +65,8 @@ const configSchema = z.object({
   PUBLIC_URL: z.url().default('http://localhost:4000'),
   UPLOAD_DIR: z.string().default('uploads'),
   MAX_IMAGE_MB: z.coerce.number().positive().default(5),
-  MAX_VIDEO_MB: z.coerce.number().positive().default(500),
+  // Gói free của Cloudinary chỉ nhận video tối đa 100MB → để cao hơn thì backend nhận nhưng Cloudinary từ chối
+  MAX_VIDEO_MB: z.coerce.number().positive().default(100),
 
   // Cloudinary: có thì ảnh / video upload lên Cloudinary (deploy: ổ đĩa Render bị xóa khi khởi động lại).
   // Không có thì lưu ổ đĩa server như cũ (máy local, test). Dạng cloudinary://<api_key>:<api_secret>@<cloud_name>
@@ -77,6 +78,14 @@ const configSchema = z.object({
       .startsWith('cloudinary://', 'CLOUDINARY_URL phải có dạng cloudinary://<api_key>:<api_secret>@<cloud_name>')
       .optional(),
   ),
+
+  // Job hằng ngày xóa video thừa trên Cloudinary (không bài giảng nào dùng, quá 30 ngày).
+  // MẶC ĐỊNH TẮT, chỉ bật ở production: máy local thường dùng chung cloud với production nhưng database khác
+  // → job chạy ở local sẽ tưởng video của production là "thừa" và xóa mất
+  VIDEO_CLEANUP_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
 
   // Tiền tố mã đơn hàng (EDU + 8 ký tự). SePay dùng nó để nhận ra mã đơn trong nội dung chuyển khoản
   // → phải trùng với "Cấu trúc mã thanh toán" cấu hình trên my.sepay.vn

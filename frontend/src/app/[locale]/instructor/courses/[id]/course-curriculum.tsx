@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 import CourseLoadError from '@/components/course-load-error'
 import CourseNotice from '@/components/course-notice'
 import LectureSheet, { LectureTarget } from './lecture-sheet'
+import QuizSheet from './quiz-sheet'
 import SectionItem, { TitleForm } from './section-item'
 import { Link } from '@/i18n/navigation'
 
@@ -28,6 +29,8 @@ export default function CourseCurriculum({ courseId }: { courseId: number }) {
   const submitMutation = useSubmitCourseMutation()
   // Bài đang mở trong khung soạn bài (Sheet). null = đóng
   const [lectureTarget, setLectureTarget] = useState<LectureTarget | null>(null)
+  // Bài đang mở trong khung soạn bài tập trắc nghiệm. null = đóng
+  const [quizLecture, setQuizLecture] = useState<InstructorLectureType | null>(null)
 
   if (isLoading) return <CurriculumSkeleton />
   if (isError || !data) return <CourseLoadError error={error} />
@@ -115,7 +118,9 @@ export default function CourseCurriculum({ courseId }: { courseId: number }) {
         </CourseNotice>
       )}
       {course.status === CourseStatus.PENDING && (
-        <CourseNotice Icon={Clock}>Khóa học đang chờ admin duyệt nên tạm thời không thể chỉnh sửa nội dung.</CourseNotice>
+        <CourseNotice Icon={Clock}>
+          Khóa học đang chờ admin duyệt nên tạm thời không thể chỉnh sửa nội dung.
+        </CourseNotice>
       )}
       {course.status === CourseStatus.REJECTED && (
         <CourseNotice tone='destructive' Icon={AlertCircle}>
@@ -128,7 +133,9 @@ export default function CourseCurriculum({ courseId }: { courseId: number }) {
         </CourseNotice>
       )}
       {course.status === CourseStatus.PUBLISHED && (
-        <CourseNotice Icon={Globe}>Khóa học đang công khai: thay đổi nội dung sẽ hiển thị ngay cho học viên.</CourseNotice>
+        <CourseNotice Icon={Globe}>
+          Khóa học đang công khai: thay đổi nội dung sẽ hiển thị ngay cho học viên.
+        </CourseNotice>
       )}
 
       {/* ===== Danh sách chương ===== */}
@@ -153,6 +160,7 @@ export default function CourseCurriculum({ courseId }: { courseId: number }) {
               onMove={(direction) => moveSection(index, direction)}
               onAddLecture={() => setLectureTarget({ sectionId: section.id })}
               onEditLecture={(lecture: InstructorLectureType) => setLectureTarget({ sectionId: section.id, lecture })}
+              onEditQuiz={setQuizLecture}
             />
           ))}
         </div>
@@ -161,11 +169,16 @@ export default function CourseCurriculum({ courseId }: { courseId: number }) {
       {editable && (
         <div className='rounded-xl border border-dashed p-4'>
           <p className='mb-3 text-sm font-medium'>Thêm chương mới</p>
-          <TitleForm placeholder='Tên chương, ví dụ: Giới thiệu khóa học' submitLabel='Thêm chương' onSubmit={createSection} />
+          <TitleForm
+            placeholder='Tên chương, ví dụ: Giới thiệu khóa học'
+            submitLabel='Thêm chương'
+            onSubmit={createSection}
+          />
         </div>
       )}
 
       <LectureSheet target={lectureTarget} onClose={() => setLectureTarget(null)} />
+      <QuizSheet lecture={quizLecture} onClose={() => setQuizLecture(null)} />
     </div>
   )
 }

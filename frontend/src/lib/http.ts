@@ -10,6 +10,12 @@ type CustomOptions = Omit<RequestInit, 'method'> & {
 
 const ENTITY_ERROR_STATUS = 422
 const AUTHENTICATION_ERROR_STATUS = 401
+const FORBIDDEN_STATUS = 403
+// Backend trả 403 kèm code này cho MỌI request của tài khoản bị admin khóa (kể cả đăng nhập).
+// So khớp code, không so khớp message (câu chữ có thể sửa / dịch)
+export const ACCOUNT_BLOCKED_CODE = 'ACCOUNT_BLOCKED'
+// Bị đăng xuất vì tài khoản bị khóa → trang đăng nhập đọc ?reason=blocked để báo lý do
+export const BLOCKED_LOGIN_PATH = '/login?reason=blocked'
 
 type EntityErrorPayload = {
   message: string
@@ -110,6 +116,10 @@ const request = async <Response>(
   }
   // Interceptor là nơi chúng ta xử lý request và response trước khi trả về cho phía component
   if (!res.ok) {
+    // Tài khoản bị khóa giữa chừng: xử lý y như hết phiên (đăng xuất), chỉ khác trang đích có báo lý do.
+    // Đăng nhập (auth request) bị 403 thì KHÔNG vào đây: ném lỗi để form đăng nhập tự báo
+    const isBlocked =
+      res.status === FORBIDDEN_STATUS && (payload as { code?: string } | null)?.code === ACCOUNT_BLOCKED_CODE
     if (res.status === ENTITY_ERROR_STATUS) {
       throw new EntityError(
         data as {
@@ -117,7 +127,7 @@ const request = async <Response>(
           payload: EntityErrorPayload
         }
       )
-    } else if (res.status === AUTHENTICATION_ERROR_STATUS && !isAuthRequest(url)) {
+    } else if ((res.status === AUTHENTICATION_ERROR_STATUS || isBlocked) && !isAuthRequest(url)) {
       if (isClient) {
         if (!clientLogoutRequest) {
           clientLogoutRequest = fetch('/api/auth/logout', {
@@ -143,15 +153,14 @@ const request = async <Response>(
             // không chạy trong event handler (submit form, click...), chỉ chạy lúc render.
             // useRouter() cũng không dùng được vì đây không phải component.
             // Tải lại cả trang là cố ý: xóa sạch dữ liệu của người dùng cũ còn trong bộ nhớ
-            // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-            location.href = '/login'
+            location.href = isBlocked ? BLOCKED_LOGIN_PATH : '/login'
           }
         }
       } else {
         // Phía server (Server Component đang render) thì redirect() dùng được
         // ?. trước split: request không có header Authorization thì không bị crash
         const accessToken = (options?.headers as any)?.Authorization?.split('Bearer ')[1]
-        redirect(`/logout?accessToken=${accessToken}`)
+        redirect(`/logout?accessToken=${accessToken}${isBlocked ? '&reason=blocked' : ''}`)
       }
     } else {
       throw new HttpError(data)

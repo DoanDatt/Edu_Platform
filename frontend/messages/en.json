@@ -427,7 +427,9 @@
         "question": "Who can I ask when I get stuck?",
         "answer": "Leave a comment below the course or send a message from the Contact page; the instructor and the team will reply."
       }
-    }
+    },
+    "playPreview": "Preview lesson: {title}",
+    "previewDescription": "Free preview. Enroll to unlock the whole course."
   },
   "Review": {
     "confirmDelete": "Delete your review for this course?",
@@ -473,7 +475,8 @@
     "noAccount": "Don't have an account?",
     "haveAccount": "Already have an account?",
     "loggingOut": "Logging out...",
-    "refreshing": "Refreshing your session..."
+    "refreshing": "Refreshing your session...",
+    "accountBlocked": "Your account has been locked. If you think this is a mistake, please contact an administrator."
   },
   "ForgotPassword": {
     "title": "Forgot password",
@@ -563,5 +566,24 @@
     "title": "Latest Articles",
     "description": "Learning roadmaps, study tips and guides",
     "viewAll": "All articles"
+  },
+  "Player": {
+    "auto": "Auto",
+    "autoWithLevel": "Auto ({height}p)",
+    "quality": "Quality",
+    "chooseQuality": "Choose video quality"
+  },
+  "ErrorPage": {
+    "title": "Something went wrong",
+    "description": "This page ran into a problem. Try again, and if it keeps happening, go back to the home page.",
+    "retry": "Try again",
+    "home": "Back to home",
+    "errorId": "Error ID"
+  },
+  "NotFoundPage": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist, was removed, or the link is mistyped.",
+    "home": "Back to home",
+    "courses": "Browse courses"
   }
 }
