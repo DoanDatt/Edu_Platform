@@ -186,6 +186,8 @@ Kiểm tra:
 | `FRONTEND_URL` | Địa chỉ frontend, dùng tạo link trong email |
 | `PUBLIC_URL` | Địa chỉ công khai của API, dùng tạo link file upload |
 | `UPLOAD_DIR`, `MAX_IMAGE_MB`, `MAX_VIDEO_MB` | Thư mục lưu file và giới hạn dung lượng |
+| `CLOUDINARY_URL` | Có thì ảnh / video lên Cloudinary (video kèm bản HLS), không có thì lưu ổ đĩa server |
+| `VIDEO_CLEANUP_ENABLED` | `true`: 3h30 mỗi ngày xóa video không bài giảng nào dùng quá 30 ngày. **Chỉ bật ở production** (local dùng chung cloud nhưng khác database sẽ xóa nhầm). Xem trước bằng `npm run video:cleanup` |
 | `RATE_LIMIT_ENABLED` | `false` để tắt giới hạn số request (khi test) |
 
 Có file `.env` thì đọc, không có thì dùng biến môi trường sẵn có (CI, Docker). Thiếu hoặc sai biến thì server dừng ngay và in ra biến bị lỗi (Zod trong `src/config/env.ts`).

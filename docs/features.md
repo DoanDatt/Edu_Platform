@@ -9,7 +9,7 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 
 | Nhóm | Xong | Còn lại |
 |---|---|---|
-| 1. Khách (chưa đăng nhập) | Trang chủ, danh sách, chi tiết, tìm kiếm, Blog, Giới thiệu | Xem thử video bài preview |
+| 1. Khách (chưa đăng nhập) | Trang chủ, danh sách, chi tiết, tìm kiếm, Blog, Giới thiệu, xem thử video bài preview | |
 | 2. Tài khoản | Đăng ký, đăng nhập, đăng xuất, giữ đăng nhập, hồ sơ, đổi mật khẩu, quên mật khẩu | Xử lý tài khoản bị khóa |
 | 3. Học viên | Ghi danh, mua khóa có phí, đơn hàng, khóa của tôi, trang học (xem đủ 90%), đánh giá | Giao diện làm quiz |
 | 4. Giảng viên | Dashboard (có doanh thu thật), soạn bài, gửi duyệt, học viên | Giao diện soạn quiz |
@@ -30,7 +30,7 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ **SEO trang chi tiết:** tiêu đề / mô tả / Open Graph theo từng khóa, URL dạng `ten-khoa-i.15`, link sai chữ tự chuyển về URL chuẩn
 - ✅ **Ảnh bìa tự vẽ** theo danh mục khi khóa chưa có ảnh
 - ✅ **Blog** (danh sách + bài viết) và **trang Giới thiệu**
-- ⬜ **Xem thử bài preview:** bấm bài có nhãn "Xem thử" để phát video ngay trên trang chi tiết (hiện mới có nhãn; backend đã trả link video của bài xem thử)
+- ✅ **Xem thử bài preview:** bấm bài có nhãn "Xem thử" → hộp thoại phát video ngay trên trang chi tiết (HLS + chọn chất lượng, dùng chung trình phát với trang học)
 
 ## 2. Tài khoản và xác thực
 
@@ -114,7 +114,8 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ Đơn hàng + thanh toán 3 cổng (MoMo, PayPal, SePay), thống kê doanh thu
 - ✅ Theo dõi thời gian xem video, quiz cuối bài
 - ✅ Hàng đợi email bằng BullMQ + Redis; dọn dữ liệu cũ hằng ngày
-- ✅ Upload ảnh / video lên Cloudinary (kiểm tra nội dung thật của file)
+- ✅ Upload ảnh / video lên Cloudinary (kiểm tra nội dung thật của file); video upload thẳng từ trình duyệt, phát bằng HLS
+- ✅ Dọn video thừa trên Cloudinary hằng ngày (`VIDEO_CLEANUP_ENABLED`, chờ 30 ngày, tự dừng nếu số video thừa bất thường)
 - ✅ Bảo mật: helmet, giới hạn số request, mật khẩu băm bcrypt, OTP lưu dạng băm
 - ✅ 83 test (Vitest + Supertest), GitHub Actions CI, tài liệu API, bộ Postman
 - ✅ Deploy: Vercel (frontend), Render (backend), Neon (PostgreSQL), Render Key Value (Redis)
