@@ -135,6 +135,7 @@ export default function LearnCourse({ courseId }: { courseId: number }) {
               ) : lecture?.videoUrl ? (
                 // key = id bài: đổi bài thì React tạo trình phát MỚI (bộ đếm giây xem về 0, không phát tiếp video cũ)
                 <LectureVideo
+                  hlsUrl={lecture.hlsUrl}
                   key={current.id}
                   lectureId={current.id}
                   src={lecture.videoUrl}

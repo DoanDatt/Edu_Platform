@@ -3,11 +3,18 @@ import { redisConnection } from './connection'
 
 export const MAINTENANCE_QUEUE = 'maintenance'
 export const CLEANUP_JOB = 'cleanup-expired'
+export const CLEANUP_VIDEOS_JOB = 'cleanup-orphan-videos'
 
 // Lên lịch dọn dữ liệu lúc 3h sáng mỗi ngày (cú pháp cron: phút giờ ngày tháng thứ).
 // upsert: chạy lại nhiều lần (mỗi lần khởi động) vẫn chỉ có 1 lịch, không bị nhân đôi
-export const scheduleMaintenanceJobs = async () => {
+export const scheduleMaintenanceJobs = async ({ videoCleanup }: { videoCleanup: boolean }) => {
   const queue = new Queue(MAINTENANCE_QUEUE, { connection: redisConnection })
   await queue.upsertJobScheduler(CLEANUP_JOB, { pattern: '0 3 * * *' }, { name: CLEANUP_JOB })
+  // Dọn video thừa trên Cloudinary lúc 3h30: chỉ khi được bật. Tắt thì gỡ lịch cũ (nếu trước đó từng bật)
+  if (videoCleanup) {
+    await queue.upsertJobScheduler(CLEANUP_VIDEOS_JOB, { pattern: '30 3 * * *' }, { name: CLEANUP_VIDEOS_JOB })
+  } else {
+    await queue.removeJobScheduler(CLEANUP_VIDEOS_JOB)
+  }
   await queue.close()
 }

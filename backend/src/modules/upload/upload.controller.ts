@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { unlink } from 'fs/promises'
 import path from 'path'
 import envConfig from '../../config/env'
-import { isCloudinaryEnabled, uploadToCloudinary } from '../../lib/cloudinary'
+import { createVideoUploadSignature, isCloudinaryEnabled, uploadToCloudinary } from '../../lib/cloudinary'
 import { HttpError } from '../../utils/error'
 import { hasValidSignature } from '../../utils/file-signature'
 
@@ -46,3 +46,14 @@ const handleUpload = (folder: 'images' | 'videos') => async (req: Request, res: 
 
 export const uploadImage = handleUpload('images')
 export const uploadVideo = handleUpload('videos')
+
+// Xin cách upload video. Có Cloudinary (deploy): trả chữ ký để trình duyệt upload THẲNG lên Cloudinary
+// (file không đi qua server Render, có % tiến trình). Không có (local, test): upload qua POST /uploads/video như cũ
+export const getVideoUploadSignature = (req: Request, res: Response) => {
+  const maxBytes = envConfig.MAX_VIDEO_MB * 1024 * 1024
+  const signed = createVideoUploadSignature()
+  const data = signed
+    ? { mode: 'cloudinary' as const, ...signed, maxBytes }
+    : { mode: 'server' as const, uploadUrl: `${envConfig.PUBLIC_URL}/uploads/video`, maxBytes }
+  res.json({ message: 'Lấy thông tin upload video thành công', data })
+}
