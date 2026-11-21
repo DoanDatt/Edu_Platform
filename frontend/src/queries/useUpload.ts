@@ -9,6 +9,8 @@ export const useUploadImageMutation = () => {
   })
 }
 
+// Video: tự xin chữ ký rồi upload thẳng lên Cloudinary (có %), local không có Cloudinary thì qua server.
+// Trả thẳng { url, durationSec } (không bọc trong payload như các API khác)
 export const useUploadVideoMutation = () => {
   return useMutation({
     mutationFn: uploadApiRequest.video

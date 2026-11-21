@@ -3,6 +3,7 @@
 import { useReportWatchMutation } from '@/queries/useLecture'
 import { ReportWatchResType } from '@/schemaValidations/lecture.schema'
 import { useCallback, useEffect, useRef } from 'react'
+import type Hls from 'hls.js'
 
 // Cứ xem thêm chừng này giây thì báo backend 1 lần (ngoài ra còn báo khi dừng, hết video, rời bài)
 const REPORT_EVERY_SEC = 15
@@ -18,11 +19,13 @@ const MAX_NORMAL_STEP_SEC = 3
 export default function LectureVideo({
   lectureId,
   src,
+  hlsUrl,
   startAtSec,
   onReported
 }: {
   lectureId: number
   src: string
+  hlsUrl: string | null
   startAtSec: number
   onReported?: (data: ReportWatchResType['data']) => void
 }) {
@@ -66,11 +69,53 @@ export default function LectureVideo({
       report()
     }
   }, [report])
+  // Chọn nguồn phát: có HLS thì phát HLS, không có hoặc HLS lỗi thì phát mp4.
+  // <video> không đặt prop src: để effect này tự gán, tránh trình duyệt tải mp4 trước rồi mới chuyển sang HLS
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    if (!hlsUrl) {
+      video.src = src
+      return
+    }
+    let hls: Hls | null = null
+    let cancelled = false // effect đã dọn (đổi bài, StrictMode chạy 2 lần) → bỏ qua kết quả import
+    const fallbackToMp4 = () => {
+      video.src = src
+    }
+    // import() động: hls.js chỉ chạy được trên trình duyệt, tải lúc cần (không lọt vào bundle trang khác)
+    import('hls.js').then(({ default: HlsClass }) => {
+      if (cancelled) return
+      if (HlsClass.isSupported()) {
+        // Chrome, Edge, Firefox: hls.js tự tải từng đoạn .ts và đổi chất lượng theo tốc độ mạng
+        hls = new HlsClass()
+        hls.on(HlsClass.Events.ERROR, (_event, data) => {
+          if (!data.fatal) return // lỗi nhẹ: hls.js tự xử lý được
+          // Lỗi nặng (vd bản HLS chưa tạo xong vì video vừa upload) → quay về mp4
+          hls?.destroy()
+          hls = null
+          fallbackToMp4()
+        })
+        hls.loadSource(hlsUrl)
+        hls.attachMedia(video)
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Safari / iOS: tự phát được .m3u8, không cần hls.js
+        video.addEventListener('error', fallbackToMp4, { once: true })
+        video.src = hlsUrl
+      } else {
+        fallbackToMp4()
+      }
+    })
+    return () => {
+      cancelled = true
+      hls?.destroy()
+      video.removeEventListener('error', fallbackToMp4)
+    }
+  }, [hlsUrl, src])
 
   return (
     <video
       ref={videoRef}
-      src={src}
       controls
       className='size-full'
       onLoadedMetadata={(e) => {
