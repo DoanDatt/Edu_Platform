@@ -63,8 +63,12 @@ export function proxy(request: NextRequest) {
     return redirectTo('/login')
   }
 
-  // 2. Đăng nhập rồi mà vào đăng nhập / đăng ký / quên mật khẩu → về trang chủ
-  if (matchPath(pathname, unAuthPaths) && isAuth) {
+  // 2. CHẮC CHẮN đang đăng nhập (còn access token, sống 15 phút) mà vào đăng nhập / đăng ký / quên mật khẩu
+  //    → về trang chủ.
+  //    Chỉ còn refresh token thì KHÔNG chặn: proxy không biết token đó còn dùng được hay đã bị thu hồi
+  //    (đăng xuất ở máy khác, đổi mật khẩu, bị khóa...). Chặn thì người có cookie hỏng không vào được /login
+  //    mà cũng không có gì xóa cookie đó → kẹt mãi. Cho vào /login: đăng nhập lại là ghi đè cookie cũ
+  if (matchPath(pathname, unAuthPaths) && accessToken) {
     return redirectTo('/')
   }
 
