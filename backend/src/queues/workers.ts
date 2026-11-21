@@ -3,8 +3,10 @@ import prisma from '../lib/prisma'
 import { mailProvider, sendMail } from '../lib/mailer'
 import { redisConnection } from './connection'
 import { EMAIL_QUEUE, EmailJobData } from './email.queue'
-import { CLEANUP_JOB, MAINTENANCE_QUEUE, scheduleMaintenanceJobs } from './maintenance.queue'
+import { CLEANUP_JOB, CLEANUP_VIDEOS_JOB, MAINTENANCE_QUEUE, scheduleMaintenanceJobs } from './maintenance.queue'
 import { cancelExpiredOrders } from '../modules/order/order.service'
+import { cleanupOrphanVideos } from '../modules/upload/video-cleanup.service'
+import envConfig from '../config/env'
 
 // Dọn dữ liệu đã hết hạn: xóa refresh token và mã OTP (bảng sẽ phình mãi nếu không dọn),
 // hủy đơn hàng chờ thanh toán quá lâu
@@ -31,6 +33,15 @@ export const startWorkers = async () => {
     MAINTENANCE_QUEUE,
     async (job) => {
       if (job.name === CLEANUP_JOB) return cleanupExpired()
+      // Kiểm tra cờ cả lúc chạy: lịch cũ còn sót trong Redis cũng không xóa được gì khi cờ đang tắt
+      if (job.name === CLEANUP_VIDEOS_JOB) {
+        if (!envConfig.VIDEO_CLEANUP_ENABLED) return { skipped: 'VIDEO_CLEANUP_ENABLED=false' }
+        const result = await cleanupOrphanVideos({ dryRun: false })
+        if ('skipped' in result) return result
+        // Log tóm tắt (số lượng, dung lượng), bỏ danh sách publicId cho log gọn
+        const { publicIds, ...summary } = result
+        return { ...summary, sample: publicIds.slice(0, 5) }
+      }
     },
     { connection: redisConnection },
   )
@@ -43,8 +54,11 @@ export const startWorkers = async () => {
   maintenanceWorker.on('completed', (job, result) => console.log(`[maintenance] ${job.name}:`, result))
   maintenanceWorker.on('failed', (job, error) => console.error(`[maintenance] ${job?.name} lỗi:`, error.message))
 
-  await scheduleMaintenanceJobs()
-  console.log(`Worker đang chạy: email (gửi qua ${mailProvider}), maintenance (dọn dữ liệu hết hạn lúc 3h sáng)`)
+  await scheduleMaintenanceJobs({ videoCleanup: envConfig.VIDEO_CLEANUP_ENABLED })
+  console.log(
+    `Worker đang chạy: email (gửi qua ${mailProvider}), maintenance (dọn dữ liệu hết hạn lúc 3h sáng` +
+      `${envConfig.VIDEO_CLEANUP_ENABLED ? ', dọn video thừa trên Cloudinary lúc 3h30' : ''})`,
+  )
 
   return async () => {
     await Promise.all([emailWorker.close(), maintenanceWorker.close()])

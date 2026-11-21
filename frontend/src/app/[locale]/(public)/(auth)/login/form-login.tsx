@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { HttpError } from '@/lib/http'
+import { ACCOUNT_BLOCKED_CODE, HttpError } from '@/lib/http'
 import { handleErrorApi } from '@/lib/utils'
 import { useLoginMutation } from '@/queries/useAuth'
 import { LoginBodySchema, LoginBodyType } from '@/schemaValidations/auth.schema'
@@ -47,7 +47,12 @@ export default function LoginForm() {
         form.setError('root', { message: error.payload.message })
         return
       }
-      // 422: lỗi từng ô (gắn vào đúng ô) · 403 tài khoản bị khóa, lỗi khác: toast
+      // 403 tài khoản bị admin khóa → cũng hiện trên form (câu đã dịch theo ngôn ngữ đang xem)
+      if (error instanceof HttpError && error.payload.code === ACCOUNT_BLOCKED_CODE) {
+        form.setError('root', { message: t('accountBlocked') })
+        return
+      }
+      // 422: lỗi từng ô (gắn vào đúng ô) · lỗi khác: toast
       handleErrorApi({ error, setError: form.setError })
     }
   }
