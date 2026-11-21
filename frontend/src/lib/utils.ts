@@ -46,7 +46,8 @@ export const handleErrorApi = ({
   setError?: UseFormSetError<any>
   duration?: number
 }) => {
-  if (error instanceof EntityError && setError) {
+  // Có mảng errors mới gắn được vào từng ô; 422 chỉ có message thì xuống nhánh toast bên dưới
+  if (error instanceof EntityError && setError && error.payload.errors?.length) {
     error.payload.errors.forEach((item) => {
       setError(item.field, {
         type: 'server',
@@ -56,7 +57,8 @@ export const handleErrorApi = ({
   } else {
     // 422 mà không có form để gắn lỗi (ví dụ upload file hỏng) → hiện lỗi chi tiết đầu tiên,
     // "Nội dung file không đúng định dạng" rõ hơn câu chung "Dữ liệu không hợp lệ"
-    const detail = error instanceof EntityError ? error.payload.errors[0]?.message : undefined
+    // errors?.: một số lỗi 422 của backend chỉ có message, không kèm mảng errors (vd quiz "trả lời tất cả câu hỏi")
+    const detail = error instanceof EntityError ? error.payload.errors?.[0]?.message : undefined
     toast('Lỗi', {
       description: detail ?? error?.payload?.message ?? 'Lỗi không xác định',
       duration: duration ?? 5000

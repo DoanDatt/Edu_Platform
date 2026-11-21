@@ -72,6 +72,8 @@ function LectureForm({ target, onDone }: { target: LectureTarget; onDone: () => 
   const uploadVideoMutation = useUploadVideoMutation()
   const isSaving = createMutation.isPending || updateMutation.isPending
   const inputRef = useRef<HTMLInputElement>(null)
+  // % đã gửi khi upload thẳng lên Cloudinary. null = chưa biết (đang xin chữ ký, hoặc upload qua server không báo %)
+  const [uploadPercent, setUploadPercent] = useState<number | null>(null)
 
   const form = useForm<LectureContentType>({
     resolver: zodResolver(LectureContentSchema),
@@ -114,16 +116,19 @@ function LectureForm({ target, onDone }: { target: LectureTarget; onDone: () => 
     }
 
     const localDuration = await getVideoDuration(file)
+    setUploadPercent(null)
     try {
-      const result = await uploadVideoMutation.mutateAsync(file)
+      const result = await uploadVideoMutation.mutateAsync({ file, onProgress: setUploadPercent })
       // setValue: đổi giá trị 1 ô từ code (không phải người dùng gõ). shouldDirty: tính là "đã sửa"
-      form.setValue('videoUrl', result.payload.data.url, { shouldDirty: true, shouldValidate: true })
+      form.setValue('videoUrl', result.url, { shouldDirty: true, shouldValidate: true })
       // Ưu tiên thời lượng Cloudinary đo (chuẩn hơn), không có thì dùng số trình duyệt đo được
-      const duration = result.payload.data.durationSec ?? localDuration
+      const duration = result.durationSec ?? localDuration
       if (duration !== undefined) form.setValue('durationSec', duration, { shouldDirty: true, shouldValidate: true })
       toast.success('Đã tải video lên. Bấm Lưu để lưu bài giảng.')
     } catch (error) {
       handleErrorApi({ error })
+    } finally {
+      setUploadPercent(null)
     }
   }
 
@@ -178,15 +183,30 @@ function LectureForm({ target, onDone }: { target: LectureTarget; onDone: () => 
                   disabled={uploadVideoMutation.isPending}
                 >
                   {uploadVideoMutation.isPending ? <Loader2 className='animate-spin' /> : <Upload />}
-                  Tải lên
+                  {uploadVideoMutation.isPending && uploadPercent !== null ? `${uploadPercent}%` : 'Tải lên'}
                 </Button>
               </div>
+              {uploadVideoMutation.isPending && uploadPercent !== null && (
+                // Thanh tiến trình: chỉ có khi upload thẳng lên Cloudinary
+                <div
+                  role='progressbar'
+                  aria-label='Tiến trình tải video'
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={uploadPercent}
+                  className='bg-muted h-1.5 w-full overflow-hidden rounded-full'
+                >
+                  <div className='bg-primary h-full transition-[width]' style={{ width: `${uploadPercent}%` }} />
+                </div>
+              )}
               {fieldState.invalid ? (
                 <FieldError errors={[fieldState.error]} />
               ) : (
                 <FieldDescription>
                   {uploadVideoMutation.isPending
-                    ? 'Đang tải video lên, video lớn có thể mất vài phút...'
+                    ? uploadPercent === 100
+                      ? 'Đã gửi xong, đang chờ Cloudinary xử lý video...'
+                      : 'Đang tải video lên, video lớn có thể mất vài phút...'
                     : `MP4, WEBM hoặc MOV, tối đa ${MAX_VIDEO_MB} MB.`}
                 </FieldDescription>
               )}

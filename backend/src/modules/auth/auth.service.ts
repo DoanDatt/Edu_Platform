@@ -2,7 +2,7 @@ import { RoleName } from '../../constants/role'
 import { Prisma } from '../../generated/prisma/client'
 import prisma from '../../lib/prisma'
 import { comparePassword, generateOtp, hashOtp, hashPassword, isOtpMatch } from '../../utils/crypto'
-import { HttpError } from '../../utils/error'
+import { accountBlockedError, HttpError } from '../../utils/error'
 import { VerificationCodeType } from '../../generated/prisma/enums'
 import { enqueueEmail, enqueueEmailSafely } from '../../queues/email.queue'
 import { passwordChangedEmail, passwordResetOtpEmail, welcomeEmail } from '../../emails/templates'
@@ -96,7 +96,7 @@ export const login = async (body: LoginBodyType) => {
 
   // 3. Tài khoản bị khoá thì không cho đăng nhập
   if (user.status === 'BLOCKED') {
-    throw new HttpError(403, 'Tài khoản của bạn đã bị khoá')
+    throw accountBlockedError()
   }
 
   // 4. Tạo access token + refresh token (refresh token được lưu DB)
@@ -153,7 +153,7 @@ export const refreshToken = async (token: string) => {
       throw new HttpError(401, 'Tài khoản không tồn tại')
     }
     if (user.status === 'BLOCKED') {
-      throw new HttpError(403, 'Tài khoản của bạn đã bị khóa')
+      throw accountBlockedError()
     }
 
     // Cấp token mới (ghi DB bằng tx để nằm trong transaction)
