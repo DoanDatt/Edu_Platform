@@ -2,7 +2,14 @@
 import { createHash } from 'crypto'
 import { v2 as cloudinary } from 'cloudinary'
 import { describe, expect, it } from 'vitest'
-import { buildHlsUrl, HLS_EAGER, parseCloudinaryVideoUrl } from '../../src/utils/video'
+import {
+  buildHlsUrl,
+  findOrphanVideos,
+  HLS_EAGER,
+  isSuspiciousOrphanCount,
+  ORPHAN_GRACE_DAYS,
+  parseCloudinaryVideoUrl,
+} from '../../src/utils/video'
 import { HLS_EAGER_OPTION, signVideoUpload } from '../../src/lib/cloudinary'
 
 const CLOUD = 'democloud'
@@ -69,5 +76,28 @@ describe('Upload thẳng lên Cloudinary', () => {
     expect(fields).toMatchObject({ api_key: 'key123', timestamp: 1731400000, folder: 'edu-platform/videos' })
     // api_secret tuyệt đối không được nằm trong dữ liệu trả cho trình duyệt
     expect(JSON.stringify(fields)).not.toContain('secret456')
+  })
+})
+
+describe('dọn video thừa', () => {
+  const NOW = new Date('2026-11-21T00:00:00Z')
+  const daysAgo = (days: number) => new Date(NOW.getTime() - days * 24 * 60 * 60 * 1000)
+  const asset = (publicId: string, ageDays: number) => ({ publicId, createdAt: daysAgo(ageDays), bytes: 1000 })
+
+  it('chỉ chọn video không bài nào dùng VÀ đã quá thời gian chờ', () => {
+    const assets = [
+      asset('edu-platform/videos/dang-dung', 90), // bài giảng còn dùng → giữ
+      asset('edu-platform/videos/thua-cu', ORPHAN_GRACE_DAYS + 1), // thừa, đủ lâu → xóa
+      asset('edu-platform/videos/vua-upload', 2), // thừa nhưng mới upload (chưa bấm Lưu bài) → giữ
+    ]
+    const orphans = findOrphanVideos(assets, new Set(['edu-platform/videos/dang-dung']), NOW)
+    expect(orphans.map((a) => a.publicId)).toEqual(['edu-platform/videos/thua-cu'])
+  })
+
+  it('phanh an toàn: quá nửa số video là thừa thì coi là bất thường', () => {
+    expect(isSuspiciousOrphanCount(6, 10)).toBe(true)
+    expect(isSuspiciousOrphanCount(5, 10)).toBe(false)
+    // Ít video: 2/3 thừa vẫn là chuyện bình thường (vừa dọn khóa test chẳng hạn)
+    expect(isSuspiciousOrphanCount(2, 3)).toBe(false)
   })
 })

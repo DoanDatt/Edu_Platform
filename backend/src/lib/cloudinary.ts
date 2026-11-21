@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary'
 import envConfig from '../config/env'
-import { buildHlsUrl, HLS_EAGER, HLS_STREAMING_PROFILE } from '../utils/video'
+import { buildHlsUrl, CloudVideoAsset, HLS_EAGER, HLS_STREAMING_PROFILE } from '../utils/video'
 
 // Đọc thông tin từ CLOUDINARY_URL (cloudinary://<api_key>:<api_secret>@<cloud_name>) và cấu hình rõ ràng,
 // không dựa vào việc SDK tự đọc biến môi trường (phụ thuộc thứ tự import với dotenv)
@@ -76,6 +76,34 @@ export const signVideoUpload = (
 export const createVideoUploadSignature = () => {
   if (!credentials) return null
   return signVideoUpload(credentials, Math.floor(Date.now() / 1000))
+}
+
+// Liệt kê MỌI video trong thư mục bài giảng (Admin API, 500 video / lần, lật trang bằng next_cursor).
+// Gói free giới hạn ~500 lần gọi Admin API / giờ: job chạy 1 lần / ngày nên không đáng kể
+export const listLectureVideos = async (): Promise<CloudVideoAsset[]> => {
+  const assets: CloudVideoAsset[] = []
+  let nextCursor: string | undefined
+  do {
+    const page = await cloudinary.api.resources({
+      type: 'upload',
+      resource_type: 'video',
+      prefix: `${VIDEO_FOLDER}/`,
+      max_results: 500,
+      next_cursor: nextCursor,
+    })
+    for (const resource of page.resources) {
+      assets.push({ publicId: resource.public_id, createdAt: new Date(resource.created_at), bytes: resource.bytes })
+    }
+    nextCursor = page.next_cursor
+  } while (nextCursor)
+  return assets
+}
+
+// Xóa video (kèm mọi bản biến đổi của nó: các bản HLS, ảnh thumbnail...). Mỗi lần gọi tối đa 100 video
+export const deleteVideos = async (publicIds: string[]) => {
+  for (let i = 0; i < publicIds.length; i += 100) {
+    await cloudinary.api.delete_resources(publicIds.slice(i, i + 100), { resource_type: 'video', invalidate: true })
+  }
 }
 
 // Link HLS của video bài giảng (null = không phải video Cloudinary của mình → phát mp4)

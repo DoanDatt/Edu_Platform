@@ -13,6 +13,7 @@
     "seed:demo": "tsx src/scripts/seed-demo.ts",
     "sync-permissions": "tsx src/scripts/sync-permissions.ts",
     "video:hls": "tsx src/scripts/generate-hls.ts",
+    "video:cleanup": "tsx src/scripts/cleanup-videos.ts",
     "start": "node dist/server.js",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "oxlint --type-aware src/",

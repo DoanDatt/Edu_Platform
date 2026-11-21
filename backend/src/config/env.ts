@@ -79,6 +79,14 @@ const configSchema = z.object({
       .optional(),
   ),
 
+  // Job hằng ngày xóa video thừa trên Cloudinary (không bài giảng nào dùng, quá 30 ngày).
+  // MẶC ĐỊNH TẮT, chỉ bật ở production: máy local thường dùng chung cloud với production nhưng database khác
+  // → job chạy ở local sẽ tưởng video của production là "thừa" và xóa mất
+  VIDEO_CLEANUP_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+
   // Tiền tố mã đơn hàng (EDU + 8 ký tự). SePay dùng nó để nhận ra mã đơn trong nội dung chuyển khoản
   // → phải trùng với "Cấu trúc mã thanh toán" cấu hình trên my.sepay.vn
   PAYMENT_CODE_PREFIX: z

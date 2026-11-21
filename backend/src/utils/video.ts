@@ -32,6 +32,28 @@ export const parseCloudinaryVideoUrl = (videoUrl: string, cloudName: string) => 
   return { publicId, version: version ?? null }
 }
 
+// ===== Dọn video thừa trên Cloudinary =====
+
+// Video phải "không ai dùng" ít nhất chừng này ngày mới bị xóa:
+//   - vừa upload nhưng giảng viên chưa bấm Lưu bài → chưa có bài nào trỏ tới, không được xóa vội
+//   - bài đã xóa mềm vẫn khôi phục được → giữ video thêm 30 ngày
+export const ORPHAN_GRACE_DAYS = 30
+// Phanh an toàn: thấy hơn chừng này phần video là "thừa" thì gần như chắc chắn đang so với NHẦM database
+// (vd máy local dùng chung cloud với production) → không xóa gì
+export const MAX_ORPHAN_RATIO = 0.5
+
+export type CloudVideoAsset = { publicId: string; createdAt: Date; bytes: number }
+
+// Chọn video thừa: không bài giảng nào dùng VÀ đã upload quá ORPHAN_GRACE_DAYS ngày
+export const findOrphanVideos = (assets: CloudVideoAsset[], referencedPublicIds: Set<string>, now = new Date()) => {
+  const cutoff = now.getTime() - ORPHAN_GRACE_DAYS * 24 * 60 * 60 * 1000
+  return assets.filter((asset) => !referencedPublicIds.has(asset.publicId) && asset.createdAt.getTime() < cutoff)
+}
+
+// true = số video thừa bất thường → dừng, không xóa (ít video thì bỏ qua kiểm tra: 2/3 video thừa vẫn là chuyện thường)
+export const isSuspiciousOrphanCount = (orphanCount: number, totalCount: number) =>
+  totalCount >= 10 && orphanCount / totalCount > MAX_ORPHAN_RATIO
+
 // Link HLS (.m3u8) của video: trình phát tự chọn chất lượng theo tốc độ mạng.
 // Không phải video Cloudinary của mình → null (frontend phát link mp4 như cũ)
 export const buildHlsUrl = (videoUrl: string | null, cloudName: string | undefined) => {
