@@ -11,8 +11,8 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 |---|---|---|
 | 1. Khách (chưa đăng nhập) | Trang chủ, danh sách, chi tiết, tìm kiếm, Blog, Giới thiệu | Xem thử video bài preview |
 | 2. Tài khoản | Đăng ký, đăng nhập, đăng xuất, giữ đăng nhập, hồ sơ, đổi mật khẩu, quên mật khẩu | Xử lý tài khoản bị khóa |
-| 3. Học viên | Ghi danh, mua khóa có phí, đơn hàng, khóa của tôi, trang học (xem đủ 90%), đánh giá | Giao diện làm quiz |
-| 4. Giảng viên | Dashboard (có doanh thu thật), soạn bài, gửi duyệt, học viên | Giao diện soạn quiz |
+| 3. Học viên | Ghi danh, mua khóa có phí, đơn hàng, khóa của tôi, trang học (xem đủ 90%), làm quiz, đánh giá | |
+| 4. Giảng viên | Dashboard (có doanh thu thật), soạn bài, soạn quiz, gửi duyệt, học viên | |
 | 5. Admin | Dashboard (có doanh thu thật), duyệt khóa học, danh mục, người dùng | Phân quyền |
 | 6. Thông báo | Backend + chuông ở header | Realtime SSE |
 | 7. Giao diện và chất lượng | Sáng / tối, điện thoại, song ngữ Việt – Anh trang công khai, Next.js 16.4.3 | Giao diện EduPress từ bước 3, dịch dashboard, trang lỗi / 404, SEO, cache |
@@ -57,7 +57,7 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ **Khóa học của tôi:** tổng kết, thẻ "Học tiếp", bộ lọc, thanh tiến độ, nút Bắt đầu / Tiếp tục / Xem lại
 - ✅ **Trang học:** video + nội dung bài, mục lục có dấu ✓, mở lại thì vào đúng bài đang học dở
 - ✅ **Xem đủ 90% video mới tính học xong:** trình phát đếm thời gian xem thật (tua không tính), lưu tiến độ lên server, chưa đủ thì hiện thanh "đã xem x%"
-- 🚧 **Quiz cuối bài:** backend xong (lấy đề, nộp bài, chấm điểm); chưa có giao diện làm bài
+- ✅ **Quiz cuối bài:** khối "Bài tập" dưới video: làm bài (phải trả lời đủ mới nộp), xem điểm, câu đúng / sai kèm đáp án và giải thích, làm lại; mục lục có icon bài tập (xanh khi đã đạt)
 - ✅ **Đánh giá:** viết / sửa / xóa (phải ghi danh mới được đánh giá)
 - 💡 Chứng chỉ hoàn thành khóa học (PDF)
 - 💡 Ghi chú cá nhân khi học từng bài
@@ -70,7 +70,7 @@ Trạng thái ngày 30/10/2026: ✅ xong · 🚧 đang làm · ⬜ chưa làm ·
 - ✅ **Khóa học của tôi:** bảng lọc theo trạng thái, phân trang, hiện lý do bị từ chối, menu thao tác
 - ✅ **Tạo / sửa khóa:** một form dùng chung, upload ảnh bìa, chọn danh mục / trình độ / ngôn ngữ, giá
 - ✅ **Soạn nội dung:** thêm / đổi tên / xóa / đổi thứ tự chương và bài, upload video (tự lấy thời lượng), nội dung bài, đánh dấu bài xem thử
-- 🚧 **Soạn quiz cho bài:** backend xong (tạo / sửa câu hỏi); chưa có giao diện
+- ✅ **Soạn quiz cho bài:** menu bài giảng → "Bài tập trắc nghiệm": tối đa 20 câu, 2–6 lựa chọn, chọn đáp án đúng, giải thích; xóa hết câu + lưu = bỏ bài tập
 - ✅ **Gửi duyệt** (cần ít nhất 1 bài), thông báo theo từng trạng thái (Nháp / Chờ duyệt / Bị từ chối / Đã xuất bản)
 - ✅ Xóa khóa Nháp / Bị từ chối
 - ✅ **Học viên của khóa:** danh sách + tiến độ từng người, phân trang
