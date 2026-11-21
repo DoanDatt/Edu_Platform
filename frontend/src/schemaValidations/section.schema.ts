@@ -5,7 +5,10 @@ export const PublicLectureSchema = z.object({
   title: z.string(),
   durationSec: z.number(),
   isPreview: z.boolean(),
-  videoUrl: z.string().nullable()
+  videoUrl: z.string().nullable(),
+  // Link HLS của bài xem thử (null: không phải bài xem thử / không phải video Cloudinary → phát videoUrl).
+  // optional: API soạn bài của giảng viên không trả trường này
+  hlsUrl: z.string().nullable().optional()
 })
 
 export type PublicLectureType = z.infer<typeof PublicLectureSchema>

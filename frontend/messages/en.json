@@ -427,7 +427,9 @@
         "question": "Who can I ask when I get stuck?",
         "answer": "Leave a comment below the course or send a message from the Contact page; the instructor and the team will reply."
       }
-    }
+    },
+    "playPreview": "Preview lesson: {title}",
+    "previewDescription": "Free preview. Enroll to unlock the whole course."
   },
   "Review": {
     "confirmDelete": "Delete your review for this course?",
@@ -563,5 +565,11 @@
     "title": "Latest Articles",
     "description": "Learning roadmaps, study tips and guides",
     "viewAll": "All articles"
+  },
+  "Player": {
+    "auto": "Auto",
+    "autoWithLevel": "Auto ({height}p)",
+    "quality": "Quality",
+    "chooseQuality": "Choose video quality"
   }
 }
