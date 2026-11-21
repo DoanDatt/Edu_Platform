@@ -1,4 +1,4 @@
-import { HttpError } from '../utils/error'
+import { accountBlockedError, HttpError } from '../utils/error'
 import { verifyAccessToken } from '../utils/jwt'
 import { RequestHandler } from 'express'
 import { buildPermissionPath } from '../utils/permission-path'
@@ -86,7 +86,7 @@ export const requirePermission: RequestHandler = async (req, res, next) => {
     throw new HttpError(401, 'Tài khoản không còn tồn tại')
   }
   if (user.status === 'BLOCKED') {
-    throw new HttpError(403, 'Tài khoản của bạn đã bị khoá')
+    throw accountBlockedError()
   }
   if (!user.role.isActive || user.role.deletedAt) {
     throw new HttpError(403, 'Role của bạn đã bị vô hiệu hoá')
