@@ -23,7 +23,18 @@ import {
 } from '@/schemaValidations/section.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useIsMutating } from '@tanstack/react-query'
-import { ArrowDown, ArrowUp, FileText, Loader2, MoreHorizontal, Pencil, PlayCircle, Plus, Trash2 } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowUp,
+  ClipboardCheck,
+  FileText,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  PlayCircle,
+  Plus,
+  Trash2
+} from 'lucide-react'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -37,6 +48,7 @@ type SectionItemProps = {
   onMove: (direction: -1 | 1) => void
   onAddLecture: () => void
   onEditLecture: (lecture: InstructorLectureType) => void
+  onEditQuiz: (lecture: InstructorLectureType) => void
 }
 
 // 1 chương: tiêu đề (đổi tên, lên / xuống, xóa) + danh sách bài giảng + nút thêm bài
@@ -48,7 +60,8 @@ export default function SectionItem({
   editable,
   onMove,
   onAddLecture,
-  onEditLecture
+  onEditLecture,
+  onEditQuiz
 }: SectionItemProps) {
   const [isRenaming, setIsRenaming] = useState(false)
   const updateSectionMutation = useUpdateSectionMutation()
@@ -185,6 +198,10 @@ export default function SectionItem({
                     <DropdownMenuItem onSelect={() => onEditLecture(lecture)}>
                       <Pencil />
                       Sửa bài giảng
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => onEditQuiz(lecture)}>
+                      <ClipboardCheck />
+                      Bài tập trắc nghiệm
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       disabled={lectureIndex === 0 || isBusy}

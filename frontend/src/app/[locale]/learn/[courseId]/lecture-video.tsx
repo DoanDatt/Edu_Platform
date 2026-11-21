@@ -1,5 +1,6 @@
 'use client'
 
+import HlsVideo from '@/components/hls-video'
 import { useReportWatchMutation } from '@/queries/useLecture'
 import { ReportWatchResType } from '@/schemaValidations/lecture.schema'
 import { useCallback, useEffect, useRef } from 'react'
@@ -10,7 +11,7 @@ const REPORT_EVERY_SEC = 15
 // Nhảy xa hơn mức này = người dùng TUA → không tính là đã xem
 const MAX_NORMAL_STEP_SEC = 3
 
-// Trình phát video của trang học:
+// Trình phát video của trang học = HlsVideo (phát HLS / mp4, chọn chất lượng) + đếm thời gian xem:
 //   - mở bài: tua tới chỗ đang xem dở lần trước (startAtSec)
 //   - đếm số giây video THỰC SỰ phát (tua qua không tính), báo backend định kỳ
 //   - backend cộng dồn, đủ 90% thời lượng thì tự đánh dấu học xong → onReported nhận completed: true
@@ -18,11 +19,13 @@ const MAX_NORMAL_STEP_SEC = 3
 export default function LectureVideo({
   lectureId,
   src,
+  hlsUrl,
   startAtSec,
   onReported
 }: {
   lectureId: number
   src: string
+  hlsUrl: string | null
   startAtSec: number
   onReported?: (data: ReportWatchResType['data']) => void
 }) {
@@ -68,11 +71,10 @@ export default function LectureVideo({
   }, [report])
 
   return (
-    <video
-      ref={videoRef}
+    <HlsVideo
       src={src}
-      controls
-      className='size-full'
+      hlsUrl={hlsUrl}
+      videoRef={videoRef}
       onLoadedMetadata={(e) => {
         const video = e.currentTarget
         // Xem tiếp từ chỗ dừng (trừ khi đã ở sát cuối video → xem lại từ đầu)

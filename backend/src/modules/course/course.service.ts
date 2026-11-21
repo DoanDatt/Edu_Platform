@@ -1,6 +1,7 @@
 import { CourseLevel, CourseStatus, NotificationType } from '../../generated/prisma/enums'
 import { Prisma } from '../../generated/prisma/client'
 import prisma from '../../lib/prisma'
+import { getHlsUrl } from '../../lib/cloudinary'
 import { HttpError } from '../../utils/error'
 import { enqueueEmailSafely } from '../../queues/email.queue'
 import { courseApprovedEmail, courseRejectedEmail, EmailContent } from '../../emails/templates'
@@ -357,7 +358,11 @@ export const getPublicCourseById = async (courseId: number, userId?: number) => 
       totalLectures++
       totalDurationSec += lecture.durationSec
       // Bài không phải xem thử → ẩn link video (phải ghi danh rồi lấy qua GET /lectures/:id)
-      return { ...lecture, videoUrl: lecture.isPreview ? videoUrl : null }
+      return {
+        ...lecture,
+        videoUrl: lecture.isPreview ? videoUrl : null,
+        hlsUrl: lecture.isPreview ? getHlsUrl(videoUrl) : null,
+      }
     }),
   }))
 

@@ -7,6 +7,7 @@ import { hasExactlyIds } from '../../utils/ids'
 import { ensurePublishedCourseKeepsLectures, getEditableOwnCourse } from '../course/course.service'
 import { getEditableOwnSection } from '../section/section.service'
 import { isEnrolled, requiredWatchSec } from '../enrollment/enrollment.service'
+import { getHlsUrl } from '../../lib/cloudinary'
 import { CreateLectureBodyType, ReorderLecturesBodyType, UpdateLectureBodyType } from './lecture.schema'
 
 // Vị trí cuối cùng trong chương (để thêm bài mới / chuyển bài sang vào cuối)
@@ -145,6 +146,8 @@ export const getLectureForLearner = async (lectureId: number, user: AccessTokenP
   return {
     ...rest,
     hasQuiz: _count.quizQuestions > 0,
+    // Link HLS (tự đổi chất lượng theo mạng). null = phát videoUrl như cũ
+    hlsUrl: getHlsUrl(lecture.videoUrl),
     watch,
     // Số giây phải xem để tính là học xong (0 = bài không có video / chưa biết thời lượng → tự bấm "đã học")
     requiredWatchSec: lecture.videoUrl && lecture.durationSec > 0 ? requiredWatchSec(lecture.durationSec) : 0,

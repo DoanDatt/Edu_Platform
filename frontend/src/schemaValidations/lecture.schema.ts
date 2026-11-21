@@ -4,6 +4,9 @@ export const LectureSchema = z.object({
   id: z.number(),
   title: z.string(),
   videoUrl: z.string().nullable(),
+  // Link HLS (.m3u8): nhiều chất lượng, trình phát tự đổi theo tốc độ mạng
+  // null = không phải video Cloudinary của hệ thống → phát videoUrl như cũ
+  hlsUrl: z.string().nullable(),
   content: z.string(),
   durationSec: z.number(),
 

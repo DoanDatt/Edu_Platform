@@ -1,5 +1,6 @@
 'use client'
 import { useAppContext } from '@/components/app-provider'
+import { BLOCKED_LOGIN_PATH } from '@/lib/http'
 import { getAccessTokenFromLocalStorage } from '@/lib/utils'
 import { useLogoutMutation } from '@/queries/useAuth'
 import { useQueryClient } from '@tanstack/react-query'
@@ -14,7 +15,10 @@ export default function Logout() {
   const router = useRouter()
   const { setRole } = useAppContext()
   const queryClient = useQueryClient()
-  const accessTokenFromUrl = useSearchParams().get('accessToken')
+  const searchParams = useSearchParams()
+  const accessTokenFromUrl = searchParams.get('accessToken')
+  // http.ts (nhánh server) gắn reason=blocked khi tài khoản bị khóa → trang đăng nhập báo lý do
+  const loginPath = searchParams.get('reason') === 'blocked' ? BLOCKED_LOGIN_PATH : '/login'
   const isLoggingOut = useRef(false) // cờ: đang đăng xuất thì không gọi lần 2
 
   useEffect(() => {
@@ -31,12 +35,12 @@ export default function Logout() {
       // gọi api logout, đợi xong
       setRole()
       queryClient.clear()
-      router.push('/login')
+      router.push(loginPath)
       setTimeout(() => {
         isLoggingOut.current = false // 1s sau: hạ cờ (chạy đúng 1 lần)
       }, 1000)
     })
-  }, [mutateAsync, accessTokenFromUrl, setRole, queryClient, router])
+  }, [mutateAsync, accessTokenFromUrl, loginPath, setRole, queryClient, router])
 
   return <p className='py-16 text-center text-muted-foreground'>{t('loggingOut')}</p>
 }
