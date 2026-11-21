@@ -1,7 +1,7 @@
 import { formatClock } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { MySectionType } from '@/schemaValidations/enrollment.schema'
-import { CheckCircle2, Circle, PlayCircle } from 'lucide-react'
+import { CheckCircle2, Circle, ClipboardCheck, PlayCircle } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
 
 // Mục lục bên phải trang học: ✓ bài đã học, ▶ bài đang học (tô nền), ○ bài chưa học.
@@ -56,7 +56,19 @@ export default function LearnCurriculum({
                       <Circle className='size-4 shrink-0 text-muted-foreground' />
                     )}
                     <span className='flex-1'>{lecture.title}</span>
-                    <span className='tabular-nums text-xs text-muted-foreground'>{formatClock(lecture.durationSec)}</span>
+                    {/* Bài có bài tập: icon xám, làm đạt rồi thì xanh */}
+                    {lecture.hasQuiz && (
+                      <ClipboardCheck
+                        className={cn(
+                          'size-4 shrink-0',
+                          lecture.quizPassed ? 'text-green-600' : 'text-muted-foreground'
+                        )}
+                        aria-label={lecture.quizPassed ? 'Bài tập: đã đạt' : 'Có bài tập'}
+                      />
+                    )}
+                    <span className='tabular-nums text-xs text-muted-foreground'>
+                      {formatClock(lecture.durationSec)}
+                    </span>
                   </Link>
                 </li>
               )

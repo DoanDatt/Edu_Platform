@@ -1,4 +1,4 @@
-import { HttpError } from '../utils/error'
+import { accountBlockedError, HttpError } from '../utils/error'
 import { verifyAccessToken } from '../utils/jwt'
 import { RequestHandler } from 'express'
 import { buildPermissionPath } from '../utils/permission-path'
@@ -60,13 +60,28 @@ export const requirePermission: RequestHandler = async (req, res, next) => {
     throw new Error('requirePermission phải được đặt trong khai báo route, không dùng với router.use')
   }
 
-  const method = req.method as HTTPMethod
   // '/roles' + '/:roleId' → '/roles/:roleId', ghép giống hệt script sync
-  const path = buildPermissionPath(req.baseUrl, req.route.path)
+  await ensurePermission(req.user.userId, req.method as HTTPMethod, buildPermissionPath(req.baseUrl, req.route.path))
+  next()
+}
 
+// Route đi kèm 1 route khác, dùng chung quyền của route đó (khỏi tạo permission mới + chạy lại sync khi deploy).
+// VD: POST /uploads/video/signature (xin chữ ký upload thẳng) dùng quyền 'POST /uploads/video'
+export const requirePermissionOf = (method: HTTPMethod, path: string): RequestHandler => {
+  return async (req, res, next) => {
+    if (!req.user) {
+      throw new HttpError(401, 'Chưa đăng nhập')
+    }
+    await ensurePermission(req.user.userId, method, path)
+    next()
+  }
+}
+
+// Ném lỗi nếu user không được gọi method + path này
+const ensurePermission = async (userId: number, method: HTTPMethod, path: string) => {
   // 1 query: lấy trạng thái user + role + CHỈ permission khớp method/path đang gọi
   const user = await prisma.user.findFirst({
-    where: { id: req.user.userId, deletedAt: null },
+    where: { id: userId, deletedAt: null },
     select: {
       status: true,
       role: {
@@ -86,7 +101,7 @@ export const requirePermission: RequestHandler = async (req, res, next) => {
     throw new HttpError(401, 'Tài khoản không còn tồn tại')
   }
   if (user.status === 'BLOCKED') {
-    throw new HttpError(403, 'Tài khoản của bạn đã bị khoá')
+    throw accountBlockedError()
   }
   if (!user.role.isActive || user.role.deletedAt) {
     throw new HttpError(403, 'Role của bạn đã bị vô hiệu hoá')
@@ -95,5 +110,4 @@ export const requirePermission: RequestHandler = async (req, res, next) => {
   if (user.role.permissions.length === 0) {
     throw new HttpError(403, 'Bạn không có quyền truy cập')
   }
-  next()
 }

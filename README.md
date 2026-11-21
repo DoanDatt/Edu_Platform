@@ -14,10 +14,10 @@
 **Key decisions and tradeoffs**
 
 - **Local payments:** VietQR bank transfer (SePay) alongside PayPal, because many Vietnamese learners don't have an international card. Payment webhooks can arrive more than once, so each one is logged under a unique `(method, externalId)` and the order moves out of `PENDING` in one conditional update: a duplicate can't pay or enroll twice.
-- **Auth:** JWT in httpOnly cookies set through Next.js Route Handlers instead of localStorage. Safer against XSS, at the cost of more work for token refresh. Refresh tokens rotate and are single-use.
+- **Auth:** Next.js Route Handlers set the JWTs as httpOnly cookies, so Server Components and `proxy.ts` can render and guard pages per role on the server. The browser also keeps a copy in localStorage for client-side API calls, which means an XSS bug could still read the tokens: a known tradeoff, kept because it makes client requests simpler. Refresh tokens rotate and are single-use, and an account blocked by an admin is logged out on its next request.
 - **Catalogue:** search, filters, sorting and pagination live in the URL and render with Server Components, so results are shareable and SEO-friendly. Vietnamese and English versions with next-intl.
 - **Course review flow:** `DRAFT → PENDING → PUBLISHED / REJECTED`, with status changes guarded by the previous status, so two admins approving at the same time can't conflict.
-- **Division of work:** I wrote the front end myself. The back end was built with Claude so I could focus on the front end; I designed the API contract, read and ran every change, and kept 95 automated tests plus GitHub Actions CI.
+- **Division of work:** I wrote the front end myself. The back end was built with Claude so I could focus on the front end; I designed the API contract, read and ran every change, and kept 105 automated tests plus GitHub Actions CI.
 - **Hosting:** free tiers (Vercel, Render, Neon) keep the cost at $0. The tradeoff is the cold start above.
 
 **Stack:** Next.js 16 (App Router), React 19, TypeScript, TanStack Query, React Hook Form, Zod, next-intl, shadcn/ui, Tailwind CSS · Express 5, Prisma, PostgreSQL, Redis + BullMQ, Cloudinary · Vitest + Supertest.
@@ -82,7 +82,7 @@ Trình duyệt ──▶ Vercel (Next.js 16) ──▶ Render (Express API) ─�
 | Dữ liệu | Fetch wrapper riêng, TanStack Query cho thao tác ghi (mutation) |
 | Form + validate | React Hook Form + Zod 4 (schema viết khớp với backend) |
 | Giao diện | Tailwind CSS 4 + shadcn/ui, giao diện sáng / tối |
-| Xác thực | JWT trong httpOnly cookie qua Route Handler, `proxy.ts` chặn route theo role, refresh token chống gọi trùng |
+| Xác thực | JWT trong httpOnly cookie qua Route Handler (cho Server Component và `proxy.ts` chặn route theo role) + bản sao trong localStorage cho request phía trình duyệt, refresh token chống gọi trùng, tài khoản bị khóa tự đăng xuất |
 
 Thư mục:
 
@@ -111,7 +111,7 @@ Edu_Platform/
 | Validate | Zod 4 | `.env`, body, params, query |
 | Xác thực | JWT (`jsonwebtoken`) | access token 15 phút + refresh token 7 ngày, xoay vòng |
 | Bảo mật | helmet, express-rate-limit, bcrypt | |
-| Test | Vitest + Supertest | 95 test, database riêng |
+| Test | Vitest + Supertest | 105 test, database riêng |
 | Lint | oxlint | |
 
 ---
@@ -186,6 +186,8 @@ Kiểm tra:
 | `FRONTEND_URL` | Địa chỉ frontend, dùng tạo link trong email |
 | `PUBLIC_URL` | Địa chỉ công khai của API, dùng tạo link file upload |
 | `UPLOAD_DIR`, `MAX_IMAGE_MB`, `MAX_VIDEO_MB` | Thư mục lưu file và giới hạn dung lượng |
+| `CLOUDINARY_URL` | Có thì ảnh / video lên Cloudinary (video kèm bản HLS), không có thì lưu ổ đĩa server |
+| `VIDEO_CLEANUP_ENABLED` | `true`: 3h30 mỗi ngày xóa video không bài giảng nào dùng quá 30 ngày. **Chỉ bật ở production** (local dùng chung cloud nhưng khác database sẽ xóa nhầm). Xem trước bằng `npm run video:cleanup` |
 | `RATE_LIMIT_ENABLED` | `false` để tắt giới hạn số request (khi test) |
 
 Có file `.env` thì đọc, không có thì dùng biến môi trường sẵn có (CI, Docker). Thiếu hoặc sai biến thì server dừng ngay và in ra biến bị lỗi (Zod trong `src/config/env.ts`).

@@ -65,9 +65,12 @@ describe('Admin quản lý người dùng', () => {
     const user = await registerStudent()
     await api().put(`/users/${user.id}/status`).set(bearer(admin.token)).send({ status: 'BLOCKED' }).expect(200)
 
-    await api().get('/enrollments/mine').set(bearer(user.token)).expect(403)
+    // code ACCOUNT_BLOCKED: frontend dựa vào mã này (không dựa vào câu chữ) để tự đăng xuất
+    const blocked = await api().get('/enrollments/mine').set(bearer(user.token)).expect(403)
+    expect(blocked.body.code).toBe('ACCOUNT_BLOCKED')
     await api().post('/auth/refresh-token').send({ refreshToken: user.refreshToken }).expect(401)
-    await api().post('/auth/login').send({ email: user.email, password: PASSWORD }).expect(403)
+    const loginBlocked = await api().post('/auth/login').send({ email: user.email, password: PASSWORD }).expect(403)
+    expect(loginBlocked.body.code).toBe('ACCOUNT_BLOCKED')
 
     await api().put(`/users/${user.id}/status`).set(bearer(admin.token)).send({ status: 'ACTIVE' }).expect(200)
     await login(user.email)
