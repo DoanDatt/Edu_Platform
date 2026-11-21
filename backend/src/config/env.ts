@@ -65,7 +65,8 @@ const configSchema = z.object({
   PUBLIC_URL: z.url().default('http://localhost:4000'),
   UPLOAD_DIR: z.string().default('uploads'),
   MAX_IMAGE_MB: z.coerce.number().positive().default(5),
-  MAX_VIDEO_MB: z.coerce.number().positive().default(500),
+  // Gói free của Cloudinary chỉ nhận video tối đa 100MB → để cao hơn thì backend nhận nhưng Cloudinary từ chối
+  MAX_VIDEO_MB: z.coerce.number().positive().default(100),
 
   // Cloudinary: có thì ảnh / video upload lên Cloudinary (deploy: ổ đĩa Render bị xóa khi khởi động lại).
   // Không có thì lưu ổ đĩa server như cũ (máy local, test). Dạng cloudinary://<api_key>:<api_secret>@<cloud_name>

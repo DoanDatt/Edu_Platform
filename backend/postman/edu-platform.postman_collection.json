@@ -532,7 +532,7 @@
                 "video"
               ]
             },
-            "description": "form-data, field \"file\": mp4/webm/mov ≤ 500MB",
+            "description": "form-data, field \"file\": mp4/webm/mov ≤ 100MB (giới hạn gói free Cloudinary)",
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -543,6 +543,25 @@
                 }
               ]
             }
+          }
+        },
+        {
+          "name": "Xin chữ ký upload video thẳng lên Cloudinary (giảng viên)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/uploads/video/signature",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "uploads",
+                "video",
+                "signature"
+              ]
+            },
+            "description": "Không body. mode \"cloudinary\": gửi file + mọi field trong data.fields tới data.uploadUrl. mode \"server\" (local): dùng POST /uploads/video"
           }
         }
       ]

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import * as uploadController from './upload.controller'
-import { requireAuth, requirePermission } from '../../middleware/auth.middleware'
+import { requireAuth, requirePermission, requirePermissionOf } from '../../middleware/auth.middleware'
+import { HTTPMethod } from '../../generated/prisma/enums'
 import { uploadImage, uploadVideo } from '../../middleware/upload.middleware'
 
 // Upload xong trả về { url }: frontend gửi tiếp url đó vào API khác
@@ -14,5 +15,12 @@ uploadRouter.post('/image', requireAuth, uploadImage, uploadController.uploadIma
 // Video bài giảng: chỉ người có quyền (giảng viên, admin). requirePermission đặt TRƯỚC multer
 // để người không có quyền bị chặn trước khi file nặng hàng trăm MB được ghi xuống đĩa
 uploadRouter.post('/video', requireAuth, requirePermission, uploadVideo, uploadController.uploadVideo)
+// Xin chữ ký để upload video thẳng lên Cloudinary: ai upload video được (quyền 'POST /uploads/video') mới xin được
+uploadRouter.post(
+  '/video/signature',
+  requireAuth,
+  requirePermissionOf(HTTPMethod.POST, '/uploads/video'),
+  uploadController.getVideoUploadSignature,
+)
 
 export default uploadRouter

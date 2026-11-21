@@ -146,7 +146,7 @@ Upload trước, nhận `url`, rồi gửi `url` đó vào API khác: `avatar` (
 | Method | Path | Ai | Giới hạn |
 |---|---|---|---|
 | POST | `/uploads/image` | 🔒 mọi người đã đăng nhập | jpg, png, webp, gif, tối đa **5 MB** |
-| POST | `/uploads/video` | 🔑 giảng viên / admin | mp4, webm, mov, tối đa **500 MB** |
+| POST | `/uploads/video` | 🔑 giảng viên / admin | mp4, webm, mov, tối đa **100 MB** |
 
 Gửi dạng **`multipart/form-data`**, đúng **1 file**, field tên **`file`**:
 ```ts
@@ -165,7 +165,40 @@ Lỗi: sai loại file, hoặc nội dung file không khớp loại khai báo (v
 
 File được phục vụ lại tại `url` (GET, công khai). Video hỗ trợ tua (HTTP Range), dùng thẳng trong thẻ `<video src="...">`.
 
-**Khi có `CLOUDINARY_URL`** (bản deploy): file được đẩy lên Cloudinary, `url` có dạng `https://res.cloudinary.com/<cloud>/image/upload/...`. Video có thêm **`durationSec`** (giây, Cloudinary tự đọc) để gửi tiếp khi tạo / sửa bài giảng. Lỗi khi đẩy lên Cloudinary → **502**. Gói miễn phí của Cloudinary giới hạn dung lượng mỗi file (ảnh khoảng 10 MB, video khoảng 100 MB), nên khi deploy đặt `MAX_VIDEO_MB` không vượt mức này.
+**Khi có `CLOUDINARY_URL`** (bản deploy): file được đẩy lên Cloudinary, `url` có dạng `https://res.cloudinary.com/<cloud>/image/upload/...`. Video có thêm **`durationSec`** (giây, Cloudinary tự đọc) để gửi tiếp khi tạo / sửa bài giảng. Lỗi khi đẩy lên Cloudinary → **502**. Gói miễn phí của Cloudinary giới hạn dung lượng mỗi file (ảnh 10 MB, video 100 MB), nên `MAX_VIDEO_MB` mặc định là 100.
+
+### Upload video thẳng lên Cloudinary (nên dùng)
+
+`POST /uploads/video` bắt file đi 2 chặng (trình duyệt → server → Cloudinary) và không báo được tiến trình. Nên xin chữ ký rồi để trình duyệt upload **thẳng** lên Cloudinary:
+
+| Method | Path | Ai | Ghi chú |
+|---|---|---|---|
+| POST | `/uploads/video/signature` | 🔑 ai có quyền `POST /uploads/video` | Không có body. Chữ ký hết hạn sau **1 giờ** → xin ngay trước khi upload |
+
+Response 200 có 2 dạng, xem `data.mode`:
+```jsonc
+// Có Cloudinary (deploy)
+{ "data": {
+  "mode": "cloudinary",
+  "uploadUrl": "https://api.cloudinary.com/v1_1/<cloud>/video/upload",
+  "fields": { "folder": "edu-platform/videos", "allowed_formats": "mp4,webm,mov", "eager": "sp_hd/m3u8", "eager_async": true, "timestamp": 1731400000, "api_key": "...", "signature": "..." },
+  "maxBytes": 104857600
+} }
+// Không có Cloudinary (máy local, test) → upload qua POST /uploads/video như trên
+{ "data": { "mode": "server", "uploadUrl": "http://localhost:4000/uploads/video", "maxBytes": 104857600 } }
+```
+
+Với `mode: "cloudinary"`: gửi `multipart/form-data` tới `uploadUrl`, gồm field `file` và **y nguyên** mọi field trong `fields` (sửa field nào là Cloudinary trả **401**). **Không** gửi header `Authorization`. Muốn có % tiến trình thì dùng `XMLHttpRequest` (`xhr.upload.onprogress`), vì `fetch` không báo được tiến trình upload. Kiểm tra `file.size <= maxBytes` trước khi gửi.
+
+Cloudinary trả JSON, lấy `secure_url` làm `videoUrl` và `Math.round(duration)` làm `durationSec` khi tạo / sửa bài giảng. Bản HLS được Cloudinary tạo **chạy nền** sau khi upload (vài giây tới vài phút).
+
+### Phát video bằng HLS
+
+`GET /lectures/:lectureId` và bài xem thử trong `GET /courses/:courseId` có thêm **`hlsUrl`** (`.m3u8`): video được chia nhiều mức chất lượng (tối đa 720p), trình phát tự đổi theo tốc độ mạng. `hlsUrl: null` khi video không nằm trên Cloudinary của hệ thống (ví dụ video mẫu của seed) → phát `videoUrl` như cũ.
+
+- Safari / iOS phát `.m3u8` sẵn. Chrome, Firefox, Edge cần thư viện `hls.js`.
+- Bản HLS chưa tạo xong (vừa upload) hoặc lỗi → `hls.js` báo lỗi fatal → chuyển sang phát `videoUrl`.
+- Video upload trước khi có HLS: chạy `npm run video:hls` (backend, với `DATABASE_URL` + `CLOUDINARY_URL` của production) một lần để Cloudinary tạo bù.
 
 ---
 
@@ -246,8 +279,8 @@ Công khai. **Nếu gửi kèm token** thì có thêm thông tin `isEnrolled`.
     {
       "id": 1, "title": "Giới thiệu",
       "lectures": [
-        { "id": 1, "title": "React là gì?", "durationSec": 300, "isPreview": true,  "videoUrl": "https://..." },
-        { "id": 2, "title": "Cài đặt",     "durationSec": 420, "isPreview": false, "videoUrl": null }
+        { "id": 1, "title": "React là gì?", "durationSec": 300, "isPreview": true,  "videoUrl": "https://...", "hlsUrl": "https://....m3u8" },
+        { "id": 2, "title": "Cài đặt",     "durationSec": 420, "isPreview": false, "videoUrl": null, "hlsUrl": null }
       ]
     }
   ],
@@ -258,7 +291,7 @@ Công khai. **Nếu gửi kèm token** thì có thêm thông tin `isEnrolled`.
   "isEnrolled": null
 }
 ```
-- `videoUrl` **chỉ có** ở bài xem thử (`isPreview: true`). Các bài còn lại phải ghi danh rồi lấy qua `GET /lectures/:lectureId`.
+- `videoUrl`, `hlsUrl` **chỉ có** ở bài xem thử (`isPreview: true`). Các bài còn lại phải ghi danh rồi lấy qua `GET /lectures/:lectureId`.
 - `isEnrolled`: `null` = khách chưa đăng nhập; `true` = đã ghi danh, hiện nút **Vào học**; `false` = hiện nút **Ghi danh**.
 - `instructor.courseCount` / `studentCount`: số khóa đã xuất bản và tổng lượt ghi danh của giảng viên (tab Instructor).
 - Khóa chưa xuất bản → **404**.
@@ -368,7 +401,7 @@ Duyệt, từ chối, gỡ khóa đều **gửi email cho giảng viên** (kèm 
 | POST | `/enrollments` | `{ courseId }` | Ghi danh. 409 nếu đã ghi danh / là giảng viên của khóa; **402** nếu khóa có phí; 404 nếu chưa xuất bản |
 | GET | `/enrollments/mine` | `?page&limit` | Khóa đã ghi danh + tiến độ |
 | GET | `/enrollments/mine/:courseId` | | Trang học: mục lục + bài nào đã xong. 403 nếu chưa ghi danh |
-| GET | `/lectures/:lectureId` | | Nội dung bài (`videoUrl`, `content`) kèm `hasQuiz`, `watch` (`{ watchedSec, positionSec }` hoặc `null`), `requiredWatchSec`. Xem được nếu: bài xem thử, **hoặc** đã ghi danh, **hoặc** là giảng viên của khóa / admin. Ngược lại **403** |
+| GET | `/lectures/:lectureId` | | Nội dung bài (`videoUrl`, `hlsUrl`, `content`) kèm `hasQuiz`, `watch` (`{ watchedSec, positionSec }` hoặc `null`), `requiredWatchSec`. Xem được nếu: bài xem thử, **hoặc** đã ghi danh, **hoặc** là giảng viên của khóa / admin. Ngược lại **403** |
 | PUT | `/lectures/:lectureId/watch` | `{ playedSec, positionSec }` | Trình phát báo tiến độ xem, khoảng 15 giây một lần và khi dừng / hết video. Trả `{ watchedSec, positionSec, requiredSec, completed }` |
 | POST | `/lectures/:lectureId/complete` | | Đánh dấu đã học xong (gọi nhiều lần không sao). Bài có video: **409** nếu chưa xem đủ 90% |
 | DELETE | `/lectures/:lectureId/complete` | | Bỏ đánh dấu |
